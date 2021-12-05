@@ -1,13 +1,5 @@
 import https from 'https'
 
-const search = () => {
-
-
-// https://invidious.snopyta.org/api/v1/search?q=awesome?page=3
-
-const query = 'foo bar'
-const page = '1'
-
 const hosts = [
   'vid.puffyan.us', // []
   'invidious.osi.kr', // []
@@ -27,7 +19,10 @@ const hosts = [
 ]
 
 const num = (hosts.length - 1)
+const query = 'foo bar'
+const page = '1'
 
+const search = () => {
   return new Promise((resolve, reject) => {
 
     const query = new URL(
@@ -48,25 +43,27 @@ const num = (hosts.length - 1)
       })
 
       res.on('end', () => {
-        resolve(`results:\n\n${resToString}`)
+        // resolve(`results:\n\n${resToString}`)
+        resolve(resToString)
       })
     })
 
     req.end()
   })
 
-
-
-
 }
 
-// export default search
-
-async function getSearch () {
+async function init () {
   const res = await search()
-  console.log('ha ha ha')
-  console.log(res)
+  console.log(`server: ${hosts[num]}\nsearch: ${query}\nresults: ${JSON.parse(res).length}\npage: ${page}\n`)
+  console.log(JSON.parse(res, 0, 2).map(item => {
+    return {
+      title: item.title,
+      id: item.videoId
+    }
+  }))
+  console.log('\n')
 }
 
-getSearch()
+init()
 
