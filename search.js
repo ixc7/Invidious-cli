@@ -17,12 +17,12 @@ const hosts = [
   'inv.riverside.rocks', // correct
   'invidio.xamh.de', // correct
 ]
-// different hosts return diferent results?
+// different hosts return diferent results..
 
 const hostsearch = hosts[(hosts.length - 1)]
 const hostclient = 'yewtu.be'
 const searchterm = 'hello world'
-// let page = 1
+const maxpages = 100
 
 const search = (p) => {
   return new Promise((resolve, reject) => {
@@ -45,7 +45,6 @@ const search = (p) => {
       })
 
       res.on('end', () => {
-        // page += 1
         resolve(resToString)
       })
     })
@@ -57,32 +56,26 @@ const search = (p) => {
 (async () => {
   console.log('\x1b[?25h\x1b[0m\x1Bc\x1b[3J')
 
-  let final = {}
+  const final = {}
 
-  for (let i = 1; i < 11; i += 1) {
-
+  for (let i = 1; i < (maxpages + 1); i += 1) {
+    console.log(`fetching page ${i} of ${maxpages}`)
     const res = await search(i)
     const resParsed = JSON.parse(res)
+
+    if (resParsed.length < 1) {
+      console.log(final)
+      process.exit(0)
+    }
+    
     const resMapped = resParsed.map(item => {
                         return {
                           title: item.title,
                           url: `https://${hostclient}/watch?v=${item.videoId}`
                         }
                       })
-
     final[i] = resMapped
-
-    // console.log(`server: ${hostsearch}
-                // \rsearch: ${searchterm}
-                // \rresults: ${resParsed.length}
-                // \rpage: ${page}\n`)
-    // console.log(resMapped)
-    // console.log('\n')
-
   }
 
   console.log(final)
-
-
 })()
-
