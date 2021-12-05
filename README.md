@@ -56,7 +56,6 @@ region: ISO 3166 country code (default: "US")
     author: String,
     authorId: String,
     authorUrl: String,
-
     videoCount: Int32,
     videos: [
       {
@@ -79,7 +78,6 @@ region: ISO 3166 country code (default: "US")
     author: String,
     authorId: String,
     authorUrl: String,
-
     authorThumbnails: [
       {
         url: String,
