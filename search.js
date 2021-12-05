@@ -21,10 +21,10 @@ const hosts = [
 
 const hostsearch = hosts[(hosts.length - 1)]
 const hostclient = 'yewtu.be'
-const searchterm = 'foo'
-const page = 1
+const searchterm = 'hello world'
+// let page = 1
 
-const search = () => {
+const search = (p) => {
   return new Promise((resolve, reject) => {
     const query = new URL(
       `/api/v1/search`, 
@@ -32,7 +32,7 @@ const search = () => {
     )
 
     query.searchParams.set('q', searchterm)
-    query.searchParams.set('page', page)
+    query.searchParams.set('page', p)
     query.searchParams.set('pretty', 1)
 
     const req = https.request(query.href)
@@ -45,6 +45,7 @@ const search = () => {
       })
 
       res.on('end', () => {
+        // page += 1
         resolve(resToString)
       })
     })
@@ -53,26 +54,35 @@ const search = () => {
   })
 }
 
-async function init () {
-  const res = await search()
-  const resParsed = JSON.parse(res)
-  const resMapped = resParsed.map(item => {
-        return {
-          title: item.title,
-          url: `https://${hostclient}/watch?v=${item.videoId}`
-        }
-      })
-
+(async () => {
   console.log('\x1b[?25h\x1b[0m\x1Bc\x1b[3J')
-  
-  console.log(`server: ${hostsearch}
-              \rsearch: ${searchterm}
-              \rresults: ${resParsed.length}
-              \rpage: ${page}\n`)
 
-  console.log(resMapped)
-  console.log('\n')
-}
+  let final = {}
 
-init()
+  for (let i = 1; i < 11; i += 1) {
+
+    const res = await search(i)
+    const resParsed = JSON.parse(res)
+    const resMapped = resParsed.map(item => {
+                        return {
+                          title: item.title,
+                          url: `https://${hostclient}/watch?v=${item.videoId}`
+                        }
+                      })
+
+    final[i] = resMapped
+
+    // console.log(`server: ${hostsearch}
+                // \rsearch: ${searchterm}
+                // \rresults: ${resParsed.length}
+                // \rpage: ${page}\n`)
+    // console.log(resMapped)
+    // console.log('\n')
+
+  }
+
+  console.log(final)
+
+
+})()
 

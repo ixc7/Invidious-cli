@@ -2,6 +2,13 @@
 
 # GET /api/v1/search
 
+
+
+todo
+get all pages in background
+option to run new search
+pagination/fzf/thumbnails/mpv (or another player)
+
 ## Links:
 
 https://docs.invidious.io/Invidious-Instances.md
