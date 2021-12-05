@@ -5,6 +5,8 @@
 ## Links:
 
 https://docs.invidious.io/Invidious-Instances.md
+https://api.invidious.io/
+
 
 ## Parameters:
 
