@@ -1,9 +1,5 @@
 import https from 'https'
 
-
-
-// https://api.invidious.io/instances.json?pretty=1&sort_by=type,users
-
 const hosts = [
   'vid.puffyan.us', // []
   'invidious.osi.kr', // []
@@ -21,21 +17,21 @@ const hosts = [
   'inv.riverside.rocks', // correct
   'invidio.xamh.de', // correct
 ]
+// different hosts return diferent results?
 
-const hostname = hosts[(hosts.length - 1)]
-const query = 'foo bar'
-const page = '1'
+const hostsearch = hosts[(hosts.length - 1)]
+const hostclient = 'yewtu.be'
+const searchterm = 'foo'
+const page = 1
 
 const search = () => {
   return new Promise((resolve, reject) => {
-
-
     const query = new URL(
-      '/api/v1/search?q=awesome', 
-      `https://${hostname}/api`
+      `/api/v1/search`, 
+      `https://${hostsearch}/api`
     )
 
-    query.searchParams.set('q', query)
+    query.searchParams.set('q', searchterm)
     query.searchParams.set('page', page)
     query.searchParams.set('pretty', 1)
 
@@ -54,8 +50,6 @@ const search = () => {
     })
 
     req.end()
-
-    
   })
 }
 
@@ -65,18 +59,17 @@ async function init () {
   const resMapped = resParsed.map(item => {
         return {
           title: item.title,
-          id: item.videoId
+          url: `https://${hostclient}/watch?v=${item.videoId}`
         }
       })
 
   console.log('\x1b[?25h\x1b[0m\x1Bc\x1b[3J')
   
-  console.log(`
-    \rserver: ${hostname}
-    \rsearch: ${query}
-    \rresults: ${resParsed.length}
-    \rpage: ${page}\n
-  `)
+  console.log(`server: ${hostsearch}
+              \rsearch: ${searchterm}
+              \rresults: ${resParsed.length}
+              \rpage: ${page}\n`)
+
   console.log(resMapped)
   console.log('\n')
 }
