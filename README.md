@@ -10,7 +10,7 @@ https://docs.invidious.io/Invidious-Instances.md
 
 
 https://yewtu.be/api/v1/search?q=awesome (429 too many requests)
-https://invidious.snopyta.org/api/v1/search?q=awesome
+curl -s https://invidious.snopyta.org/api/v1/search?q=awesome?page=3 ({"code":"403", "message": "Access denied, high abuse"})
 
 q: String
 page: Int32
