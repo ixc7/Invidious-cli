@@ -5,7 +5,7 @@ import child_process from 'child_process'
 import https from 'https'
 
 const list = process.argv.slice(2)
-let current =0
+let current = 0
 
 if (list.length < 1) process.exit(0)
 process.stdout.write("\x1b[?25h\x1b[0m\x1Bc\x1b[3J")

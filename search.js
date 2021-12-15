@@ -17,10 +17,11 @@ const hosts = [
   'inv.riverside.rocks', // correct
   'invidio.xamh.de', // correct
 ]
-// different hosts return diferent results..
+// TODO check hosts
 
-const hostsearch = hosts[(hosts.length - 1)]
-const hostclient = 'yewtu.be'
+const server = hosts[(hosts.length - 1)]
+const client = 'yewtu.be'
+
 const searchterm = 'hello world'
 const maxpages = 100
 
@@ -28,7 +29,7 @@ const search = (p) => {
   return new Promise((resolve, reject) => {
     const query = new URL(
       `/api/v1/search`, 
-      `https://${hostsearch}/api`
+      `https://${server}/api`
     )
 
     query.searchParams.set('q', searchterm)
@@ -38,6 +39,7 @@ const search = (p) => {
     const req = https.request(query.href)
 
     req.on('response', res => {
+
       let resToString  = ''
 
       res.on('data', chunk => {
@@ -45,6 +47,8 @@ const search = (p) => {
       })
 
       res.on('end', () => {
+        // console.log('GOT STATUS CODE:', res.statusCode)
+        // console.log('GOT RES:', resToString)
         resolve(resToString)
       })
     })
@@ -53,29 +57,33 @@ const search = (p) => {
   })
 }
 
-(async () => {
-  console.log('\x1b[?25h\x1b[0m\x1Bc\x1b[3J')
 
-  const final = {}
+const leave = (input) => {
+  console.log(input)
+  process.exit(0)
+}
+
+(async () => {
+  let final = {}
+  console.log('\x1b[?25h\x1b[0m\x1Bc\x1b[3J')
 
   for (let i = 1; i < (maxpages + 1); i += 1) {
     console.log(`fetching page ${i} of ${maxpages}`)
-    const res = await search(i)
-    const resParsed = JSON.parse(res)
 
-    if (resParsed.length < 1) {
-      console.log(final)
-      process.exit(0)
-    }
+    const res = await search(i)
+    const resJSON = JSON.parse(res)
     
-    const resMapped = resParsed.map(item => {
-                        return {
-                          title: item.title,
-                          url: `https://${hostclient}/watch?v=${item.videoId}`
-                        }
-                      })
+    if (resJSON.length < 1) leave(final)
+    
+    const resMapped = resJSON.map(item => {
+      return {
+        title: item.title,
+        url: `https://${client}/watch?v=${item.videoId}`
+      }
+    })
+
     final[i] = resMapped
   }
-
-  console.log(final)
+  // console.log(final)
+  leave(final)
 })()
