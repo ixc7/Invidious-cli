@@ -1,31 +1,57 @@
 
 // https://github.com/sindresorhus/ansi-escapes/blob/main/index.js
 
+
 const esc = `\x1b[`
 
-const seq = { 
-  scrollUp: `${esc}S`,
-  scrollDown: `${esc}T`,
-  eraseLine: `${esc}2K`,
-  eraseStartLine: `${esc}1K`,
-  eraseEndLine: `${esc}K`,
-  eraseUp: `${esc}1J`,
-  eraseDown: `${esc}J`,
-  eraseScreen: `${esc}2J`,
-  clearScreen: `\x1Bc`,
-  clearScroll: `\x1Bc${esc}3J`,
-  resetCursor: `${esc}H`
+const initTerm = () => {
+  const print = x => process.stdout.write(x)
+  
+  return {
+    scrollUp () { print(`${esc}S`) },
+    scrollDown () { print(`${esc}T`) },
+    eraseLine () { print(`${esc}2K`) },
+    eraseStartLine () { print(`${esc}1K`) },
+    eraseEndLine () { print(`${esc}K`) },
+    eraseUp () { print(`${esc}1J`) },
+    eraseDown () { print(`${esc}J`) },
+    eraseScreen () { print(`${esc}2J`) },
+    clearScreen () { print(`\x1Bc`) },
+    clearScroll () { print(`\x1Bc${esc}3J`) },
+    resetCursor () { print(`${esc}H`) },
+  }
 }
-  // clearTerm1: `${esc}2J${esc}3J${esc}H`,
 
-function cmd (prop, obj = seq) {
-  process.stdout.write(obj[prop])
-}
+const term = initTerm()
+const { scrollDown, clearScroll, resetCursor } = term
 
+clearScroll()
+scrollDown()
+scrollDown()
+scrollDown()
+scrollDown()
+console.log('WHATDAIYBGTF')
+scrollDown()
+scrollDown()
+scrollDown()
+scrollDown()
+console.log('hahahahaha')
+scrollDown()
+scrollDown()
+scrollDown()
+scrollDown()
+console.log('AAAAAAA ahahahahhhhhAHHHhahahahahaAAAAAHHHHH AAAHHHHH')
+scrollDown()
+scrollDown()
+resetCursor()
 
+// function cmd (prop, obj = seq) {
+  // process.stdout.write(obj[prop])
+// }
 
-for (let i = 0; i < 50; i += 1) console.log('hello cruel world')
-
-setTimeout(() => {
-  cmd('clearScroll')
-}, 2000)
+// function test () {
+  // for (let i = 0; i < 50; i += 1) console.log('hello cruel world')
+  // setTimeout(() => {
+    // cmd('clearScroll')
+  // }, 2000)
+// }
