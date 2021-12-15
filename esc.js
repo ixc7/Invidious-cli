@@ -1,12 +1,7 @@
 
-// https://github.com/sindresorhus/ansi-escapes/blob/main/index.js
-
-
-const esc = `\x1b[`
-
 const initTerm = () => {
   const print = x => process.stdout.write(x)
-  
+  const esc = `\x1b[`
   return {
     scrollUp () { print(`${esc}S`) },
     scrollDown () { print(`${esc}T`) },
@@ -25,33 +20,19 @@ const initTerm = () => {
 const term = initTerm()
 const { scrollDown, clearScroll, resetCursor } = term
 
-clearScroll()
-scrollDown()
-scrollDown()
-scrollDown()
-scrollDown()
-console.log('WHATDAIYBGTF')
-scrollDown()
-scrollDown()
-scrollDown()
-scrollDown()
-console.log('hahahahaha')
-scrollDown()
-scrollDown()
-scrollDown()
-scrollDown()
-console.log('AAAAAAA ahahahahhhhhAHHHhahahahahaAAAAAHHHHH AAAHHHHH')
-scrollDown()
-scrollDown()
-resetCursor()
+const test = () => {
+  clearScroll()
+  scrollDown()
+  scrollDown()
+  console.log('WHATDAIYBGTF')
+  scrollDown()
+  scrollDown()
+  console.log('hahahahaha')
+  scrollDown()
+  scrollDown()
+  console.log('AAAAAAA ahahahahhhhhAHHHhahahahahaAAAAAHHHHH AAAHHHHH')
+  resetCursor()
+}
 
-// function cmd (prop, obj = seq) {
-  // process.stdout.write(obj[prop])
-// }
-
-// function test () {
-  // for (let i = 0; i < 50; i += 1) console.log('hello cruel world')
-  // setTimeout(() => {
-    // cmd('clearScroll')
-  // }, 2000)
-// }
+// https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+// https://github.com/sindresorhus/ansi-escapes/blob/main/index.js

@@ -19,7 +19,10 @@ const hosts = [
 ]
 // TODO check hosts
 
-const server = hosts[(hosts.length - 1)]
+// let hostURL = 4
+let serverIndex = 4
+let serverMax = hosts.length
+let server = hosts[(hosts.length - serverIndex)]
 const client = 'yewtu.be'
 
 const searchterm = 'hello world'
@@ -47,8 +50,20 @@ const search = (p) => {
       })
 
       res.on('end', () => {
-        // console.log('GOT STATUS CODE:', res.statusCode)
+        if (res.statusCode !== 200) {
+            console.log('BAD STATUS CODE:', res.statusCode)
+            if (serverIndex >= serverMax) {
+              console.log('all servers are down.')
+              reject('no servers')
+            } else {
+              console.log(`server '${server}' is down. trying next...`)
+              serverIndex -= 1
+              server = hosts[(hosts.length - serverIndex)]
+              resolve(search (p))
+            }
+        } 
         // console.log('GOT RES:', resToString)
+        console.log('GOT STATUS CODE:', res.statusCode)
         resolve(resToString)
       })
     })
@@ -71,6 +86,8 @@ const leave = (input) => {
     console.log(`fetching page ${i} of ${maxpages}`)
 
     const res = await search(i)
+    if (!res) cleanup()
+    
     const resJSON = JSON.parse(res)
     
     if (resJSON.length < 1) leave(final)
