@@ -1,22 +1,21 @@
 
 const initTerm = () => {
-  const print = x => process.stdout.write(x)
-  const esc = `\x1b[`
+  const x = `\x1b[`
 
   const sequences = {
-    scrollUp: `${esc}S`,
-    scrollDown: `${esc}T`,
-    eraseLine: `${esc}2K`,
-    eraseStartLine: `${esc}1K`,
-    eraseEndLine: `${esc}K`,
-    eraseUp: `${esc}1J`,
-    eraseDown: `${esc}J`,
-    eraseScreen: `${esc}2J`,
+    scrollUp: `${x}S`,
+    scrollDown: `${x}T`,
+    eraseLine: `${x}2K`,
+    eraseStartLine: `${x}1K`,
+    eraseEndLine: `${x}K`,
+    eraseUp: `${x}1J`,
+    eraseDown: `${x}J`,
+    eraseScreen: `${x}2J`,
     clearScreen: `\x1Bc`,
-    clearScroll: `\x1Bc${esc}3J`,
-    resetCursorPosition: `${esc}H`,
-    hideCursor: `${esc}?25l`,
-    showCursor: `${esc}?25h`
+    clearScroll: `\x1Bc${x}3J`,
+    resetCursorPosition: `${x}H`,
+    hideCursor: `${x}?25l`,
+    showCursor: `${x}?25h`
   }
 
   for (let key in sequences) {
@@ -30,8 +29,10 @@ const initTerm = () => {
 
 const runTests = () => {
   const term = initTerm()
-  
+
+  term.clearScroll()
   term.hideCursor()
+
   for (let i = 0; i < 20; i += 1) console.log('hello cruel world')
   
   setTimeout(() => {
@@ -45,7 +46,7 @@ const runTests = () => {
   }, 2000)
 }
 
-// runTests()
+runTests()
 
 export default initTerm
 
