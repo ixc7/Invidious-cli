@@ -2,22 +2,50 @@
 const initTerm = () => {
   const print = x => process.stdout.write(x)
   const esc = `\x1b[`
-  return {
-    scrollUp () { print(`${esc}S`) },
-    scrollDown () { print(`${esc}T`) },
-    eraseLine () { print(`${esc}2K`) },
-    eraseStartLine () { print(`${esc}1K`) },
-    eraseEndLine () { print(`${esc}K`) },
-    eraseUp () { print(`${esc}1J`) },
-    eraseDown () { print(`${esc}J`) },
-    eraseScreen () { print(`${esc}2J`) },
-    clearScreen () { print(`\x1Bc`) },
-    clearScroll () { print(`\x1Bc${esc}3J`) },
-    resetCursorPosition () { print(`${esc}H`) },
-    hideCursor () { print(`${esc}?25l`) },
-    showCursor () { print(`${esc}?25h`) }
+
+  const sequences = {
+    scrollUp: `${esc}S`,
+    scrollDown: `${esc}T`,
+    eraseLine: `${esc}2K`,
+    eraseStartLine: `${esc}1K`,
+    eraseEndLine: `${esc}K`,
+    eraseUp: `${esc}1J`,
+    eraseDown: `${esc}J`,
+    eraseScreen: `${esc}2J`,
+    clearScreen: `\x1Bc`,
+    clearScroll: `\x1Bc${esc}3J`,
+    resetCursorPosition: `${esc}H`,
+    hideCursor: `${esc}?25l`,
+    showCursor: `${esc}?25h`
   }
+
+  for (let key in sequences) {
+    sequences[key] = (function (input) {
+      process.stdout.write(input)
+    }).bind(this, sequences[key])
+  }
+  
+  return sequences
 }
+
+const runTests = () => {
+  const term = initTerm()
+  
+  term.hideCursor()
+  for (let i = 0; i < 20; i += 1) console.log('hello cruel world')
+  
+  setTimeout(() => {
+    term.resetCursorPosition()
+    term.eraseLine()
+  }, 1000)
+  
+  setTimeout(() => { 
+    term.clearScroll() 
+    term.showCursor() 
+  }, 2000)
+}
+
+// runTests()
 
 export default initTerm
 
