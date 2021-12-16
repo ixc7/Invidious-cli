@@ -13,26 +13,14 @@ const initTerm = () => {
     eraseScreen () { print(`${esc}2J`) },
     clearScreen () { print(`\x1Bc`) },
     clearScroll () { print(`\x1Bc${esc}3J`) },
-    resetCursor () { print(`${esc}H`) },
+    resetCursorPosition () { print(`${esc}H`) },
+    hideCursor () { print(`${esc}?25l`) },
+    showCursor () { print(`${esc}?25h`) }
   }
 }
 
-const term = initTerm()
-const { scrollDown, clearScroll, resetCursor } = term
+export default initTerm
 
-const test = () => {
-  clearScroll()
-  scrollDown()
-  scrollDown()
-  console.log('WHATDAIYBGTF')
-  scrollDown()
-  scrollDown()
-  console.log('hahahahaha')
-  scrollDown()
-  scrollDown()
-  console.log('AAAAAAA ahahahahhhhhAHHHhahahahahaAAAAAHHHHH AAAHHHHH')
-  resetCursor()
-}
-
+// notes:
 // https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
 // https://github.com/sindresorhus/ansi-escapes/blob/main/index.js
