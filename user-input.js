@@ -1,28 +1,50 @@
 #!/usr/bin/env node
 
 import readline from 'readline'
-import initTerm from './escape-sequences.js'
+import term from './escape-sequences.js'
+
+const { clearScroll, showCursor, hideCursor, resetCursorPosition } = term()
+
+const clear = () => {
+  clearScroll()
+  hideCursor()
+  console.log('press [ctrl] <Qq> to exit')
+}
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 })
 
-const term = initTerm()
-
-const clear = (t = term) => {
-  if (t.hasOwnProperty('clearScroll')) t.clearScroll()
-  if (t.hasOwnProperty('hideCursor')) t.hideCursor()
-  console.log('press <qQ> to exit')
-}
-
-clear(term)
-
-process.stdin.on('keypress', k => {
-  clear(term)
-  if (k === 'q' || k === 'Q') {
-    term.showCursor()
-    process.exit(0)
-  }
-  process.stdout.write(k)
+rl.on('close', () => {
+  clear()
+  showCursor()
+  process.exit(0)
 })
+
+process.stdin.on('keypress', (char, props) => {
+  clear()
+  
+  if (char === 'q' || char === 'Q' || char === '\u0011') {
+    showCursor()
+    rl.close()
+  }
+  // TODO ctrl + <Qq>
+
+  process.stdout.write(
+    `\n\r${char}: {\n` +
+    (['  {'])
+    .concat(
+      (JSON.stringify(props))
+      .replaceAll('{', '')
+      .replaceAll('}', '')
+      .split(',')
+      .map(x => `    ${x}`)
+      .concat(['  }'])
+    )
+    .join('\n') +
+    `\n\r}\n\n`
+  )
+})
+
+clear()
