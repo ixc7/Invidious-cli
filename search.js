@@ -2,13 +2,13 @@ import fs from 'fs'
 import https from 'https'
 
 const hosts = [
-  'vid.puffyan.us', // []
-  'invidious.osi.kr', // []
-  'inv.cthd.icu', // []
-  'youtube.076.ne.jp', // []
-  'invidious.mutahar.rocks', // []
-  'invidious.namazso.eu', // []
-  'yt.artemislena.eu', // []
+  'vid.puffyan.us',
+  'invidious.osi.kr',
+  'inv.cthd.icu',
+  'youtube.076.ne.jp',
+  'invidious.mutahar.rocks',  
+  'invidious.namazso.eu',  
+  'yt.artemislena.eu',  
   'invidious.snopyta.org', // 403: access denied, high abuse
   'yt.didw.to', // 502: bad gateway
   'invidious.kavin.rocks', // 1020

@@ -9,14 +9,20 @@ const rl = readline.createInterface({
 })
 
 const term = initTerm()
-term.hideCursor()
+
+const clear = (t = term) => {
+  if (t.hasOwnProperty('clearScroll')) t.clearScroll()
+  if (t.hasOwnProperty('hideCursor')) t.hideCursor()
+  console.log('press <qQ> to exit')
+}
+
+clear(term)
 
 process.stdin.on('keypress', k => {
-  term.clearScroll()
-  term.hideCursor()
+  clear(term)
   if (k === 'q' || k === 'Q') {
     term.showCursor()
     process.exit(0)
   }
-  console.log(k)
+  process.stdout.write(k)
 })
