@@ -23,7 +23,7 @@ const initTerm = () => {
       process.stdout.write(input)
     }).bind(this, sequences[key])
   }
-  
+
   return sequences
 }
 
@@ -34,22 +34,19 @@ const runTests = () => {
   term.hideCursor()
 
   for (let i = 0; i < 20; i += 1) console.log('hello cruel world')
-  
+
   setTimeout(() => {
     term.resetCursorPosition()
     term.eraseLine()
   }, 1000)
-  
+
   setTimeout(() => { 
     term.clearScroll() 
     term.showCursor() 
   }, 2000)
 }
 
-runTests()
-
 export default initTerm
 
-// reference:
 // https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
 // https://github.com/sindresorhus/ansi-escapes/blob/main/index.js

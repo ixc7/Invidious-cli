@@ -9,22 +9,23 @@ const hosts = [
   'invidious.mutahar.rocks',  
   'invidious.namazso.eu',  
   'yt.artemislena.eu',  
-  'invidious.snopyta.org', // 403: access denied, high abuse
-  'yt.didw.to', // 502: bad gateway
-  'invidious.kavin.rocks', // 1020
-  'invidious-us.kavin.rocks', // 1020
-  'vid.mint.lgbt', // correct
-  'inv.riverside.rocks', // correct
-  'invidio.xamh.de', // correct
+  'invidious.snopyta.org',
+  'yt.didw.to',
+  'invidious.kavin.rocks',
+  'invidious-us.kavin.rocks',
+  'vid.mint.lgbt',
+  'inv.riverside.rocks',
+  'invidio.xamh.de'
 ]
 
-const leave = (x) => {
-  console.log(x)
+const leave = (i) => {
+  if (i) console.log(i)
   process.exit(0)
 }
 
-const userInput = 'humanity is the devil'
+if (!(process.argv.slice(2)).length) leave() 
 
+const userInput = process.argv.slice(2).join(' ')
 let serverIndex = 1
 let server = hosts[(hosts.length - serverIndex)]
 const serverMax = hosts.length
@@ -72,6 +73,8 @@ const search = (p) => {
 }
 
 
+const runTests = () => {
+  
 
 (async () => {
   let final = {}
@@ -100,3 +103,9 @@ const search = (p) => {
   fs.writeFileSync('results.json', JSON.stringify(final, 0, 2))
   leave(final)
 })()
+
+
+}
+
+
+runTests()
