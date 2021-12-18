@@ -3,18 +3,21 @@ import https from 'https'
 import getInstances from './instances.js'
 
 const leave = (i) => {
+  process.stdout.write('\n')
   if (i) console.log(i)
   process.exit(0)
 }
 
 // if (!(process.argv.slice(2)).length) leave()
 // const USERINPUT = process.argv.slice(2).join(' ')
-const USERINPUT = 'hello cruel world'
 
-const init = async (userInput = USERINPUT) => {
-  const maxpages = 10
-  const hosts = await getInstances()
+const USERINPUT = 'hello cruel world'
+const MAXPAGES = 10
+
+const init = async (userInput = USERINPUT, maxpages = MAXPAGES) => {
+  const hosts = await getInstances()  
   const serverMax = hosts.length
+
   let serverIndex = 1
   let server = hosts[(hosts.length - serverIndex)]
 
@@ -24,7 +27,6 @@ const init = async (userInput = USERINPUT) => {
         `/api/v1/search`, 
         `${server}/api`
       )
-        // `https://${server}/api`
 
       query.searchParams.set('q', userInput)
       query.searchParams.set('page', p)
@@ -77,7 +79,7 @@ const init = async (userInput = USERINPUT) => {
         const resMapped = resJSON.map(item => {
           return {
             title: item.title,
-            url: `https://${server}/watch?v=${item.videoId}`
+            url: `${server}/watch?v=${item.videoId}`
           }
         })
 
@@ -88,7 +90,6 @@ const init = async (userInput = USERINPUT) => {
   }
 
   runSearch()
-
 }
 
 init()

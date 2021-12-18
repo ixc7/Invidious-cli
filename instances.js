@@ -4,11 +4,14 @@ const formatResult = (arr) => {
   return arr
   .split('\n')
   .filter(x => x.includes('https') && x.includes('*'))
-  .map( x => {
+  .map(x => {
     const start = x.indexOf('https')
     const end = x.indexOf(')')
     const realEnd = (end - start)
-    return x.substr(start, realEnd) 
+    const url =  x.substr(start, realEnd) 
+
+    if (url.substr((url.length - 1)) === '/') return url.substr(0, (url.length - 1))
+    return url
   })
 }
 
@@ -26,6 +29,7 @@ const getInstances = () => {
   })
 }
 
-// const instances = await getInstances()
-// console.log(instances)
+const instances = await getInstances()
+console.log(instances)
+
 export default getInstances
