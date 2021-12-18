@@ -8,9 +8,8 @@ const formatResult = (arr) => {
     const start = x.indexOf('https')
     const end = x.indexOf(')')
     const realEnd = (end - start)
-    const url =  x.substr(start, realEnd) 
-
-    if (url.substr((url.length - 1)) === '/') return url.substr(0, (url.length - 1))
+    const url =  x.substr(start, realEnd)
+    if (url.substr(url.length - 1) === '/') return url.substr(0, url.length - 1)
     return url
   })
 }
@@ -19,17 +18,14 @@ const getInstances = () => {
   return new Promise((resolve, reject) => {
     const req = https.request('https://raw.githubusercontent.com/iv-org/documentation/master/Invidious-Instances.md')
     req.on('response', res => {
-      let dataStr = ''
-      res.on('data', chunk => {
-        dataStr += chunk.toString('utf8')
-      })
-      res.on('end', () => { resolve(formatResult(dataStr)) })
+      let str = ''
+      res.on('data', chunk => str += chunk.toString('utf8'))
+      res.on('end', () => resolve(formatResult(str)))
     })
     req.end()
   })
 }
 
-const instances = await getInstances()
-console.log(instances)
+// console.log(await getInstances())
 
 export default getInstances
