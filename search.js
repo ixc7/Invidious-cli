@@ -1,22 +1,8 @@
 import fs from 'fs'
 import https from 'https'
+import getInstances from './get-instances.js'
 
-const hosts = [
-  'vid.puffyan.us',
-  'invidious.osi.kr',
-  'inv.cthd.icu',
-  'youtube.076.ne.jp',
-  'invidious.mutahar.rocks',  
-  'invidious.namazso.eu',  
-  'yt.artemislena.eu',  
-  'invidious.snopyta.org',
-  'yt.didw.to',
-  'invidious.kavin.rocks',
-  'invidious-us.kavin.rocks',
-  'vid.mint.lgbt',
-  'inv.riverside.rocks',
-  'invidio.xamh.de'
-]
+const hosts = getInstances()
 
 const leave = (i) => {
   if (i) console.log(i)
@@ -30,7 +16,7 @@ let serverIndex = 1
 let server = hosts[(hosts.length - serverIndex)]
 const serverMax = hosts.length
 const maxpages = 10
-const client = 'yewtu.be'
+// const client = 'yewtu.be'
 
 const search = (p) => {
   return new Promise((resolve, reject) => {
@@ -94,7 +80,8 @@ const runTests = () => {
     const resMapped = resJSON.map(item => {
       return {
         title: item.title,
-        url: `https://${client}/watch?v=${item.videoId}`
+        url: `https://${server}/watch?v=${item.videoId}`
+        // url: `https://${client}/watch?v=${item.videoId}`
       }
     })
 

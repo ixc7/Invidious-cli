@@ -27,25 +27,6 @@ const initTerm = () => {
   return sequences
 }
 
-const runTests = () => {
-  const term = initTerm()
-
-  term.clearScroll()
-  term.hideCursor()
-
-  for (let i = 0; i < 20; i += 1) console.log('hello cruel world')
-
-  setTimeout(() => {
-    term.resetCursorPosition()
-    term.eraseLine()
-  }, 1000)
-
-  setTimeout(() => { 
-    term.clearScroll() 
-    term.showCursor() 
-  }, 2000)
-}
-
 export default initTerm
 
 // https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797

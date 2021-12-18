@@ -8,10 +8,11 @@ get-invidious-instances () {
     -o $temp \
     -s &&
   cat $temp | 
-  grep -e "*" | 
+  grep -e "*" |
   grep -e "https" | 
-  cut -d "(" -f 2 | 
-  cut -d ")" -f 1
+  cut -d "(" -f 2 |
+  cut -d ")" -f 1 |
+  cut -d "/" -f 3
 
   rm -f $temp
 }
