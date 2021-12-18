@@ -15,7 +15,11 @@ const initTerm = () => {
     clearScroll: `\x1Bc${x}3J`,
     resetCursorPosition: `${x}H`,
     hideCursor: `${x}?25l`,
-    showCursor: `${x}?25h`
+    showCursor: `${x}?25h`,
+    up: `${x}1A`,
+    down: `${x}1B`,
+    right: `${x}1C`
+    left: `${x}1D`
   }
 
   for (let key in sequences) {
