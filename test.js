@@ -10,6 +10,4 @@ for (let i = 0; i < 25; i += 1) {
   process.stdout.write('X')
 }
 
-  // term.cursorPos()
 // console.log(instances)
-

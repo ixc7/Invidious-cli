@@ -1,7 +1,11 @@
 import readline from 'readline'
-import term from './terminal.js'
 
-const { clearScroll } = term()
+const keys = {
+  '[A': '\x1b[1A',
+  '[B' : '\x1b[1B',
+  '[C' : '\x1b[1C',
+  '[D' : '\x1b[1D'
+}
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -9,44 +13,12 @@ const rl = readline.createInterface({
 })
 
 rl.input.on('keypress', (char, props) => {
-  if (char === 'q' || char === 'Q' || char === '\u0011') rl.close()
-  process.stdout.write(props.sequence)
+  if (keys.hasOwnProperty(props.code)) {
+    process.stdout.write(keys[props.code])
+  } else if (char === 'q' || char === 'Q' || char === '\u0011') {
+    rl.close()
+  }
 })
 
-clearScroll()
+console.clear()
 console.log('press [ctrl] <Qq> to exit')
-
-/*
-{
-  sequence: '\x1B[B',
-  name: 'down',
-  ctrl: false,
-  meta: false,
-  shift: false,
-  code: '[B'
-}
-{
-  sequence: '\x1B[A',
-  name: 'up',
-  ctrl: false,
-  meta: false,
-  shift: false,
-  code: '[A'
-}
-{
-  sequence: '\x1B[D',
-  name: 'left',
-  ctrl: false,
-  meta: false,
-  shift: false,
-  code: '[D'
-}
-{
-  sequence: '\x1B[C',
-  name: 'right',
-  ctrl: false,
-  meta: false,
-  shift: false,
-  code: '[C'
-}
-*/
