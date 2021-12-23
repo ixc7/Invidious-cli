@@ -2,25 +2,25 @@ import fs from 'fs'
 import https from 'https'
 import getInstances from './instances.js'
 
+// TODO can we make this default behaviour?
 const leave = (i) => {
   process.stdout.write('\n')
   if (i) console.log(i)
   process.exit(0)
 }
 
-// if (!(process.argv.slice(2)).length) leave()
-// const USERINPUT = process.argv.slice(2).join(' ')
+let MAXPAGES = 10
+let USERINPUT = 'hello cruel world'
+if ((process.argv.slice(2)).length) USERINPUT = process.argv.slice(2).join(' ')
 
-const USERINPUT = 'hello cruel world'
-const MAXPAGES = 10
-
+// wraps the request function, and the function calling it
 const init = async (userInput = USERINPUT, maxpages = MAXPAGES) => {
   const hosts = await getInstances()  
   const serverMax = hosts.length
-
   let serverIndex = 1
-  let server = hosts[(hosts.length - serverIndex)]
+  let server = hosts[(serverMax - serverIndex)]
 
+  // request one page
   const search = (p) => {
     return new Promise((resolve, reject) => {
       const query = new URL(
@@ -37,9 +37,7 @@ const init = async (userInput = USERINPUT, maxpages = MAXPAGES) => {
       req.on('response', res => {
         let resToString  = ''
 
-        res.on('data', chunk => {
-          resToString += chunk.toString('utf8')
-        })
+        res.on('data', chunk => resToString += chunk.toString('utf8'))
 
         res.on('end', () => {
           if (res.statusCode !== 200) {
@@ -61,10 +59,11 @@ const init = async (userInput = USERINPUT, maxpages = MAXPAGES) => {
     })
   }
 
+  // request N number of pages
+  // return results if max is reached || no more results are found
   const runSearch = async () => {
       let final = {}
-      console.log('\x1b[?25h\x1b[0m\x1Bc\x1b[3J\x1b[H')
-      console.log(`input: ${userInput}\nserver: ${server}\nmax pages: ${maxpages}\n`)
+      process.stdout.write(`\x1b[?25h\x1b[0m\x1Bc\x1b[3J\x1b[Hinput: ${userInput}\nserver: ${server}\nmax pages: ${maxpages}\n`)
 
       for (let i = 1; i < (maxpages + 1); i += 1) {
         process.stdout.write(`\r fetching page ${i} of ${maxpages}\r`)
@@ -89,6 +88,7 @@ const init = async (userInput = USERINPUT, maxpages = MAXPAGES) => {
       leave(final)
   }
 
+  // ok let's go fingers crossed
   runSearch()
 }
 

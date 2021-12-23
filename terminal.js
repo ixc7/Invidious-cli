@@ -18,12 +18,12 @@ const initTerm = () => {
     showCursor: `${x}?25h`,
     up: `${x}1A`,
     down: `${x}1B`,
-    right: `${x}1C`
+    right: `${x}1C`,
     left: `${x}1D`
   }
 
   for (let key in sequences) {
-    sequences[key] = (function (input) {
+    sequences[key] = (input => {
       process.stdout.write(input)
     }).bind(this, sequences[key])
   }
