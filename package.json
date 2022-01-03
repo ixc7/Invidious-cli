@@ -1,5 +1,8 @@
 {
   "name": "invidious",
   "version": "1.0.0",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "enquirer": "^2.3.6"
+  }
 }
