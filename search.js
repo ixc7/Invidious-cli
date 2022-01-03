@@ -1,13 +1,13 @@
 import https from 'https'
-import getInstances from './instances.js'
+import getInstancesList from './instances.js'
 
 let MAXPAGES = 2
 let USERINPUT = 'hello cruel world'
 
 // TODO 
-// refactor this so we're not calling it for EVERY PAGE.
+// refactor this so we're not calling getInstancesList for EVERY PAGE.
 const loadEnv = async () => {
-  const hosts = await getInstances()    
+  const hosts = await getInstancesList()
   return {
     hosts,
     serverMax: hosts.length,
@@ -17,9 +17,16 @@ const loadEnv = async () => {
 }
 
 // request 1 page
-const search = async (p) => {
+const search = async (p, environment) => {
 
-  let env = await loadEnv()
+  let env = false
+  
+  if (!environment) {
+    env = await loadEnv()
+  } else {
+    env = environment
+  }
+
   let { hosts, serverMax, serverIndex, server } = env
   
   return new Promise((resolve, reject) => {
@@ -51,7 +58,7 @@ const search = async (p) => {
           } else {
             serverIndex += 1
             server = hosts[(hosts.length - serverIndex)]
-            resolve(search(p))
+            resolve(search(p, env))
           }
         }
 
@@ -67,11 +74,12 @@ const search = async (p) => {
 // request (1-MAXPAGES) number of pages
 // break and return if MAXPAGES is reached, or no more results are found.
 const searchRecursive = async (userInput = USERINPUT, maxpages = MAXPAGES) => {
+    let env = await loadEnv()
     let final = {}
 
     for (let i = 1; i < (maxpages + 1); i += 1) {
 
-      const res = await search(i)
+      const res = await search(i, env)
       if (!res) return false
       
       const resJSON = JSON.parse(res)

@@ -18,7 +18,7 @@ const formatResult = arr => {
 }
 
 // request doc
-const getInstances = () => {
+const getInstancesList = () => {
   return new Promise((resolve, reject) => {
     const req = https.request(list)
     req.on('response', res => {
@@ -30,5 +30,4 @@ const getInstances = () => {
   })
 }
 
-export default getInstances
-// console.log(await getInstances())
+export default getInstancesList
