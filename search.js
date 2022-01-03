@@ -4,8 +4,6 @@ import getInstancesList from './instances.js'
 let MAXPAGES = 2
 let USERINPUT = 'hello cruel world'
 
-// TODO 
-// refactor this so we're not calling getInstancesList for EVERY PAGE.
 const loadEnv = async () => {
   const hosts = await getInstancesList()
   return {
@@ -26,7 +24,7 @@ const search = async (p, environment) => {
   } else {
     env = environment
   }
-
+  
   let { hosts, serverMax, serverIndex, server } = env
   
   return new Promise((resolve, reject) => {
@@ -88,7 +86,7 @@ const searchRecursive = async (userInput = USERINPUT, maxpages = MAXPAGES) => {
       const resMapped = resJSON.map(item => {
         return {
           name: item.title,
-          value: item.videoId
+          value: `${env.server}/watch?v=${item.videoId}`
         }
       })
 
