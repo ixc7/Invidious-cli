@@ -5,9 +5,14 @@ const { AutoComplete } = pkg
 import { loadEnv, search, searchRecursive } from './search.js'
 
 const VIDEO_PLAYER = 'mpv'
+const MAX_PAGES = 3
 
-let searchTerm = 'hello world'
-if (process.argv[2]) searchTerm = process.argv.slice(2).join(' ')
+if (!process.argv[2]) {
+  console.log('please enter a search')
+  process.exit(0)
+}
+
+let searchTerm = process.argv.slice(2).join(' ')
 
 console.clear()
 console.log(`searching for: ${searchTerm}`)
@@ -43,8 +48,12 @@ try {
   const selection = await prompt.run()
   console.clear()
   console.log(`opening url with ${VIDEO_PLAYER}: ${selection}`)
-  const videoPlayer = spawn(VIDEO_PLAYER, [selection], { detached: true, stdio: 'ignore' })
-  videoPlayer.unref()
+  const player = spawn(
+    VIDEO_PLAYER,
+    [selection, '--fullscreen', '--loop', '--audio-pitch-correction=no'],
+    { detached: true, stdio: 'ignore' }
+  )
+  player.unref()
   process.exit(0)
 }
 

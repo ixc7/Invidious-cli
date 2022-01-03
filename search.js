@@ -68,7 +68,9 @@ const search = async (searchTerm, environment, page) => {
 
 // request (1-[max) number of pages
 // return results if [max] is reached, or no more results are found.
-const searchRecursive = async (searchTerm = 'test', max = 3) => {
+const searchRecursive = async (searchTerm, max = 1) => {
+    if (!searchTerm) return false
+
     let env = await loadEnv()
     let final = {}
 
