@@ -3,7 +3,13 @@ import pkg from 'enquirer'
 const { AutoComplete } = pkg
 import { loadEnv, search, searchRecursive } from './search.js'
 
-const results = await searchRecursive()
+let searchTerm = 'hello world'
+if (process.argv[2]) searchTerm = process.argv.slice(2).join(' ')
+
+console.clear()
+console.log(`searching for: ${searchTerm}`)
+
+const results = await searchRecursive(searchTerm)
 let choices = []
 
 for (let key in results) {
@@ -32,8 +38,9 @@ rl.input.on('keypress', (char, props) => {
 try {
   console.clear()
   const selection = await prompt.run()
-  console.log('selection:', selection)
+  console.log('url:', selection)
 }
+
 catch (e) {
   console.clear()
   console.log('exit')

@@ -1,11 +1,8 @@
 import https from 'https'
-import getInstancesList from './instances.js'
-
-let MAXPAGES = 3
-let USERINPUT = 'hello cruel world'
+import getHostsList from './hosts.js'
 
 const loadEnv = async () => {
-  const hosts = await getInstancesList()
+  const hosts = await getHostsList()
   return {
     hosts,
     serverMax: hosts.length,
@@ -15,7 +12,7 @@ const loadEnv = async () => {
 }
 
 // request 1 page
-const search = async (p, environment) => {
+const search = async (searchTerm, environment, page) => {
 
   let env = false
   
@@ -33,8 +30,8 @@ const search = async (p, environment) => {
       `${server}/api`
     )
 
-    query.searchParams.set('q', USERINPUT)
-    query.searchParams.set('page', p)
+    query.searchParams.set('q', searchTerm)
+    query.searchParams.set('page', page)
     query.searchParams.set('pretty', 1)
 
     const req = https.request(query.href)
@@ -56,7 +53,7 @@ const search = async (p, environment) => {
           } else {
             serverIndex += 1
             server = hosts[(hosts.length - serverIndex)]
-            resolve(search(p, env))
+            resolve(search(query, env, page))
           }
         }
 
@@ -69,15 +66,15 @@ const search = async (p, environment) => {
   })
 }
 
-// request (1-MAXPAGES) number of pages
-// return results if MAXPAGES is reached, or no more results are found.
-const searchRecursive = async (userInput = USERINPUT, maxpages = MAXPAGES) => {
+// request (1-[max) number of pages
+// return results if [max] is reached, or no more results are found.
+const searchRecursive = async (searchTerm = 'test', max = 3) => {
     let env = await loadEnv()
     let final = {}
 
-    for (let i = 1; i < (maxpages + 1); i += 1) {
+    for (let i = 1; i < (max + 1); i += 1) {
 
-      const res = await search(i, env)
+      const res = await search(searchTerm, env, i)
       if (!res) return false
       
       const resJSON = JSON.parse(res)
