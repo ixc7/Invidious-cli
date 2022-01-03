@@ -1,8 +1,9 @@
 import https from 'https'
 
+// the markdown doc (the list.)
 const list = 'https://raw.githubusercontent.com/iv-org/documentation/master/Invidious-Instances.md'
 
-// grep server addresses from markdown
+// grep server addresses from doc
 const formatResult = arr => {
   return arr
   .split('\n')
@@ -10,13 +11,13 @@ const formatResult = arr => {
   .map(x => {
     const start = x.indexOf('https')
     const end = x.indexOf(')')
-    const url =  x.substr(start, end - start)
+    const url = x.substr(start, end - start)
     if (url.substr(url.length - 1) === '/') return url.substr(0, url.length - 1)
     return url
   })
 }
 
-// the request
+// request doc
 const getInstances = () => {
   return new Promise((resolve, reject) => {
     const req = https.request(list)
