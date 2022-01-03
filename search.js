@@ -4,8 +4,8 @@ import getInstances from './instances.js'
 let MAXPAGES = 2
 let USERINPUT = 'hello cruel world'
 
-
-// TODO refactor this so we're not calling it for EVERY PAGE.
+// TODO 
+// refactor this so we're not calling it for EVERY PAGE.
 const loadEnv = async () => {
   const hosts = await getInstances()    
   return {

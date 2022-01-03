@@ -6,8 +6,8 @@ import { loadEnv, search, searchRecursive } from './search.js'
 const results = (await searchRecursive())[1]
 
 const prompt = new AutoComplete({
-  name: 'flavor',
-  message: 'Pick your favorite flavor',
+  name: 'video',
+  message: 'select a video',
   choices: results
 })
 
@@ -18,11 +18,17 @@ const rl = readline.createInterface({
 
 process.stdin.on('keypress', (char, props) => {
   const prev = rl.getCursorPos()
-  readline.cursorTo(process.stdout, 0, (process.stdout.rows - 3))
-  console.log('key pressed:', char)
+  readline.cursorTo(process.stdout, 0, process.stdout.rows - 2)
+  console.log('key pressed:', char || 'none')
   readline.cursorTo(process.stdout, prev.cols, prev.rows)
-  // readline.cursorTo(process.stdout, 0, 0)
 })
 
-const selection = await prompt.run()
-console.log('selection:', selection)
+try {
+  console.clear()
+  const selection = await prompt.run()
+  console.log('selection:', selection)
+}
+catch (e) {
+  console.clear()
+  console.log('exit')
+}
