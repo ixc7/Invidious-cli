@@ -1,7 +1,10 @@
 import readline from 'readline'
+import { spawn } from 'child_process'
 import pkg from 'enquirer'
 const { AutoComplete } = pkg
 import { loadEnv, search, searchRecursive } from './search.js'
+
+const VIDEO_PLAYER = 'mpv'
 
 let searchTerm = 'hello world'
 if (process.argv[2]) searchTerm = process.argv.slice(2).join(' ')
@@ -38,10 +41,15 @@ rl.input.on('keypress', (char, props) => {
 try {
   console.clear()
   const selection = await prompt.run()
-  console.log('url:', selection)
+  console.clear()
+  console.log(`opening url with ${VIDEO_PLAYER}: ${selection}`)
+  const videoPlayer = spawn(VIDEO_PLAYER, [selection], { detached: true, stdio: 'ignore' })
+  videoPlayer.unref()
+  process.exit(0)
 }
 
 catch (e) {
   console.clear()
   console.log('exit')
+  console.log(e)
 }
