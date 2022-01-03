@@ -8,7 +8,7 @@ const VIDEO_PLAYER = 'mpv'
 const MAX_PAGES = 3
 
 if (!process.argv[2]) {
-  console.log('please enter a search')
+  console.log('please enter a search term')
   process.exit(0)
 }
 
@@ -17,7 +17,7 @@ let searchTerm = process.argv.slice(2).join(' ')
 console.clear()
 console.log(`searching for: ${searchTerm}`)
 
-const results = await searchRecursive(searchTerm)
+const results = await searchRecursive(searchTerm, MAX_PAGES)
 let choices = []
 
 for (let key in results) {
