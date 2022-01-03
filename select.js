@@ -16,11 +16,11 @@ const rl = readline.createInterface({
   output: process.stdout
 })
 
-process.stdin.on('keypress', (char, props) => {
-  const prev = rl.getCursorPos()
-  readline.cursorTo(process.stdout, 0, process.stdout.rows - 2)
+rl.input.on('keypress', (char, props) => {
+  readline.cursorTo(rl.output, 0, rl.output.rows - 2)
+  readline.clearLine(rl.output, 0)
   console.log('key pressed:', char || 'none')
-  readline.cursorTo(process.stdout, prev.cols, prev.rows)
+  readline.cursorTo(rl.output, 0, 0)
 })
 
 try {
