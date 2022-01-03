@@ -17,11 +17,12 @@ const rl = readline.createInterface({
 })
 
 process.stdin.on('keypress', (char, props) => {
-  // rl.cursorTo(0, 0)
-  readline.cursorTo(process.stdout, 50, 0)
-  console.log('keypress', char, char, char)
+  const prev = rl.getCursorPos()
+  readline.cursorTo(process.stdout, 0, (process.stdout.rows - 3))
+  console.log('key pressed:', char)
+  readline.cursorTo(process.stdout, prev.cols, prev.rows)
+  // readline.cursorTo(process.stdout, 0, 0)
 })
 
-prompt.run()
-  .then(answer => console.log('Answer:', answer))
-  .catch(console.error)
+const selection = await prompt.run()
+console.log('selection:', selection)
