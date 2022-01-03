@@ -1,7 +1,7 @@
 import https from 'https'
 import getInstancesList from './instances.js'
 
-let MAXPAGES = 2
+let MAXPAGES = 3
 let USERINPUT = 'hello cruel world'
 
 const loadEnv = async () => {
@@ -70,7 +70,7 @@ const search = async (p, environment) => {
 }
 
 // request (1-MAXPAGES) number of pages
-// break and return if MAXPAGES is reached, or no more results are found.
+// return results if MAXPAGES is reached, or no more results are found.
 const searchRecursive = async (userInput = USERINPUT, maxpages = MAXPAGES) => {
     let env = await loadEnv()
     let final = {}
