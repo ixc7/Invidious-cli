@@ -19,7 +19,7 @@ const rl = readline.createInterface({
 rl.input.on('keypress', (char, props) => {
   readline.cursorTo(rl.output, 0, rl.output.rows - 2)
   readline.clearLine(rl.output, 0)
-  console.log('key pressed:', char || 'none')
+  console.log('key pressed:', props.name || 'none')
   readline.cursorTo(rl.output, 0, 0)
 })
 
