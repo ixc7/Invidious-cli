@@ -3,25 +3,18 @@ import pkg from 'enquirer'
 const { AutoComplete } = pkg
 import { loadEnv, search, searchRecursive } from './search.js'
 
-const searchResponse = await searchRecursive()
-const results = searchResponse[1]
-let fullresults = []
-for (let key in searchResponse) {
-  // console.log(searchResponse[key])
-  // console.log(results[key])
-  fullresults = fullresults.concat(searchResponse[key])
+const results = await searchRecursive()
+let choices = []
+
+for (let key in results) {
+  choices = choices.concat(results[key])
 }
-
-console.log(fullresults)
-
-// /*
 
 const prompt = new AutoComplete({
   name: 'video',
   message: 'select a video',
-  choices: fullresults,
+  choices,
   limit: (process.stdout.rows - 4)
-  // choices: results
 })
 
 const rl = readline.createInterface({
@@ -45,5 +38,3 @@ catch (e) {
   console.clear()
   console.log('exit')
 }
-
-// */
