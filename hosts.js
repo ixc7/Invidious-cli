@@ -19,7 +19,7 @@ const formatResult = arr => {
 
 // request doc
 const getInstancesList = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const req = https.request(list)
     req.on('response', res => {
       let str = ''

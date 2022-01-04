@@ -12,7 +12,7 @@ const loadEnv = async () => {
 }
 
 // request 1 page
-const search = async (searchTerm, environment, page) => {
+const search = async (searchTerm, environment, page = 1) => {
 
   let env = false
   
@@ -24,7 +24,7 @@ const search = async (searchTerm, environment, page) => {
   
   let { hosts, serverMax, serverIndex, server } = env
   
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const query = new URL(
       `/api/v1/search`, 
       `${server}/api`
@@ -70,7 +70,7 @@ const search = async (searchTerm, environment, page) => {
 // return results if [max] is reached, or no more results are found.
 const searchRecursive = async (searchTerm, max = 1) => {
     if (!searchTerm) return false
-
+    
     let env = await loadEnv()
     let final = {}
 
@@ -91,6 +91,7 @@ const searchRecursive = async (searchTerm, max = 1) => {
 
       final[i] = resMapped
     }
+
     return final
 }
 
