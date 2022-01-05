@@ -38,7 +38,18 @@ process.stdin.on('keypress', (char, props) => {
   else if (props.name === 'return') {
     if (selection.length) {
       const videoUrl = fzf.find(selection)[0].item.value
-      console.log(videoUrl)
+      const videoPlayer = spawn(
+        VIDEO_PLAYER,
+        [
+          videoUrl,
+          '--fullscreen',
+          '--loop',
+          '--audio-pitch-correction=no'
+        ],
+        { detached: true, stdio: 'ignore' }
+      )
+      videoPlayer.unref()
+      console.log(`opening url with ${VIDEO_PLAYER}: ${selection}`)
     }
     process.exit(0)
   } 
