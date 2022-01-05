@@ -26,21 +26,20 @@ const fzf = new Fzf(searchResults, {
 })
 
 let input = ''
-let position = 0
-let selection = false
+let selection = ''
 let matches = []
+let position = 0
+let newchar = false
 
 process.stdin.on('keypress', (char, props) => {
-  // console.clear()
-
-  // AND HERE WE HAVE TO CAPTURE ARROWS AND ENTER KEY AS WELL
-  // ENTER KEY OPENS MPV
-  // PROBABLY WANT A BACK/REDO BUTTON TOO
   if (props.name === 'backspace') {
     input = input.substring(0, input.length - 1)
   }
   else if (props.name === 'return') {
-    if (selection) console.log(`result: ${selection}`)
+    if (selection.length) {
+      const videoUrl = fzf.find(selection)[0].item.value
+      console.log(videoUrl)
+    }
     process.exit(0)
   } 
   else if (props.name === 'down' && matches[position + 1]) {
@@ -52,13 +51,15 @@ process.stdin.on('keypress', (char, props) => {
     selection = matches[position]
   }
   else if (char) {
+    newchar = true
     input = input.concat(char)
-    selection = matches[0]
   }
 
-  matches = fzf.find(input).map(match => match.item.name)
-
-  // SO HERE WE HAVE TO COUNT ARROWS AND NOT CLEAR THE CONSOLE IF ITS ARROWS AND JUST UPDATE THE SELECTION.
+  if (newchar) {
+    matches = fzf.find(input).map(match => match.item.name)
+    selection = matches[0]
+    newchar = false   
+  }
 
   console.log('\x1b[0m\x1Bc\x1b[3J\x1b[?25l')
   if (matches[0]) console.log(matches.join('\n'))
