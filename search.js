@@ -72,7 +72,8 @@ const searchRecursive = async (searchTerm, max = 1) => {
   if (!searchTerm) return false
   
   let env = await loadEnv()
-  let final = {}
+  // let final = {}
+  let final = []
 
   for (let i = 1; i < (max + 1); i += 1) {
 
@@ -89,7 +90,8 @@ const searchRecursive = async (searchTerm, max = 1) => {
       }
     })
 
-    final[i] = resMapped
+    // final[i] = resMapped
+    final = final.concat(resMapped)
   }
 
   return final

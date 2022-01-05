@@ -1,90 +1,57 @@
 import readline from 'readline'
 import { spawn } from 'child_process'
-import enquirer from 'enquirer'
+// import enquirer from 'enquirer'
 import { searchRecursive } from './search.js'
 
-const { AutoComplete } = enquirer
+// const { AutoComplete } = enquirer
 const VIDEO_PLAYER = 'mpv'
 const MAX_PAGES = 3
 
-
-
-
-// if (!process.argv[2]) {
-  // console.log('please enter a search term')
-  // process.exit(0)
-// }
-
-// const searchTerm = process.argv.slice(2).join(' ')
-
-// const prompt = new AutoComplete({
-  // name: 'video',
-  // message: 'select a video',
-  // choices: async () => {
-
-    // SHOULD PROBABLY THROW THIS IN A TRY CATCH.
-    // const results = await searchRecursive(searchTerm, MAX_PAGES)
-    // let choices = []
-    // for (let key in results) {
-      // choices = choices.concat(results[key])
-    // }
-    
-    // return choices
-  // },
-  
-  // RE IMPLEMENT THIS WE STILL NEED IT.
-  // limit: (process.stdout.rows - 4)
-
-// })
-
-/*
-
-{
-  sequence: '\x7F',
-  name: 'backspace',
-  ctrl: false,
-  meta: false,
-  shift: false
+if (!process.argv[2]) {
+  console.log('please enter a search term')
+  process.exit(0)
 }
 
-*/
+const searchTerm = process.argv.slice(2).join(' ')
 
-let input=''
+console.clear()
+console.log('searching')
+const searchResults = await searchRecursive(searchTerm, MAX_PAGES)
+console.clear()
+console.log('got results')
+console.log(searchResults)
 
-const rrl = readline.createInterface({
+const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 })
-// const rl = readline.createInterface({
-  // input: process.stdin
-  // WE SHOULD PROB NOT OUTPUT IT MAYBE.
-  // output: process.stdin
-// })
+
+// limit: (process.stdout.rows - 4)
+// RE IMPLEMENT THIS WE STILL NEED IT.
 
 // KEEP ADDING IT ALL CHARS TO A STRING AND THEN RUN THAT STRING AGAINST CHOICES WITH FZF.
 // https://fzf.netlify.app/docs/latest
 // DO WE EVEN NEED FZF.
 // https://nodejs.org/api/readline.html#use-of-the-completer-function_1
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes
-// rl.input.on('keypress', (char, props) => {
+
+let input=''
+// ONLY PROBLEM IS IT DOESN'T SEARCH OUT OF ORDER.
+// SO YEAH I GUESS WE DO NEED FZF.
 process.stdin.on('keypress', (char, props) => {
-  
-  readline.cursorTo(process.stdout, 0, 0)
-  readline.clearLine(process.stdout, 0)
+  console.clear()
+  readline.cursorTo(process.stdout, 0, 1)
   if (props.name === 'backspace') {
     input = input.substring(0, input.length - 1)
-  } else {
+  } else if (props.name !== 'return'){
     input = input.concat(char)
   }
-  console.log(input)
+  for (let i = 0; i < searchResults.length; i += 1) {
+    if (searchResults[i].name.toUpperCase().indexOf(input.toUpperCase()) !== -1) console.log(searchResults[i].name)
+  }
   readline.cursorTo(process.stdout, 0, 0)
-
-  // GET THE BACKSPACE KEY.
-  // if (props.name === 'left' || props.name === 'right') {
-    // readline.cursorTo(process.stdout, 0, process.stdout.rows - 2)
-    // console.log(props.name.toUpperCase())
-    // readline.cursorTo(process.stdout, 0, 0)
-  // }
+  readline.clearLine(process.stdout, 0)
+  console.log(input)
 })
 
 // try {
