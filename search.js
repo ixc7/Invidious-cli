@@ -49,7 +49,7 @@ const search = async (searchTerm, environment, page = 1) => {
           // return false if all servers have been tried.
           if (serverIndex >= serverMax) {
             return false
-          // keep trying servers recursively, and return the first successful result.
+          // keep trying servers, return first ok result.
           } else {
             serverIndex += 1
             server = hosts[(hosts.length - serverIndex)]
@@ -57,7 +57,7 @@ const search = async (searchTerm, environment, page = 1) => {
           }
         }
 
-        // return result if first server is up.
+        // return result if first server is ok.
         resolve(resToString)
       })
     })
@@ -66,33 +66,33 @@ const search = async (searchTerm, environment, page = 1) => {
   })
 }
 
-// request (1-[max) number of pages
+// request 1-[max] pages
 // return results if [max] is reached, or no more results are found.
 const searchRecursive = async (searchTerm, max = 1) => {
-    if (!searchTerm) return false
+  if (!searchTerm) return false
+  
+  let env = await loadEnv()
+  let final = {}
+
+  for (let i = 1; i < (max + 1); i += 1) {
+
+    const res = await search(searchTerm, env, i)
+    if (!res) return false
     
-    let env = await loadEnv()
-    let final = {}
+    const resJSON = JSON.parse(res)
+    if (resJSON.length < 1) return final
+    
+    const resMapped = resJSON.map(item => {
+      return {
+        name: item.title,
+        value: `${env.server}/watch?v=${item.videoId}`
+      }
+    })
 
-    for (let i = 1; i < (max + 1); i += 1) {
+    final[i] = resMapped
+  }
 
-      const res = await search(searchTerm, env, i)
-      if (!res) return false
-      
-      const resJSON = JSON.parse(res)
-      if (resJSON.length < 1) return final
-      
-      const resMapped = resJSON.map(item => {
-        return {
-          name: item.title,
-          value: `${env.server}/watch?v=${item.videoId}`
-        }
-      })
-
-      final[i] = resMapped
-    }
-
-    return final
+  return final
 }
 
 export { loadEnv, search, searchRecursive }
