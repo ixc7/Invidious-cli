@@ -7,6 +7,9 @@ const { AutoComplete } = enquirer
 const VIDEO_PLAYER = 'mpv'
 const MAX_PAGES = 3
 
+
+
+
 // if (!process.argv[2]) {
   // console.log('please enter a search term')
   // process.exit(0)
@@ -69,9 +72,9 @@ process.stdin.on('keypress', (char, props) => {
   readline.cursorTo(process.stdout, 0, 0)
   readline.clearLine(process.stdout, 0)
   if (props.name === 'backspace') {
-    input = 'AAAAHHHH'    
+    input = input.substring(0, input.length - 1)
   } else {
-    input = 'BAAAAAHHHHHH'
+    input = input.concat(char)
   }
   console.log(input)
   readline.cursorTo(process.stdout, 0, 0)
