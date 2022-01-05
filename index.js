@@ -1,11 +1,7 @@
 import readline from 'readline'
 import { spawn } from 'child_process'
-// import enquirer from 'enquirer'
+import { Fzf } from 'fzf'
 import { searchRecursive } from './search.js'
-
-// const { AutoComplete } = enquirer
-const VIDEO_PLAYER = 'mpv'
-const MAX_PAGES = 3
 
 if (!process.argv[2]) {
   console.log('please enter a search term')
@@ -13,45 +9,48 @@ if (!process.argv[2]) {
 }
 
 const searchTerm = process.argv.slice(2).join(' ')
+const VIDEO_PLAYER = 'mpv'
+const MAX_PAGES = 1
 
 console.clear()
-console.log('searching')
+console.log(`searching for ${searchTerm}`)
 const searchResults = await searchRecursive(searchTerm, MAX_PAGES)
 console.clear()
 console.log('got results')
-console.log(searchResults)
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 })
 
-// limit: (process.stdout.rows - 4)
-// RE IMPLEMENT THIS WE STILL NEED IT.
+const fzf = new Fzf(searchResults, {
+  selector: (item) => item.name
+})
 
-// KEEP ADDING IT ALL CHARS TO A STRING AND THEN RUN THAT STRING AGAINST CHOICES WITH FZF.
-// https://fzf.netlify.app/docs/latest
-// DO WE EVEN NEED FZF.
-// https://nodejs.org/api/readline.html#use-of-the-completer-function_1
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes
+let input = ''
+let selection = false
 
-let input=''
-// ONLY PROBLEM IS IT DOESN'T SEARCH OUT OF ORDER.
-// SO YEAH I GUESS WE DO NEED FZF.
 process.stdin.on('keypress', (char, props) => {
   console.clear()
-  readline.cursorTo(process.stdout, 0, 1)
+  readline.cursorTo(process.stdout, 1, 0)
+
+  // AND HERE WE HAVE TO CAPTURE ARROWS AND ENTER KEY AS WELL
   if (props.name === 'backspace') {
     input = input.substring(0, input.length - 1)
-  } else if (props.name !== 'return'){
+  } else if (char){
     input = input.concat(char)
   }
-  for (let i = 0; i < searchResults.length; i += 1) {
-    if (searchResults[i].name.toUpperCase().indexOf(input.toUpperCase()) !== -1) console.log(searchResults[i].name)
-  }
+  
+  const matches = fzf.find(input).map(match => match.item.name)
+  // SO HERE WE HAVE TO COUNT ARROWS AND NOT CLEAR THE CONSOLE IF ITS ARROWS AND JUST UPDATE THE SELECTION.
+  selection = matches[0]
+
+  // THIS IS WHAT THE USER SEES.
   readline.cursorTo(process.stdout, 0, 0)
   readline.clearLine(process.stdout, 0)
   console.log(input)
+  console.log(matches)
+  readline.cursorTo(process.stdout, input.length, 0)
 })
 
 // try {
