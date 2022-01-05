@@ -7,12 +7,12 @@ const { AutoComplete } = enquirer
 const VIDEO_PLAYER = 'mpv'
 const MAX_PAGES = 3
 
-if (!process.argv[2]) {
-  console.log('please enter a search term')
-  process.exit(0)
-}
+// if (!process.argv[2]) {
+  // console.log('please enter a search term')
+  // process.exit(0)
+// }
 
-const searchTerm = process.argv.slice(2).join(' ')
+// const searchTerm = process.argv.slice(2).join(' ')
 
 // const prompt = new AutoComplete({
   // name: 'video',
@@ -20,11 +20,11 @@ const searchTerm = process.argv.slice(2).join(' ')
   // choices: async () => {
 
     // SHOULD PROBABLY THROW THIS IN A TRY CATCH.
-    const results = await searchRecursive(searchTerm, MAX_PAGES)
-    let choices = []
-    for (let key in results) {
-      choices = choices.concat(results[key])
-    }
+    // const results = await searchRecursive(searchTerm, MAX_PAGES)
+    // let choices = []
+    // for (let key in results) {
+      // choices = choices.concat(results[key])
+    // }
     
     // return choices
   // },
@@ -48,26 +48,37 @@ const searchTerm = process.argv.slice(2).join(' ')
 
 let input=''
 
-const rl = readline.createInterface({
+const rrl = readline.createInterface({
   input: process.stdin,
-  // WE SHOULD PROB NOT OUTPUT IT MAYBE.
   output: process.stdout
 })
+// const rl = readline.createInterface({
+  // input: process.stdin
+  // WE SHOULD PROB NOT OUTPUT IT MAYBE.
+  // output: process.stdin
+// })
 
 // KEEP ADDING IT ALL CHARS TO A STRING AND THEN RUN THAT STRING AGAINST CHOICES WITH FZF.
 // https://fzf.netlify.app/docs/latest
 // DO WE EVEN NEED FZF.
 // https://nodejs.org/api/readline.html#use-of-the-completer-function_1
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes
-rl.input.on('keypress', (char, props) => {
+// rl.input.on('keypress', (char, props) => {
+process.stdin.on('keypress', (char, props) => {
+  
+  readline.cursorTo(process.stdout, 0, 0)
+  readline.clearLine(process.stdout, 0)
+  if (props.name === 'backspace') {
+    input = 'AAAAHHHH'    
+  } else {
+    input = 'BAAAAAHHHHHH'
+  }
+  console.log(input)
+  readline.cursorTo(process.stdout, 0, 0)
 
-  if (props.name === 'backspace') console.log('got backspace')
-  // console.log(char)
-  // console.log(props)
   // GET THE BACKSPACE KEY.
   // if (props.name === 'left' || props.name === 'right') {
     // readline.cursorTo(process.stdout, 0, process.stdout.rows - 2)
-    // readline.clearLine(process.stdout, 0)
     // console.log(props.name.toUpperCase())
     // readline.cursorTo(process.stdout, 0, 0)
   // }
