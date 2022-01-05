@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "enquirer": "^2.3.6",
     "fzf": "^0.4.1"
   }
 }
