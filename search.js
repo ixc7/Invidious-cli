@@ -20,15 +20,16 @@ const loadEnv = async () => {
   return {
     hosts,
     serverMax: hosts.length,
-    serverIndex: 1,
+    // serverIndex: 1,
     server: hosts[(hosts.length - 1)],
   }
 }
 
 // request 1 page
-const search = async (searchTerm, environment, page = 1) => {
+const search = async (searchTerm, environment, page = 1, serverIndex = 0, serverName = false) => {
 
   let env = false
+  let server = false
   
   if (!environment) {
     env = await loadEnv()
@@ -36,7 +37,13 @@ const search = async (searchTerm, environment, page = 1) => {
     env = environment
   }
   
-  let { hosts, serverMax, serverIndex, server } = env
+  let { hosts, serverMax } = env
+
+  if (!serverName) {
+    server = env.server
+  } else {
+    server = serverName
+  }
   
   return new Promise(resolve => {
     const query = new URL(
@@ -65,9 +72,9 @@ const search = async (searchTerm, environment, page = 1) => {
             return false
           // keep trying servers, return first ok result.
           } else {
-            serverIndex += 1
-            server = hosts[(hosts.length - serverIndex)]
-            resolve(search(query, env, page))
+            // serverIndex += 1
+            server = hosts[(hosts.length - (serverIndex + 1))]
+            resolve(search(query, env, page, serverIndex + 1, server))
           }
         }
 
