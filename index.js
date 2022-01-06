@@ -21,9 +21,7 @@ if (!searchResults.length) {
 }
 
 console.clear()
-console.log('search results:')
 console.log(searchResults.map(item => item.name).join('\n'))
-
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -35,8 +33,8 @@ const fzf = new Fzf(searchResults, {
 })
 
 let input = ''
-let selection = ''
-let matches = []
+let selection = false
+let matches = searchResults.map(item => item.name)
 let position = 0
 let newchar = false
 process.stdin.on('keypress', (char, props) => {
@@ -45,7 +43,7 @@ process.stdin.on('keypress', (char, props) => {
     input = input.substring(0, input.length - 1)
   }
   else if (props.name === 'return') {
-    if (selection.length) {
+    if (selection) {
       const videoUrl = fzf.find(selection)[0].item.value
       const videoPlayer = spawn(
         VIDEO_PLAYER,
@@ -61,15 +59,19 @@ process.stdin.on('keypress', (char, props) => {
     }
     process.exit(0)
   } 
-  else if (props.name === 'down' && matches[position + 1] && input.length) {
-      newchar = true
-      position += 1
-      selection = matches[position]
+  else if (props.name === 'down' && matches[position + 1]) {
+    newchar = true
+    position += 1
+    selection = matches[position]
+    
   }
-  else if (props.name === 'up' && matches[position - 1] && input.length) {
-      newchar = true
-      position -= 1
-      selection = matches[position]
+  else if (props.name === 'up' && matches[position - 1]) {
+    newchar = true
+    position -= 1
+    selection = matches[position]
+    readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
+    console.log(`selection: ${selection || 'none'}`)
+
   }
   else if (char && !props.sequence.includes('\x1b')) {
     newchar = true
@@ -77,17 +79,23 @@ process.stdin.on('keypress', (char, props) => {
   }
 
   if (newchar) {
-    matches = fzf.find(input).map(match => match.item.name)
+    matches = fzf.find(input).map(obj => obj.item.name)
     // selection = matches[0] || false
+    // position = 0
+    if (position >= matches.length) {
+      position = 0
+      selection = matches[0] || false
+    }
+    
     newchar = false   
 
     // console.log('\x1b[0m\x1Bc\x1b[3J\x1b[?25l')
     console.clear()
     if (matches[0]) console.log(matches.join('\n'))
-    readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
-    console.log(`input: ${input}`)
+    readline.cursorTo(process.stdout, 0, process.stdout.rows - 3)
     console.log(`selection: ${selection || 'none'}`)
-    console.log('\x1b[?25h')
+    console.log(`input: ${input}`)
+    // console.log('\x1b[?25h')
   }
 })
 
