@@ -20,19 +20,6 @@ if (!searchResults.length) {
   process.exit(0)
 }
 
-
-console.clear()
-
-// TODO make the selection bold.
-console.log(
-  // '\x1b[1m',
-  searchResults
-  .slice(0, process.stdout.rows - 5)
-  .map(item => item.name)
-  .join('\n')
-  // '\x1b[0m'
-)
-
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -48,7 +35,14 @@ let newchar = false
 let selection = false
 let matches = searchResults.map(item => item.name)
 
-// TODO get rid of this huge lazy if/else chain.
+console.clear()
+console.log(
+  searchResults
+  .slice(0, process.stdout.rows - 5)
+  .map(item => item.name)
+  .join('\n')
+)
+
 process.stdin.on('keypress', (char, props) => {
   if (props.name === 'backspace') {
     newchar = true
@@ -58,8 +52,10 @@ process.stdin.on('keypress', (char, props) => {
     if (selection) {
         const videoUrl = fzf.find(selection)[0].item.value
         
+        rl.pause()
         console.clear()
-        console.log(`opening url with ${VIDEO_PLAYER}\nvideo: ${selection}\nurl: ${videoUrl}`)
+        console.log(`video: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\nopening url with \x1b[1m${VIDEO_PLAYER}\x1b[0m`)
+        // console.log(`\x1b[1mopening url with ${VIDEO_PLAYER}\nvideo: ${selection}\nurl: ${videoUrl}\x1b[0m`)
 
         // TODO need a progress bar/actual UI here.
         const videoPlayer = spawn(
@@ -72,7 +68,7 @@ process.stdin.on('keypress', (char, props) => {
         ) 
 
         videoPlayer.on('exit', code => {
-          if (code !== 0) console.log(`error opening url: got exit code ${code}`)
+          if (code !== 0) console.log(`\x1b[1merror opening url: got exit code ${code}\x1b[0m`)
           process.exit(0)
         })
     }
