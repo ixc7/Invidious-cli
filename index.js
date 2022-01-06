@@ -69,9 +69,13 @@ process.stdin.on('keypress', (char, props) => {
     newchar = true
     position -= 1
     selection = matches[position]
-    readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
-    console.log(`selection: ${selection || 'none'}`)
-
+    // readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
+    // console.log(`selection: ${selection || 'none'}`)
+  }
+  else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
+    selection = matches[0]
+    readline.cursorTo(process.stdout, 0, process.stdout.rows - 3)
+    console.log(`selection: ${selection || none}\ninput: ${input}`)
   }
   else if (char && !props.sequence.includes('\x1b')) {
     newchar = true
@@ -89,34 +93,10 @@ process.stdin.on('keypress', (char, props) => {
     
     newchar = false   
 
-    // console.log('\x1b[0m\x1Bc\x1b[3J\x1b[?25l')
     console.clear()
     if (matches[0]) console.log(matches.join('\n'))
     readline.cursorTo(process.stdout, 0, process.stdout.rows - 3)
-    console.log(`selection: ${selection || 'none'}`)
-    console.log(`input: ${input}`)
-    // console.log('\x1b[?25h')
+    process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
+    // console.log(`input: ${input}`)
   }
 })
-
-// try {
-  // console.clear()
-  // console.log(`searching for: ${searchTerm}`)
-  // const selection = await prompt.run()
-  // console.clear()
-  // console.log(`opening url with ${VIDEO_PLAYER}: ${selection}`)
-  // const videoPlayer = spawn(
-    // VIDEO_PLAYER,
-    // [selection, '--fullscreen', '--loop', '--audio-pitch-correction=no'],
-    // { detached: true, stdio: 'ignore' }
-  // )
-  // videoPlayer.unref()
-  // process.exit(0)
-// }
-
-// catch (e) {
-  // console.clear()
-  // console.log('exit')
-  // if (e) console.log('got error:\n', e)
-  // process.exit(0)
-// }
