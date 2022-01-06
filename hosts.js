@@ -1,33 +1,23 @@
 import https from 'https'
 
-// the markdown doc (the list.)
-const list = 'https://raw.githubusercontent.com/iv-org/documentation/master/Invidious-Instances.md'
-
-// grep server addresses from doc
-const formatResult = arr => {
-  return arr
-  .split('\n')
-  .filter(x => x.includes('https') && x.includes('*'))
-  .map(x => {
-    const start = x.indexOf('https')
-    const end = x.indexOf(')')
-    const url = x.substr(start, end - start)
-    if (url.substr(url.length - 1) === '/') return url.substr(0, url.length - 1)
-    return url
-  })
-}
-
-// request doc
 const getInstancesList = () => {
   return new Promise(resolve => {
-    const req = https.request(list)
+    const req = https.request('https://api.invidious.io/instances.json?pretty=1')
     req.on('response', res => {
       let str = ''
       res.on('data', d => str += d.toString('utf8'))
-      res.on('end', () => resolve(formatResult(str)))
+      res.on('end', () => {
+        const parsed = JSON.parse(str, 0, 2)
+        resolve(parsed.filter(item => !item[0].includes('.onion')).map(item => `https://${item[0]}`))
+      })
     })
     req.end()
   })
+}
+
+const testInstances = async () => {
+  const instancesJSON = JSON.parse(await getInstancesListFromApi(), 0, 2)
+  return instancesJSON.map(item => item[0])
 }
 
 export default getInstancesList
