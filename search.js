@@ -76,19 +76,15 @@ const search = async (searchTerm, environment, page = 1, serverIndex = 0, server
             resolve(search(searchTerm, env, page, serverIndex + 1, server))
           }
         }
-
-        // return result.
-        // const parsed = (JSON.parse(resToString, 0, 2)).filter(item => !item[0].includes('.onion')).map(item => `https://${item[0]}`)
-        // resolve(parsed)
         try {
-          
-          const parsed = JSON.parse(resToString, 0, 2).map(item => {
-            return {
-              name: item.title,
-              value: `${server}/watch?v=${item.videoId}`
-            }
-          })
-          resolve(parsed)
+          resolve(
+            JSON.parse(resToString, 0, 2).map(item => {
+              return {
+                name: item.title,
+                value: `${server}/watch?v=${item.videoId}`
+              }
+            })
+          )
         }
         catch {
           console.log(`server '${server}' returned an error.`)

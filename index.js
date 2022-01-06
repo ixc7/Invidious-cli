@@ -39,9 +39,9 @@ let selection = ''
 let matches = []
 let position = 0
 let newchar = false
-
 process.stdin.on('keypress', (char, props) => {
   if (props.name === 'backspace') {
+    newchar = true
     input = input.substring(0, input.length - 1)
   }
   else if (props.name === 'return') {
@@ -61,31 +61,31 @@ process.stdin.on('keypress', (char, props) => {
     }
     process.exit(0)
   } 
-  else if (props.name === 'down' && matches[position + 1]) {
-    position += 1
-    selection = matches[position]
+  else if (props.name === 'down' && matches[position + 1] && input.length) {
+      position += 1
+      selection = matches[position]
   }
-  else if (props.name === 'up' && matches[position - 1]) {
-    position -= 1
-    selection = matches[position]
+  else if (props.name === 'up' && matches[position - 1] && input.length) {
+      position -= 1
+      selection = matches[position]
   }
-  else if (char) {
+  else if (char && !props.sequence.includes('\x1b')) {
     newchar = true
     input = input.concat(char)
   }
 
   if (newchar) {
     matches = fzf.find(input).map(match => match.item.name)
-    selection = matches[0]
+    selection = matches[0] || false
     newchar = false   
-  }
 
-  console.log('\x1b[0m\x1Bc\x1b[3J\x1b[?25l')
-  if (matches[0]) console.log(matches.join('\n'))
-  readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
-  console.log(`input: ${input}`)
-  console.log(`selection: ${selection}`)
-  console.log('\x1b[?25h')
+    console.log('\x1b[0m\x1Bc\x1b[3J\x1b[?25l')
+    if (matches[0]) console.log(matches.join('\n'))
+    readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
+    console.log(`input: ${input}`)
+    console.log(`selection: ${selection || 'none'}`)
+    console.log('\x1b[?25h')
+  }
 })
 
 // try {
