@@ -1,8 +1,22 @@
 import https from 'https'
-import getHostsList from './hosts.js'
+
+const getInstancesList = () => {
+  return new Promise(resolve => {
+    const req = https.request('https://api.invidious.io/instances.json?pretty=1')
+    req.on('response', res => {
+      let str = ''
+      res.on('data', d => str += d.toString('utf8'))
+      res.on('end', () => {
+        const parsed = JSON.parse(str, 0, 2)
+        resolve(parsed.filter(item => !item[0].includes('.onion')).map(item => `https://${item[0]}`))
+      })
+    })
+    req.end()
+  })
+}
 
 const loadEnv = async () => {
-  const hosts = await getHostsList()
+  const hosts = await getInstancesList()
   return {
     hosts,
     serverMax: hosts.length,
