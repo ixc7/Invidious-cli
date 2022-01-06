@@ -46,6 +46,9 @@ let selection = false
 let matches = searchResults.map(item => item.name)
 let position = 0
 let newchar = false
+
+
+// TODO get rid of this huge lazy if/else chain.
 process.stdin.on('keypress', (char, props) => {
   if (props.name === 'backspace') {
     newchar = true
@@ -63,7 +66,10 @@ process.stdin.on('keypress', (char, props) => {
         ],
         { detached: true, stdio: 'ignore' }
       )
+      
+      // TODO need a progress bar/actual UI here.
       videoPlayer.unref()
+      console.clear()
       console.log(`opening url with ${VIDEO_PLAYER}\nvideo: ${selection}\nurl: ${videoUrl}`)
     }
     process.exit(0)
@@ -72,14 +78,11 @@ process.stdin.on('keypress', (char, props) => {
     newchar = true
     position += 1
     selection = matches[position]
-    
   }
   else if (props.name === 'up' && matches[position - 1]) {
     newchar = true
     position -= 1
     selection = matches[position]
-    // readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
-    // console.log(`selection: ${selection || 'none'}`)
   }
   else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
     selection = matches[0]
@@ -93,8 +96,6 @@ process.stdin.on('keypress', (char, props) => {
 
   if (newchar) {
     matches = fzf.find(input).map(obj => obj.item.name)
-    // selection = matches[0] || false
-    // position = 0
     if (position >= matches.length) {
       position = 0
       selection = matches[0] || false

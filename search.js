@@ -24,7 +24,7 @@ const loadEnv = async () => {
 }
 
 // request 1 page
-const search = async (searchTerm, environment, page = 1, serverIndex = 0, serverName = false) => {
+const search = async (searchTerm, environment = false, page = 1, serverIndex = 0, serverName = false) => {
 
   let env = false
   let server = false
@@ -51,7 +51,7 @@ const search = async (searchTerm, environment, page = 1, serverIndex = 0, server
 
     query.searchParams.set('q', searchTerm)
     query.searchParams.set('page', page)
-    query.searchParams.set('pretty', 1)
+    // query.searchParams.set('pretty', 1)
 
     const req = https.request(query.href)
 
@@ -65,33 +65,42 @@ const search = async (searchTerm, environment, page = 1, serverIndex = 0, server
       res.on('end', () => {
         // try different server if current is down
         if (res.statusCode !== 200) {
-          console.log(`server '${server}' is down (${res.statusCode}).`)
+          console.log(`server '${server}' returned an error (${res.statusCode}).`)
         
           if (serverIndex >= serverMax) {
             reject('no available servers')
           // keep trying servers, return first ok result.
           } else {
-            server = hosts[(hosts.length - (serverIndex + 1))]
+            serverIndex +=1
+            server = hosts[(hosts.length - serverIndex)]
             console.log(`trying '${server}'`)
             resolve(search(searchTerm, env, page, serverIndex + 1, server))
           }
+        } else {
+          
+
+        // else {
+          // try {
+            resolve(
+              JSON.parse(resToString, 0, 2).map(item => {
+                return {
+                  name: item.title,
+                  value: `${server}/watch?v=${item.videoId}`
+                }
+              })
+            )
         }
-        try {
-          resolve(
-            JSON.parse(resToString, 0, 2).map(item => {
-              return {
-                name: item.title,
-                value: `${server}/watch?v=${item.videoId}`
-              }
-            })
-          )
-        }
-        catch {
-          console.log(`server '${server}' returned an error.`)
-          server = hosts[(hosts.length - (serverIndex + 1))]
-          console.log(`trying '${server}'`)
-          resolve(search(searchTerm, env, page, serverIndex + 1, server))
-        }
+          // }
+          // catch {
+            // console.log(`server '${server}' returned an empty response.`)
+            // server = hosts[(hosts.length - (serverIndex + 1))]
+            // console.log(`trying '${server}'`)
+            // resolve(search(searchTerm, env, page, serverIndex + 1, hosts[(hosts.length - (serverIndex + 1))]))
+          // }
+        // }
+
+
+
       })
     })
 
