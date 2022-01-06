@@ -20,16 +20,17 @@ if (!searchResults.length) {
   process.exit(0)
 }
 
-// TODO slice the results array so it always fits the screen.
-// TODO make the selection bold.
-// TODO how tf are we gonna position the thumbnails.
 
 console.clear()
+
+// TODO make the selection bold.
 console.log(
+  // '\x1b[1m',
   searchResults
-    .slice(0, process.stdout.rows - 5)
-    .map(item => item.name)
-    .join('\n')
+  .slice(0, process.stdout.rows - 5)
+  .map(item => item.name)
+  .join('\n')
+  // '\x1b[0m'
 )
 
 const rl = readline.createInterface({
@@ -42,11 +43,10 @@ const fzf = new Fzf(searchResults, {
 })
 
 let input = ''
-let selection = false
-let matches = searchResults.map(item => item.name)
 let position = 0
 let newchar = false
-
+let selection = false
+let matches = searchResults.map(item => item.name)
 
 // TODO get rid of this huge lazy if/else chain.
 process.stdin.on('keypress', (char, props) => {
@@ -57,12 +57,11 @@ process.stdin.on('keypress', (char, props) => {
   else if (props.name === 'return') {
     if (selection) {
         const videoUrl = fzf.find(selection)[0].item.value
-
+        
         console.clear()
         console.log(`opening url with ${VIDEO_PLAYER}\nvideo: ${selection}\nurl: ${videoUrl}`)
 
-      // TODO need a progress bar/actual UI here.
-
+        // TODO need a progress bar/actual UI here.
         const videoPlayer = spawn(
           VIDEO_PLAYER,
           [
@@ -90,7 +89,7 @@ process.stdin.on('keypress', (char, props) => {
   }
   else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
     selection = matches[0]
-    readline.cursorTo(process.stdout, 0, process.stdout.rows - 3)
+    readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
     console.log(`selection: ${selection || none}\ninput: ${input || none}`)
   }
   else if (char && !props.sequence.includes('\x1b')) {
@@ -108,9 +107,15 @@ process.stdin.on('keypress', (char, props) => {
     newchar = false   
 
     console.clear()
-    if (matches[0]) console.log(matches.slice(0, process.stdout.rows - 5).join('\n'))
+    if (matches[0]) console.log(matches.slice(0, process.stdout.rows - 5).map(item => {
+      if (item === selection) {
+        return `\x1b[1m${item}\x1b[0m`
+      } else {
+        return item
+      }
+    }).join('\n'))
     
-    readline.cursorTo(process.stdout, 0, process.stdout.rows - 3)
+    readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
     process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
   }
 })
