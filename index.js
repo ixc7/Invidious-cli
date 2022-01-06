@@ -62,10 +62,12 @@ process.stdin.on('keypress', (char, props) => {
     process.exit(0)
   } 
   else if (props.name === 'down' && matches[position + 1] && input.length) {
+      newchar = true
       position += 1
       selection = matches[position]
   }
   else if (props.name === 'up' && matches[position - 1] && input.length) {
+      newchar = true
       position -= 1
       selection = matches[position]
   }
@@ -76,10 +78,11 @@ process.stdin.on('keypress', (char, props) => {
 
   if (newchar) {
     matches = fzf.find(input).map(match => match.item.name)
-    selection = matches[0] || false
+    // selection = matches[0] || false
     newchar = false   
 
-    console.log('\x1b[0m\x1Bc\x1b[3J\x1b[?25l')
+    // console.log('\x1b[0m\x1Bc\x1b[3J\x1b[?25l')
+    console.clear()
     if (matches[0]) console.log(matches.join('\n'))
     readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
     console.log(`input: ${input}`)
