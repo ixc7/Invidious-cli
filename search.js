@@ -100,29 +100,15 @@ const search = async (searchTerm, environment, page = 1, serverIndex = 0, server
 }
 
 // request 1-[max] pages
-// return results if [max] is reached, or no more results are found.
+// exit if [max] is reached, or no more results found.
 const searchRecursive = async (searchTerm, max = 1) => {
   if (!searchTerm) return false
-  
   let env = await loadEnv()
   let final = []
 
   for (let i = 1; i < (max + 1); i += 1) {
-
     const res = await search(searchTerm, env, i)
     if (!res.length) return false
-    
-    // const resJSON = JSON.parse(res)
-    // const resJSON = res
-    // if (resJSON.length < 1) return final
-    
-    // const resMapped = resJSON.map(item => {
-      // return {
-        // name: item.title,
-        // value: `${env.server}/watch?v=${item.videoId}`
-      // }
-    // })
-
     final = final.concat(res)
   }
 

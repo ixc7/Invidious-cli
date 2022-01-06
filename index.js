@@ -10,7 +10,7 @@ if (!process.argv[2]) {
 
 const searchTerm = process.argv.slice(2).join(' ')
 const VIDEO_PLAYER = 'mpv'
-const MAX_PAGES = 1
+const MAX_PAGES = 3
 
 console.log(`searching for ${searchTerm}`)
 const searchResults = await searchRecursive(searchTerm, MAX_PAGES)
@@ -20,8 +20,17 @@ if (!searchResults.length) {
   process.exit(0)
 }
 
+// TODO slice the results array so it always fits the screen.
+// TODO make the selection bold.
+// TODO how tf are we gonna position the thumbnails.
+
 console.clear()
-console.log(searchResults.map(item => item.name).join('\n'))
+console.log(
+  searchResults
+    .slice(0, process.stdout.rows - 5)
+    .map(item => item.name)
+    .join('\n')
+)
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -29,7 +38,7 @@ const rl = readline.createInterface({
 })
 
 const fzf = new Fzf(searchResults, {
-  selector: (item) => item.name
+  selector: item => item.name
 })
 
 let input = ''
@@ -75,7 +84,7 @@ process.stdin.on('keypress', (char, props) => {
   else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
     selection = matches[0]
     readline.cursorTo(process.stdout, 0, process.stdout.rows - 3)
-    console.log(`selection: ${selection || none}\ninput: ${input}`)
+    console.log(`selection: ${selection || none}\ninput: ${input || none}`)
   }
   else if (char && !props.sequence.includes('\x1b')) {
     newchar = true
@@ -94,9 +103,9 @@ process.stdin.on('keypress', (char, props) => {
     newchar = false   
 
     console.clear()
-    if (matches[0]) console.log(matches.join('\n'))
+    if (matches[0]) console.log(matches.slice(0, process.stdout.rows - 5).join('\n'))
+    
     readline.cursorTo(process.stdout, 0, process.stdout.rows - 3)
     process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
-    // console.log(`input: ${input}`)
   }
 })
