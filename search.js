@@ -74,13 +74,10 @@ const search = async (searchTerm, environment = false, page = 1, serverIndex = 0
             serverIndex +=1
             server = hosts[(hosts.length - serverIndex)]
             console.log(`trying '${server}'`)
-            resolve(search(searchTerm, env, page, serverIndex + 1, server))
+            resolve(search(searchTerm, env, page, serverIndex, server))
           }
         } else {
-          
-
-        // else {
-          // try {
+          try {
             resolve(
               JSON.parse(resToString, 0, 2).map(item => {
                 return {
@@ -89,17 +86,18 @@ const search = async (searchTerm, environment = false, page = 1, serverIndex = 0
                 }
               })
             )
-        }
-          // }
-          // catch {
-            // console.log(`server '${server}' returned an empty response.`)
+          }
+          catch {
+            console.log(`server '${server}' returned an invalid response.`)
             // server = hosts[(hosts.length - (serverIndex + 1))]
             // console.log(`trying '${server}'`)
             // resolve(search(searchTerm, env, page, serverIndex + 1, hosts[(hosts.length - (serverIndex + 1))]))
-          // }
-        // }
-
-
+            serverIndex +=1
+            server = hosts[(hosts.length - serverIndex)]
+            console.log(`trying '${server}'`)
+            resolve(search(searchTerm, env, page, serverIndex, server))
+          }
+        }
 
       })
     })

@@ -56,23 +56,27 @@ process.stdin.on('keypress', (char, props) => {
   }
   else if (props.name === 'return') {
     if (selection) {
-      const videoUrl = fzf.find(selection)[0].item.value
-      const videoPlayer = spawn(
-        VIDEO_PLAYER,
-        [
-          videoUrl,
-          '--loop',
-          '--audio-pitch-correction=no'
-        ],
-        { detached: true, stdio: 'ignore' }
-      )
-      
+        const videoUrl = fzf.find(selection)[0].item.value
+
+        console.clear()
+        console.log(`opening url with ${VIDEO_PLAYER}\nvideo: ${selection}\nurl: ${videoUrl}`)
+
       // TODO need a progress bar/actual UI here.
-      videoPlayer.unref()
-      console.clear()
-      console.log(`opening url with ${VIDEO_PLAYER}\nvideo: ${selection}\nurl: ${videoUrl}`)
+
+        const videoPlayer = spawn(
+          VIDEO_PLAYER,
+          [
+            videoUrl,
+            '--loop',
+            '--audio-pitch-correction=no'
+          ],
+        ) 
+
+        videoPlayer.on('exit', code => {
+          if (code !== 0) console.log(`error opening url: got exit code ${code}`)
+          process.exit(0)
+        })
     }
-    process.exit(0)
   } 
   else if (props.name === 'down' && matches[position + 1]) {
     newchar = true
