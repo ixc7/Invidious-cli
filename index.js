@@ -14,7 +14,16 @@ const MAX_PAGES = 1
 
 console.log(`searching for ${searchTerm}`)
 const searchResults = await searchRecursive(searchTerm, MAX_PAGES)
-console.log('got results')
+
+if (!searchResults.length) {
+  console.log('no results')
+  process.exit(0)
+}
+
+console.clear()
+console.log('search results:')
+console.log(searchResults.map(item => item.name).join('\n'))
+
 
 const rl = readline.createInterface({
   input: process.stdin,

@@ -19,9 +19,7 @@ const loadEnv = async () => {
   const hosts = await getInstancesList()
   return {
     hosts,
-    serverMax: hosts.length,
-    // serverIndex: 1,
-    server: hosts[(hosts.length - 1)],
+    serverMax: hosts.length
   }
 }
 
@@ -40,7 +38,7 @@ const search = async (searchTerm, environment, page = 1, serverIndex = 0, server
   let { hosts, serverMax } = env
 
   if (!serverName) {
-    server = env.server
+    server = env.hosts[0]
   } else {
     server = serverName
   }
@@ -57,6 +55,8 @@ const search = async (searchTerm, environment, page = 1, serverIndex = 0, server
 
     const req = https.request(query.href)
 
+    req.setHeader('Accept', 'application/json')
+
     req.on('response', res => {
       let resToString  = ''
 
@@ -67,19 +67,35 @@ const search = async (searchTerm, environment, page = 1, serverIndex = 0, server
         if (res.statusCode !== 200) {
           console.log(`server '${server}' is down (${res.statusCode}).`)
         
-          // return false if all servers have been tried.
           if (serverIndex >= serverMax) {
-            return false
+            reject('no available servers')
           // keep trying servers, return first ok result.
           } else {
-            // serverIndex += 1
             server = hosts[(hosts.length - (serverIndex + 1))]
-            resolve(search(query, env, page, serverIndex + 1, server))
+            console.log(`trying '${server}'`)
+            resolve(search(searchTerm, env, page, serverIndex + 1, server))
           }
         }
 
-        // return result if first server is ok.
-        resolve(resToString)
+        // return result.
+        // const parsed = (JSON.parse(resToString, 0, 2)).filter(item => !item[0].includes('.onion')).map(item => `https://${item[0]}`)
+        // resolve(parsed)
+        try {
+          
+          const parsed = JSON.parse(resToString, 0, 2).map(item => {
+            return {
+              name: item.title,
+              value: `${server}/watch?v=${item.videoId}`
+            }
+          })
+          resolve(parsed)
+        }
+        catch {
+          console.log(`server '${server}' returned an error.`)
+          server = hosts[(hosts.length - (serverIndex + 1))]
+          console.log(`trying '${server}'`)
+          resolve(search(searchTerm, env, page, serverIndex + 1, server))
+        }
       })
     })
 
@@ -93,26 +109,25 @@ const searchRecursive = async (searchTerm, max = 1) => {
   if (!searchTerm) return false
   
   let env = await loadEnv()
-  // let final = {}
   let final = []
 
   for (let i = 1; i < (max + 1); i += 1) {
 
     const res = await search(searchTerm, env, i)
-    if (!res) return false
+    if (!res.length) return false
     
-    const resJSON = JSON.parse(res)
-    if (resJSON.length < 1) return final
+    // const resJSON = JSON.parse(res)
+    // const resJSON = res
+    // if (resJSON.length < 1) return final
     
-    const resMapped = resJSON.map(item => {
-      return {
-        name: item.title,
-        value: `${env.server}/watch?v=${item.videoId}`
-      }
-    })
+    // const resMapped = resJSON.map(item => {
+      // return {
+        // name: item.title,
+        // value: `${env.server}/watch?v=${item.videoId}`
+      // }
+    // })
 
-    // final[i] = resMapped
-    final = final.concat(resMapped)
+    final = final.concat(res)
   }
 
   return final
