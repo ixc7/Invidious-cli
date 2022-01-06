@@ -42,14 +42,13 @@ process.stdin.on('keypress', (char, props) => {
         VIDEO_PLAYER,
         [
           videoUrl,
-          '--fullscreen',
           '--loop',
           '--audio-pitch-correction=no'
         ],
         { detached: true, stdio: 'ignore' }
       )
       videoPlayer.unref()
-      console.log(`opening url with ${VIDEO_PLAYER}: ${selection}`)
+      console.log(`opening url with ${VIDEO_PLAYER}\nvideo: ${selection}\nurl: ${videoUrl}`)
     }
     process.exit(0)
   } 
