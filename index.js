@@ -1,4 +1,5 @@
 import readline from 'readline'
+import { rmSync } from 'fs'
 import { exec, spawn } from 'child_process'
 import { Fzf } from 'fzf'
 import { searchRecursive } from './search.js'
@@ -43,60 +44,68 @@ console.log(
   .join('\n')
 )
 
-
-
-
 const runVideoPlayer = (fileName) => {
+  console.log(`\n\n\nopening file with \x1b[1mmpv\x1b[0m\npress q to exit\n`)
+
   const videoPlayer = spawn('mpv', [`${fileName}.mp3`])
   videoPlayer.stdout.pipe(process.stdout)
-      
-  // TODO make this work somehow
-  // const videoRl = readline.createInterface({
-    // input: process.stdin,
-    // output: process.stdout
-  // })
-    
-  // const videoPlayer = exec(`mpv ${fileName}.mp3`)
-  // videoPlayer.on('message', m => videoPlayer.stdin.write(m.char))
 
-  // videoRl.input.pipe(videoPlayer.stdin)
-    
-  // process.stdin.on('keypress', (char, props) => {
-    // videoPlayer.stdin.write(char)
-    // videoPlayer.send({ char })
-  // })
+  const exitListener = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
+
+  process.stdin.on('keypress', (char, props) => {
+    if (char === 'q')  {
+      exitListener.close()
+      process.stdin.removeAllListeners('keypress')
+      rmSync(`${fileName}.mp3`, { force: true })
+      console.log('\nexit\n')
+      process.exit(0)
+    }
+  })
 
   videoPlayer.on('exit', code => {
     if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
-    fs.rmSync(`${filename}.mp3`, { force: true })
+    rmSync(`${fileName}.mp3`, { force: true })
     process.exit(0)
   })
 }
 
 const runDownloader = (selection, fileName, videoUrl) => {
   console.clear()
-  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\ndownloading file with \x1b[1myt-dlp\x1b[0m\n`)
+  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\ndownloading file with \x1b[1myt-dlp\x1b[0m\npress q to cancel\n`)
 
+  const exitListener = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
+
+  process.stdin.on('keypress', (char, props) => {
+    if (char === 'q')  {
+      exitListener.close()
+      process.stdin.removeAllListeners('keypress')
+      rmSync(`${fileName}.mp3.part`, { force: true })
+      console.log('\ndownload cancelled\n')
+      process.exit(0)
+    }
+  })
+  
   const downloader = exec(`yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 --output "${fileName}.mp3" --quiet --progress "${videoUrl}"`)
   downloader.stdout.pipe(process.stdout)
   
   downloader.on('exit', code => {
     if (code !== 0) {
       console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
-
       process.exit(0)
     } else {
-      console.log(`\n\n\nopening file with \x1b[1mmpv\x1b[0m\npress ctrl-C to exit\n`)
+      exitListener.close()
+      process.stdin.removeAllListeners('keypress')
       runVideoPlayer(fileName)
-
-
-      
     }
   })
 }
 
-// process.stdin.on('keypress', (char, props) => {
-// rl.input.on('keypress', (char, props) => {
 const keyPressInitial = (char, props) => {
   if (props.name === 'backspace') {
     newchar = true
@@ -108,7 +117,7 @@ const keyPressInitial = (char, props) => {
         const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
 
         rl.close()
-        // process.stdin.removeListener('keypress', keyPressInitial)
+        process.stdin.removeAllListeners('keypress')
         runDownloader(selection, fileName, videoUrl)
     }
   } 
@@ -153,8 +162,6 @@ const keyPressInitial = (char, props) => {
     readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
     process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
   }
-
 }
-// })
 
 rl.input.on('keypress', keyPressInitial)
