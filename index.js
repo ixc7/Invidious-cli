@@ -52,12 +52,12 @@ process.stdin.on('keypress', (char, props) => {
     if (selection) {
         const videoUrl = fzf.find(selection)[0].item.value
         const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
-        rl.pause()
-        console.clear()
-        console.log(`\nvideo: \x1b[1m${fileName}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\ndownloading file with \x1b[1myt-dlp\x1b[0m`)
 
-        const downloader = exec(`yt-dlp --output "${fileName}" --quiet --progress "${videoUrl}"`)
-        process.stdin.pipe(downloader.stdin)
+        rl.close()
+        console.clear()
+        console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\ndownloading file with \x1b[1myt-dlp\x1b[0m`)
+
+        const downloader = exec(`yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 --output "${fileName}.mp3" --quiet --progress "${videoUrl}"`)
         downloader.stdout.pipe(process.stdout)
         
         downloader.on('exit', code => {
@@ -65,12 +65,12 @@ process.stdin.on('keypress', (char, props) => {
             console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
             process.exit(0)
           } else {
+            console.clear()
             console.log(`opening file with \x1b[1m${VIDEO_PLAYER}\x1b[0m\n`)
 
-            const videoPlayer = exec(`mpv ${fileName}.*`)
-            process.stdin.pipe(videoPlayer.stdin)
+            const videoPlayer = exec(`mpv ${fileName}.mp3`)
             videoPlayer.stdout.pipe(process.stdout)
-
+            
             videoPlayer.on('exit', code => {
               if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
               process.exit(0)
