@@ -49,32 +49,19 @@ const runVideoPlayer = (fileName) => {
   console.log(`\n\nopening file with \x1b[1m${VIDEO_PLAYER}\x1b[0m\npress q to quit\n`)
 
   const videoPlayer = spawn(
-      `${VIDEO_PLAYER}`,
-      [
-        `${fileName}.mp3`
-      ],
-      {
-        stdio: ['pipe', process.stdout, process.stderr]
-      }
+    `${VIDEO_PLAYER}`,
+    [`${fileName}.mp3`],
+    { stdio: ['pipe', process.stdout, process.stderr] }
   )
 
   process.stdin.pipe(videoPlayer.stdin)
-  // videoPlayer.stdout.pipe(process.stdout)
 
-  // const quitListener = readline.createInterface({
-    // input: process.stdin,
-    // output: process.stdout
-  // })
-
-  // process.stdin.on('keypress', (char, props) => {
-    // if (char === 'q')  {
-      // quitListener.close()
-      // process.stdin.removeAllListeners('keypress')
-      // rmSync(`${fileName}.mp3`, { force: true })
-      // console.log('\nquit\n')
-      // process.exit(0)
-    // }
-  // })
+  process.stdin.on('keypress', (char, props) => {
+    if (char === 'q')  {
+      rmSync(`${fileName}.mp3`, { force: true })
+      process.exit(0)
+    }
+  })
 
   videoPlayer.on('exit', code => {
     if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
