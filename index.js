@@ -66,9 +66,9 @@ process.stdin.on('keypress', (char, props) => {
             process.exit(0)
           } else {
             console.clear()
-            console.log(`opening file with \x1b[1m${VIDEO_PLAYER}\x1b[0m\n`)
+            console.log(`\ropening file with \x1b[1m${VIDEO_PLAYER}\x1b[0m\npress ctrl-C to exit`)
 
-            const videoPlayer = exec(`mpv ${fileName}.mp3`)
+            const videoPlayer = exec(`mpv ${fileName}.mp3 --loop --audio-pitch-correction=no`)
             videoPlayer.stdout.pipe(process.stdout)
             
             videoPlayer.on('exit', code => {
@@ -77,7 +77,6 @@ process.stdin.on('keypress', (char, props) => {
             })
           }
        })
-    // */
     }
   } 
   else if (props.name === 'down' && matches[position + 1]) {
