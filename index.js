@@ -3,6 +3,7 @@ import { rmSync } from 'fs'
 import { exec, spawn } from 'child_process'
 import { Fzf } from 'fzf'
 import searchRecursive from './search.js'
+import mktemp from './mktemp.js'
 
 if (!process.argv[2]) {
   console.log('please enter a search term')
@@ -45,34 +46,44 @@ console.log(
   .join('\n')
 )
 
-const runVideoPlayer = (fileName, player) => {
-  console.log(`\n\nopening file with \x1b[1m${player}\x1b[0m\npress q to quit\n`)
+// expects full path (mktemp + ... .mp3) from runDownloader
+const runVideoPlayer = (file, application) => {
+  console.log(`\n\nopening file with \x1b[1m${application}\x1b[0m\npress q to quit\n`)
 
-  const videoPlayer = spawn(
-    `${player}`,
-    [`${fileName}.mp3`],
-    { stdio: ['pipe', process.stdout, process.stderr] }
+  const player = spawn(
+    application,
+    [
+      file,
+      '--audio-pitch-correction=no',
+      '--loop'
+    ],
+    {
+      stdio: ['pipe', process.stdout, process.stderr]
+    }
   )
 
-  process.stdin.pipe(videoPlayer.stdin)
+  process.stdin.pipe(player.stdin)
 
   process.stdin.on('keypress', (char, props) => {
     if (char === 'q')  {
-      rmSync(`${fileName}.mp3`, { force: true })
+      rmSync(file, { force: true })
       process.exit(0)
     }
   })
 
-  videoPlayer.on('exit', code => {
+  player.on('exit', code => {
     if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
-    rmSync(`${fileName}.mp3`, { force: true })
+    rmSync(file, { force: true })
     process.exit(0)
   })
 }
 
-const runDownloader = (selection, fileName, videoUrl, videoDownloader) => {
+const runDownloader = async (selection, fileName, videoUrl, videoDownloader) => {
   console.clear()
   console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1m${videoDownloader}\x1b[0m\npress q to cancel\n`)
+
+  const directory = await mktemp()
+  const fullpath = `${directory}/${fileName}.mp3` 
 
   const quitListener = readline.createInterface({
     input: process.stdin,
@@ -83,15 +94,15 @@ const runDownloader = (selection, fileName, videoUrl, videoDownloader) => {
     if (char === 'q')  {
       quitListener.close()
       process.stdin.removeAllListeners('keypress')
-      rmSync(`${fileName}.mp3.part`, { force: true })
+      rmSync(`${fullpath}.part`, { force: true })
       console.log('\ndownload cancelled\n')
       process.exit(0)
     }
   })
-  
-  const downloader = exec(`${videoDownloader} --extract-audio --audio-format mp3 --audio-quality 0 --output "${fileName}.mp3" --quiet --progress "${videoUrl}"`)
+
+  const downloader = exec(`${videoDownloader} --extract-audio --audio-format mp3 --audio-quality 0 --output "${fullpath}" --quiet --progress "${videoUrl}"`)
+
   downloader.stdout.pipe(process.stdout)
-  
   downloader.on('exit', code => {
     if (code !== 0) {
       console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
@@ -99,7 +110,7 @@ const runDownloader = (selection, fileName, videoUrl, videoDownloader) => {
     } else {
       quitListener.close()
       process.stdin.removeAllListeners('keypress')
-      runVideoPlayer(fileName, VIDEO_PLAYER)
+      runVideoPlayer(fullpath, VIDEO_PLAYER)
     }
   })
 }
@@ -113,7 +124,6 @@ const handleKeypress = (char, props) => {
     if (selection) {
         const videoUrl = fzf.find(selection)[0].item.value
         const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
-
         rl.close()
         process.stdin.removeAllListeners('keypress')
         runDownloader(selection, fileName, videoUrl, VIDEO_DOWNLOADER)
