@@ -1,5 +1,5 @@
 import readline from 'readline'
-import { spawn } from 'child_process'
+import { exec } from 'child_process'
 import { Fzf } from 'fzf'
 import { searchRecursive } from './search.js'
 
@@ -51,26 +51,33 @@ process.stdin.on('keypress', (char, props) => {
   else if (props.name === 'return') {
     if (selection) {
         const videoUrl = fzf.find(selection)[0].item.value
-        
+        const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
         rl.pause()
         console.clear()
-        console.log(`video: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\nopening url with \x1b[1m${VIDEO_PLAYER}\x1b[0m`)
-        // console.log(`\x1b[1mopening url with ${VIDEO_PLAYER}\nvideo: ${selection}\nurl: ${videoUrl}\x1b[0m`)
+        console.log(`\nvideo: \x1b[1m${fileName}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\ndownloading file with \x1b[1myt-dlp\x1b[0m`)
 
-        // TODO need a progress bar/actual UI here.
-        const videoPlayer = spawn(
-          VIDEO_PLAYER,
-          [
-            videoUrl,
-            '--loop',
-            '--audio-pitch-correction=no'
-          ],
-        ) 
+        const downloader = exec(`yt-dlp --output "${fileName}" --quiet --progress "${videoUrl}"`)
+        process.stdin.pipe(downloader.stdin)
+        downloader.stdout.pipe(process.stdout)
+        
+        downloader.on('exit', code => {
+          if (code !== 0) {
+            console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
+            process.exit(0)
+          } else {
+            console.log(`opening file with \x1b[1m${VIDEO_PLAYER}\x1b[0m\n`)
 
-        videoPlayer.on('exit', code => {
-          if (code !== 0) console.log(`\x1b[1merror opening url: got exit code ${code}\x1b[0m`)
-          process.exit(0)
-        })
+            const videoPlayer = exec(`mpv ${fileName}.*`)
+            process.stdin.pipe(videoPlayer.stdin)
+            videoPlayer.stdout.pipe(process.stdout)
+
+            videoPlayer.on('exit', code => {
+              if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
+              process.exit(0)
+            })
+          }
+       })
+    // */
     }
   } 
   else if (props.name === 'down' && matches[position + 1]) {
@@ -94,13 +101,13 @@ process.stdin.on('keypress', (char, props) => {
   }
 
   if (newchar) {
+    newchar = false   
     matches = fzf.find(input).map(obj => obj.item.name)
+
     if (position >= matches.length) {
       position = 0
       selection = matches[0] || false
     }
-    
-    newchar = false   
 
     console.clear()
     if (matches[0]) console.log(matches.slice(0, process.stdout.rows - 5).map(item => {
