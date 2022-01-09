@@ -24,81 +24,64 @@ const loadEnv = async () => {
 }
 
 // request 1 page
-const search = async (searchTerm, environment = false, page = 1, serverIndex = 0, serverName = false) => {
+const search = async (searchTerm, environment = false, page = 1, serverName = false, serverIndex = 0) => {
+  let server = serverName
+  let env = environment
 
-  let env = false
-  let server = false
-  
-  if (!environment) {
-    env = await loadEnv()
-  } else {
-    env = environment
-  }
-  
+  if (!serverName) server = env.hosts[0]
+  if (!environment) env = await loadEnv()
+
   let { hosts, serverMax } = env
 
-  if (!serverName) {
-    server = env.hosts[0]
-  } else {
-    server = serverName
-  }
-  
+
   return new Promise(resolve => {
     const query = new URL(
       `/api/v1/search`, 
       `${server}/api`
     )
-
     query.searchParams.set('q', searchTerm)
     query.searchParams.set('page', page)
-    // query.searchParams.set('pretty', 1)
 
     const req = https.request(query.href)
-
     req.setHeader('Accept', 'application/json')
 
     req.on('response', res => {
       let resToString  = ''
-
       res.on('data', chunk => resToString += chunk.toString('utf8'))
 
-      res.on('end', () => {
-        // try different server if current is down
+      res.on('end', async () => {
         if (res.statusCode !== 200) {
           console.log(`server '${server}' returned an error (${res.statusCode}).`)
-        
-          if (serverIndex >= serverMax) {
-            reject('no available servers')
-          // keep trying servers, return first ok result.
-          } else {
-            serverIndex +=1
-            server = hosts[(hosts.length - serverIndex)]
+          serverIndex +=1
+          server = hosts[(hosts.length - serverIndex)]
+
+          if (serverIndex < serverMax) {
             console.log(`trying '${server}'`)
-            resolve(search(searchTerm, env, page, serverIndex, server))
+            resolve(await search(searchTerm, env, page, server, serverIndex))
+          } else {
+            console.log('no servers available.')
+            process.exit(0)
           }
         } else {
           try {
-            resolve(
-              JSON.parse(resToString, 0, 2).map(item => {
+            resolve({
+              server,
+              results: JSON.parse(resToString, 0, 2).map(item => {
                 return {
                   name: item.title,
                   value: `${server}/watch?v=${item.videoId}`
                 }
               })
-            )
+            })
           }
           catch {
             console.log(`server '${server}' returned an invalid response.`)
-            // server = hosts[(hosts.length - (serverIndex + 1))]
-            // console.log(`trying '${server}'`)
-            // resolve(search(searchTerm, env, page, serverIndex + 1, hosts[(hosts.length - (serverIndex + 1))]))
-            serverIndex +=1
             server = hosts[(hosts.length - serverIndex)]
+            serverIndex +=1
             console.log(`trying '${server}'`)
-            resolve(search(searchTerm, env, page, serverIndex, server))
+            resolve(await search(searchTerm, env, page, server, serverIndex))
           }
         }
-
       })
     })
 
@@ -106,20 +89,25 @@ const search = async (searchTerm, environment = false, page = 1, serverIndex = 0
   })
 }
 
-// request 1-[max] pages
-// exit if [max] is reached, or no more results found.
+// request n pages, exit if n is reached, or no more results found
 const searchRecursive = async (searchTerm, max = 1) => {
   if (!searchTerm) return false
   let env = await loadEnv()
   let final = []
-
+  let server = false
+  
   for (let i = 1; i < (max + 1); i += 1) {
-    const res = await search(searchTerm, env, i)
-    if (!res.length) return false
-    final = final.concat(res)
+    console.log(`fetching page ${i} of ${max}`)
+    const res = await search(searchTerm, env, i, server)
+    if (!res.results.length) return false
+    server = res.server
+    final = final.concat(res.results)
   }
 
   return final
 }
 
-export { loadEnv, search, searchRecursive }
+// console.log(await searchRecursive('limp bizkit nookie', 3))
+
+// export { loadEnv, search, searchRecursive }
+export default searchRecursive

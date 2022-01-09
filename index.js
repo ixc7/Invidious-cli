@@ -2,7 +2,8 @@ import readline from 'readline'
 import { rmSync } from 'fs'
 import { exec, spawn } from 'child_process'
 import { Fzf } from 'fzf'
-import { searchRecursive } from './search.js'
+// import { searchRecursive } from './search.js'
+import searchRecursive from './search.js'
 
 if (!process.argv[2]) {
   console.log('please enter a search term')
@@ -45,7 +46,7 @@ console.log(
 )
 
 const runVideoPlayer = (fileName) => {
-  console.log(`\n\n\nopening file with \x1b[1mmpv\x1b[0m\npress q to exit\n`)
+  console.log(`\n\nopening file with \x1b[1mmpv\x1b[0m\npress q to quit\n`)
 
   const videoPlayer = spawn('mpv', [`${fileName}.mp3`])
   videoPlayer.stdout.pipe(process.stdout)
@@ -60,7 +61,7 @@ const runVideoPlayer = (fileName) => {
       exitListener.close()
       process.stdin.removeAllListeners('keypress')
       rmSync(`${fileName}.mp3`, { force: true })
-      console.log('\nexit\n')
+      console.log('\nquit\n')
       process.exit(0)
     }
   })
@@ -74,7 +75,7 @@ const runVideoPlayer = (fileName) => {
 
 const runDownloader = (selection, fileName, videoUrl) => {
   console.clear()
-  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\ndownloading file with \x1b[1myt-dlp\x1b[0m\npress q to cancel\n`)
+  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1myt-dlp\x1b[0m\npress q to cancel\n`)
 
   const exitListener = readline.createInterface({
     input: process.stdin,
