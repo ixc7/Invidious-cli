@@ -1,6 +1,6 @@
-import readline from 'readline'
+import { createInterface, cursorTo } from 'readline'
 import { rmSync } from 'fs'
-import { exec, spawn } from 'child_process'
+import { spawn } from 'child_process'
 import { Fzf } from 'fzf'
 import searchRecursive from './search.js'
 import mktemp from './mktemp.js'
@@ -23,7 +23,7 @@ if (!searchResults.length) {
   process.exit(0)
 }
 
-const rl = readline.createInterface({
+const rl = createInterface({
   input: process.stdin,
   output: process.stdout
 })
@@ -85,11 +85,12 @@ const runDownloader = async (selection, fileName, videoUrl, videoDownloader) => 
   const directory = await mktemp()
   const fullpath = `${directory}/${fileName}.mp3` 
 
-  const quitListener = readline.createInterface({
+  // TODO external?
+  const quitListener = createInterface({
     input: process.stdin,
     output: process.stdout
   })
-
+  // TODO external?
   process.stdin.on('keypress', (char, props) => {
     if (char === 'q')  {
       quitListener.close()
@@ -100,9 +101,23 @@ const runDownloader = async (selection, fileName, videoUrl, videoDownloader) => 
     }
   })
 
-  const downloader = exec(`${videoDownloader} --extract-audio --audio-format mp3 --audio-quality 0 --output "${fullpath}" --quiet --progress "${videoUrl}"`)
+  const downloader = spawn(
+    videoDownloader,
+    [
+      '--extract-audio',
+      '--audio-format=mp3',
+      '--audio-quality=0',
+      '--quiet',
+      '--progress',
+      `--output=${fullpath}`,
+      videoUrl
+    ],
+    {
+      stdio: ['pipe', process.stdout, process.stderr]
+    }
+  )
 
-  downloader.stdout.pipe(process.stdout)
+
   downloader.on('exit', code => {
     if (code !== 0) {
       console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
@@ -141,7 +156,7 @@ const handleKeypress = (char, props) => {
   }
   else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
     selection = matches[0]
-    readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
+    cursorTo(process.stdout, 0, process.stdout.rows - 4)
     console.log(`selection: ${selection || none}\ninput: ${input || none}`)
   }
   else if (char && !props.sequence.includes('\x1b')) {
@@ -169,7 +184,7 @@ const handleKeypress = (char, props) => {
       .join('\n')
     )
 
-    readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
+    cursorTo(process.stdout, 0, process.stdout.rows - 4)
     process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
   }
 }
