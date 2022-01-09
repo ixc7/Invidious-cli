@@ -1,7 +1,6 @@
 import https from 'https'
 
-
-// TODO combine these
+// request servernames
 const getInstancesList = () => {
   return new Promise(resolve => {
     const req = https.request('https://api.invidious.io/instances.json?pretty=1')
@@ -10,20 +9,15 @@ const getInstancesList = () => {
       res.on('data', d => str += d.toString('utf8'))
       res.on('end', () => {
         const parsed = JSON.parse(str, 0, 2)
-        resolve(parsed.filter(item => !item[0].includes('.onion')).map(item => `https://${item[0]}`))
+        const hosts = parsed.filter(item => !item[0].includes('.onion')).map(item => `https://${item[0]}`)
+        resolve({
+          hosts,
+          serverMax: hosts.length 
+        })
       })
     })
     req.end()
   })
-}
-
-// TODO combine these
-const loadEnv = async () => {
-  const hosts = await getInstancesList()
-  return {
-    hosts,
-    serverMax: hosts.length
-  }
 }
 
 // request 1 page
@@ -32,7 +26,7 @@ const search = async (searchTerm, environment = false, page = 1, serverName = fa
   let env = environment
 
   if (!serverName) server = env.hosts[0]
-  if (!environment) env = await loadEnv()
+  if (!environment) env = await getInstancesList()
 
   let { hosts, serverMax } = env
 
@@ -95,7 +89,7 @@ const search = async (searchTerm, environment = false, page = 1, serverName = fa
 // request n pages
 const searchRecursive = async (searchTerm, max = 1) => {
   if (!searchTerm) return false
-  let env = await loadEnv()
+  let env = await getInstancesList()
   let final = []
   let server = false
   

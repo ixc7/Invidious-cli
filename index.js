@@ -45,11 +45,11 @@ console.log(
   .join('\n')
 )
 
-const runVideoPlayer = (fileName) => {
-  console.log(`\n\nopening file with \x1b[1m${VIDEO_PLAYER}\x1b[0m\npress q to quit\n`)
+const runVideoPlayer = (fileName, player) => {
+  console.log(`\n\nopening file with \x1b[1m${player}\x1b[0m\npress q to quit\n`)
 
   const videoPlayer = spawn(
-    `${VIDEO_PLAYER}`,
+    `${player}`,
     [`${fileName}.mp3`],
     { stdio: ['pipe', process.stdout, process.stderr] }
   )
@@ -70,9 +70,9 @@ const runVideoPlayer = (fileName) => {
   })
 }
 
-const runDownloader = (selection, fileName, videoUrl) => {
+const runDownloader = (selection, fileName, videoUrl, videoDownloader) => {
   console.clear()
-  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1m${VIDEO_DOWNLOADER}\x1b[0m\npress q to cancel\n`)
+  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1m${videoDownloader}\x1b[0m\npress q to cancel\n`)
 
   const quitListener = readline.createInterface({
     input: process.stdin,
@@ -89,7 +89,7 @@ const runDownloader = (selection, fileName, videoUrl) => {
     }
   })
   
-  const downloader = exec(`${VIDEO_DOWNLOADER} --extract-audio --audio-format mp3 --audio-quality 0 --output "${fileName}.mp3" --quiet --progress "${videoUrl}"`)
+  const downloader = exec(`${videoDownloader} --extract-audio --audio-format mp3 --audio-quality 0 --output "${fileName}.mp3" --quiet --progress "${videoUrl}"`)
   downloader.stdout.pipe(process.stdout)
   
   downloader.on('exit', code => {
@@ -99,12 +99,12 @@ const runDownloader = (selection, fileName, videoUrl) => {
     } else {
       quitListener.close()
       process.stdin.removeAllListeners('keypress')
-      runVideoPlayer(fileName)
+      runVideoPlayer(fileName, VIDEO_PLAYER)
     }
   })
 }
 
-rl.input.on('keypress', (char, props) => {
+const handleKeypress = (char, props) => {
   if (props.name === 'backspace') {
     newchar = true
     input = input.substring(0, input.length - 1)
@@ -116,7 +116,7 @@ rl.input.on('keypress', (char, props) => {
 
         rl.close()
         process.stdin.removeAllListeners('keypress')
-        runDownloader(selection, fileName, videoUrl)
+        runDownloader(selection, fileName, videoUrl, VIDEO_DOWNLOADER)
     }
   } 
   else if (props.name === 'down' && matches[position + 1]) {
@@ -162,4 +162,6 @@ rl.input.on('keypress', (char, props) => {
     readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
     process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
   }
-})
+}
+
+rl.input.on('keypress', handleKeypress)
