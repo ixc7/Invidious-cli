@@ -1,5 +1,7 @@
 import https from 'https'
 
+
+// TODO combine these
 const getInstancesList = () => {
   return new Promise(resolve => {
     const req = https.request('https://api.invidious.io/instances.json?pretty=1')
@@ -15,6 +17,7 @@ const getInstancesList = () => {
   })
 }
 
+// TODO combine these
 const loadEnv = async () => {
   const hosts = await getInstancesList()
   return {
@@ -89,7 +92,7 @@ const search = async (searchTerm, environment = false, page = 1, serverName = fa
   })
 }
 
-// request n pages, exit if n is reached, or no more results found
+// request n pages
 const searchRecursive = async (searchTerm, max = 1) => {
   if (!searchTerm) return false
   let env = await loadEnv()
@@ -108,6 +111,4 @@ const searchRecursive = async (searchTerm, max = 1) => {
 }
 
 // console.log(await searchRecursive('limp bizkit nookie', 3))
-
-// export { loadEnv, search, searchRecursive }
 export default searchRecursive

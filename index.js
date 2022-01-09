@@ -2,7 +2,6 @@ import readline from 'readline'
 import { rmSync } from 'fs'
 import { exec, spawn } from 'child_process'
 import { Fzf } from 'fzf'
-// import { searchRecursive } from './search.js'
 import searchRecursive from './search.js'
 
 if (!process.argv[2]) {
@@ -11,6 +10,7 @@ if (!process.argv[2]) {
 }
 
 const searchTerm = process.argv.slice(2).join(' ')
+const VIDEO_DOWNLOADER = 'yt-dlp'
 const VIDEO_PLAYER = 'mpv'
 const MAX_PAGES = 3
 
@@ -46,25 +46,35 @@ console.log(
 )
 
 const runVideoPlayer = (fileName) => {
-  console.log(`\n\nopening file with \x1b[1mmpv\x1b[0m\npress q to quit\n`)
+  console.log(`\n\nopening file with \x1b[1m${VIDEO_PLAYER}\x1b[0m\npress q to quit\n`)
 
-  const videoPlayer = spawn('mpv', [`${fileName}.mp3`])
-  videoPlayer.stdout.pipe(process.stdout)
+  const videoPlayer = spawn(
+      `${VIDEO_PLAYER}`,
+      [
+        `${fileName}.mp3`
+      ],
+      {
+        stdio: ['pipe', process.stdout, process.stderr]
+      }
+  )
 
-  const exitListener = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  })
+  process.stdin.pipe(videoPlayer.stdin)
+  // videoPlayer.stdout.pipe(process.stdout)
 
-  process.stdin.on('keypress', (char, props) => {
-    if (char === 'q')  {
-      exitListener.close()
-      process.stdin.removeAllListeners('keypress')
-      rmSync(`${fileName}.mp3`, { force: true })
-      console.log('\nquit\n')
-      process.exit(0)
-    }
-  })
+  // const quitListener = readline.createInterface({
+    // input: process.stdin,
+    // output: process.stdout
+  // })
+
+  // process.stdin.on('keypress', (char, props) => {
+    // if (char === 'q')  {
+      // quitListener.close()
+      // process.stdin.removeAllListeners('keypress')
+      // rmSync(`${fileName}.mp3`, { force: true })
+      // console.log('\nquit\n')
+      // process.exit(0)
+    // }
+  // })
 
   videoPlayer.on('exit', code => {
     if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
@@ -75,16 +85,16 @@ const runVideoPlayer = (fileName) => {
 
 const runDownloader = (selection, fileName, videoUrl) => {
   console.clear()
-  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1myt-dlp\x1b[0m\npress q to cancel\n`)
+  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1m${VIDEO_DOWNLOADER}\x1b[0m\npress q to cancel\n`)
 
-  const exitListener = readline.createInterface({
+  const quitListener = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   })
 
   process.stdin.on('keypress', (char, props) => {
     if (char === 'q')  {
-      exitListener.close()
+      quitListener.close()
       process.stdin.removeAllListeners('keypress')
       rmSync(`${fileName}.mp3.part`, { force: true })
       console.log('\ndownload cancelled\n')
@@ -92,7 +102,7 @@ const runDownloader = (selection, fileName, videoUrl) => {
     }
   })
   
-  const downloader = exec(`yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 --output "${fileName}.mp3" --quiet --progress "${videoUrl}"`)
+  const downloader = exec(`${VIDEO_DOWNLOADER} --extract-audio --audio-format mp3 --audio-quality 0 --output "${fileName}.mp3" --quiet --progress "${videoUrl}"`)
   downloader.stdout.pipe(process.stdout)
   
   downloader.on('exit', code => {
@@ -100,14 +110,14 @@ const runDownloader = (selection, fileName, videoUrl) => {
       console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
       process.exit(0)
     } else {
-      exitListener.close()
+      quitListener.close()
       process.stdin.removeAllListeners('keypress')
       runVideoPlayer(fileName)
     }
   })
 }
 
-const keyPressInitial = (char, props) => {
+rl.input.on('keypress', (char, props) => {
   if (props.name === 'backspace') {
     newchar = true
     input = input.substring(0, input.length - 1)
@@ -145,24 +155,24 @@ const keyPressInitial = (char, props) => {
   if (newchar) {
     newchar = false   
     matches = fzf.find(input).map(obj => obj.item.name)
+    console.clear()
 
     if (position >= matches.length) {
       position = 0
       selection = matches[0] || false
     }
 
-    console.clear()
-    if (matches[0]) console.log(matches.slice(0, process.stdout.rows - 5).map(item => {
-      if (item === selection) {
-        return `\x1b[1m${item}\x1b[0m`
-      } else {
+    if (matches[0]) console.log(
+      matches
+      .slice(0, process.stdout.rows - 5)
+      .map(item => {
+        if (item === selection) return `\x1b[1m${item}\x1b[0m`
         return item
-      }
-    }).join('\n'))
-    
+      })
+      .join('\n')
+    )
+
     readline.cursorTo(process.stdout, 0, process.stdout.rows - 4)
     process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
   }
-}
-
-rl.input.on('keypress', keyPressInitial)
+})
