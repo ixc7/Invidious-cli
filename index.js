@@ -3,7 +3,6 @@ import { rmSync } from 'fs'
 import { spawn, spawnSync } from 'child_process'
 import { Fzf } from 'fzf'
 import searchRecursive from './search.js'
-import { mktempSync } from './mktemp.js'
 
 if (!process.argv[2]) {
   console.log('please enter a search term')
@@ -48,8 +47,6 @@ console.log(
 
 const playFile = (filePath, application) => {
   console.log(`playing file with \x1b[1m${application}\x1b[0m\npress q to quit\n`)
-  console.log(filePath)
-  console.log(`${filePath}`)
   const player = spawn(
     application,
     [
@@ -88,22 +85,6 @@ const downloadFile = (selection, fileName, videoUrl, videoDownloader) => {
   const format = 'm4a'
   const filePath = `${directory}/${fileName}.${format}` 
 
-  // TODO external?
-  const quitListener = createInterface({
-    input: process.stdin,
-    output: process.stdout
-  })
-
-  // TODO external?
-  process.stdin.on('keypress', (char, props) => {
-    if (char === 'q')  {
-      quitListener.close()
-      process.stdin.removeAllListeners('keypress')
-      rmSync(`${filePath}.part`, { force: true })
-      console.log('\ndownload cancelled\n')
-      process.exit(0)
-    }
-  })  
 
   const downloader = spawn(
     videoDownloader,
@@ -119,15 +100,35 @@ const downloadFile = (selection, fileName, videoUrl, videoDownloader) => {
     }
   )
 
+  // TODO external? 1
+  const quitListener = createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
+
+  // TODO external? 2
+  process.stdin.on('keypress', (char, props) => {
+    if (char === 'q')  {
+      quitListener.close()
+      process.stdin.removeAllListeners('keypress')
+      downloader.kill()
+      rmSync(`${filePath}.part`, { force: true })
+      console.log('\ndownload cancelled\n')
+      process.exit(0)
+    }
+  })  
+
   downloader.on('exit', code => {
     if (code !== 0) {
       console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
       process.exit(0)
-    } 
-    quitListener.close()
-    process.stdin.removeAllListeners('keypress')
-    playFile(filePath, VIDEO_PLAYER)
+    } else {
+      quitListener.close()
+      process.stdin.removeAllListeners('keypress')
+      playFile(filePath, VIDEO_PLAYER)
+    }
   })
+  
 }
 
 // TODO
