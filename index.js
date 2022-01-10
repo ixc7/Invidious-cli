@@ -7,10 +7,10 @@ import search from './search.js'
 const VIDEO_DOWNLOADER = 'yt-dlp'
 const VIDEO_PLAYER = 'mpv'
 const FILE_FORMAT = 'm4a'
-const MAX_PAGES = 2
+const MAX_PAGES = 5
 
-const clear = () => process.stdout.write('\x1b[?25h\x1b[0m\x1Bc\x1b[3J')
 const bold = input => `\x1b[1m${input}\x1b[0m`
+const clearBefore = input => process.stdout.write(`\x1b[0m\x1Bc\x1b[3J\x1b[?25l${input || ''}`)
 
 const mkInterface = (opts = {}) => {
   return createInterface({
@@ -40,9 +40,8 @@ if (!results.length) {
   process.exit(0)
 }
 
-clear()
-console.log(
-  results
+// renders the initial results.
+clearBefore(results
   .slice(0, process.stdout.rows - 5)
   .map(item => item.name)
   .join('\n')
@@ -57,6 +56,7 @@ let render = false
 let selection = false
 let matches = results.map(item => item.name)
 
+// open player
 const playFile = (filePath, application) => {
   console.log(`playing file with ${bold(application)}\npress ${bold('q')} to quit\n`)
 
@@ -83,10 +83,9 @@ const playFile = (filePath, application) => {
   })
 }
 
+// download audio
 const downloadFile = (selection, file, url, application) => {
-  clear()
-  console.log(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
-
+clearBefore(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
   const format = FILE_FORMAT
   const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
   const filePath = `${directory}/${file}.${format}` 
@@ -130,65 +129,87 @@ const downloadFile = (selection, file, url, application) => {
   })
 }
 
-// TODO fix this
+
+// TODO make this nice.
 const uglyKeypressFunction = (char, props) => {
+
+
+
+  //
+  // handle keys
+  //
   if (props.name === 'backspace') {
     render = true
     input = input.substring(0, input.length - 1)
   }
+
   else if (props.name === 'return') {
     if (selection) {
-        const url = fzf.find(selection)[0].item.value
-        const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
         rl.close()
         process.stdin.removeAllListeners('keypress')
+        const url = fzf.find(selection)[0].item.value
+        const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
         downloadFile(selection, fileName, url, VIDEO_DOWNLOADER)
     }
   }
+
   else if (props.name === 'down' && matches[position + 1]) {
     render = true
     position += 1
     selection = matches[position]
   }
+
   else if (props.name === 'up' && matches[position - 1]) {
     render = true
     position -= 1
     selection = matches[position]
   }
+  
+  // TODO just have the first one selected by default.
   else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
     selection = matches[0]
     cursorTo(process.stdout, 0, process.stdout.rows - 4)
-    console.log(`selection: ${selection || none}\ninput: ${input || none}`)
+    process.stdout.write(`selection: ${position + ': ' || ''} ${selection || 'none'}\ninput: ${input}`)
   }
+
   else if (char && !props.sequence.includes('\x1b')) {
     render = true
     input = input.concat(char)
   }
 
+
+  
+  //
+  // handle renders
+  //
   if (render) {
     render = false   
     matches = fzf.find(input).map(obj => obj.item.name)
-    clear()
+    clearBefore()
     
     if (position >= matches.length) {
       position = 0
       selection = matches[0] || false
     }
-
-    if (matches[0]) console.log(
-      matches
-      .slice(0, process.stdout.rows - 5)
+    
+    if (matches[0]) {
+      const display = matches
+      .slice(position)
+      .slice(0, process.stdout.rows - 7)
       .map(item => {
-        // TODO fix this
         if (item === selection) return bold(item)
         return item
       })
       .join('\n')
-    )
+      // console.log(display)
+      console.log(`\n${display}`)
+    } 
 
     cursorTo(process.stdout, 0, process.stdout.rows - 4)
-    process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
+    process.stdout.write(`selection: ${selection ? (position + 1) + ': ' : ''} ${selection || 'none'}\ninput: ${input}`)
   }
+
+  
 }
 
 rl.input.on('keypress', uglyKeypressFunction)

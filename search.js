@@ -53,7 +53,7 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
 
       res.on('end', async () => {
         if (res.statusCode !== 200) {
-          console.log(`server '${server}' returned an error (${res.statusCode}).`)
+          console.log(`'${server}' returned an error (${res.statusCode}).`)
           serverIndex +=1
           server = hosts[(hosts.length - serverIndex)]
 
@@ -71,13 +71,15 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
               results: JSON.parse(resToString, 0, 2).map(item => {
                 return {
                   name: item.title,
-                  value: `${server}/watch?v=${item.videoId}`
+                  value: `${server}/watch?v=${item.videoId}`,
+                  // TODO
+                  // thumbnails: item.videoThumbnails
                 }
               })
             })
           }
           catch {
-            console.log(`server '${server}' returned an invalid response.`)
+            console.log(`'${server}' returned an invalid response.`)
             server = hosts[(hosts.length - serverIndex)]
             serverIndex +=1
             console.log(`trying '${server}'`)
@@ -97,9 +99,13 @@ const searchRecursive = async (searchTerm, max = 1) => {
   let env = await getServers()
   let final = []
   let server = false
+
+  // TODO dont duplicate this
+  const bold = input => `\x1b[1m${input}\x1b[0m`
   
   for (let i = 1; i < (max + 1); i += 1) {
-    console.log(`fetching page ${i} of ${max}\nserver: ${server || 'none'}`)
+    console.log(`fetching page ${bold(i)} of ${bold(max)}`)
+    if (server) console.log(`server: ${bold(server)}`)
     const res = await searchSingle(searchTerm, env, i, server)
     if (!res.results.length) return false
     server = res.server
@@ -109,5 +115,4 @@ const searchRecursive = async (searchTerm, max = 1) => {
   return final
 }
 
-// console.log(await searchRecursive('limp bizkit nookie', 3))
 export default searchRecursive
