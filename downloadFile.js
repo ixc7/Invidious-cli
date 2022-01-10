@@ -1,11 +1,11 @@
 import { spawn, spawnSync } from 'child_process'
-import { bold, clear, mkInterface } from './util.js'
+import { bold, clear, mkInterface, mkTemp } from './util.js'
 import playFile from './playFile.js'
 
 // download audio
 const downloadFile = (selection, file, url, format = 'm4a', fileDownloader = 'yt-dlp', filePlayer = 'mpv') => {
   clear(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(fileDownloader)}\npress ${bold('q')} to cancel\n`)
-  const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
+  const directory = mkTemp()
   const filePath = `${directory}/${file}.${format}` 
 
   const downloader = spawn(

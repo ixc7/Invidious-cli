@@ -72,8 +72,8 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
                 return {
                   name: item.title,
                   value: `${server}/watch?v=${item.videoId}`,
-                  // TODO
-                  // thumbnails: item.videoThumbnails
+                  thumbnails: item.videoThumbnails[3].url
+                  // <server>/vi/<url>/hqdefault.jpg
                 }
               })
             })
@@ -107,7 +107,7 @@ const searchRecursive = async (searchTerm, max = 1) => {
     console.log(`fetching page ${bold(i)} of ${bold(max)}`)
     if (server) console.log(`server: ${bold(server)}`)
     const res = await searchSingle(searchTerm, env, i, server)
-    if (!res.results.length) return false
+    if (!res.results.length) return final
     server = res.server
     final = final.concat(res.results)
   }

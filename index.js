@@ -4,14 +4,11 @@ import { rmSync } from 'fs'
 import { Fzf } from 'fzf'
 import { bold, clear, mkInterface } from './util.js'
 import downloadFile from './downloadFile.js'
-// import playFile from './playFile.js'
 import search from './search.js'
 
-const VIDEO_DOWNLOADER = 'yt-dlp'
-const VIDEO_PLAYER = 'mpv'
-const MAX_PAGES = 5
+const maxPages = 5
 
-const userInput = process.argv.slice(2).join(' ') || await new Promise((resolve, reject) => {
+const searchTerm = process.argv.slice(2).join(' ') || await new Promise((resolve, reject) => {
   const rl = mkInterface({ prompt: 'search: ' }) 
   rl.on('line', line => {
     if (line.split('').filter(i => i !== ' ').length > 0) {
@@ -23,16 +20,13 @@ const userInput = process.argv.slice(2).join(' ') || await new Promise((resolve,
   rl.prompt()
 })
 
-console.log(`searching for ${bold(userInput)}`)
-const results = await search(userInput, MAX_PAGES)
+console.log(`searching for ${bold(searchTerm)}`)
+const results = await search(searchTerm, maxPages)
 
 if (!results.length) {
   console.log('no results')
   process.exit(0)
 }
-
-const rl = mkInterface()
-const fzf = new Fzf(results, { selector: item => item.name })
 
 let input = ''
 let position = 0
@@ -40,59 +34,14 @@ let render = false
 let selection = false
 let matches = results.map(item => item.name)
 
-/*
-// download audio
-const downloadFile = (selection, file, url, application = 'yt-dlp', format = 'm4a') => {
-  clear(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
-  const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
-  const filePath = `${directory}/${file}.${format}` 
+const rl = mkInterface()
+const fzf = new Fzf(results, { selector: item => item.name })
 
-  const downloader = spawn(
-    application,
-    [
-      `--format=${format}`,
-      '--quiet',
-      '--progress',
-      `--output=${filePath}`,
-      url
-    ],
-    {
-      stdio: ['pipe', process.stdout, process.stderr]
-    }
-  )
 
-  const rl = mkInterface()
-
-  rl.input.on('keypress', (char, props) => {
-    if (char === 'q')  {
-      rl.close()
-      process.stdin.removeAllListeners('keypress')
-      downloader.kill()
-      rmSync(`${filePath}.part`, { force: true })
-      console.log('\ndownload cancelled\n')
-      process.exit(0)
-    }
-  })  
-
-  downloader.on('exit', code => {
-    if (code !== 0) {
-      console.log(`error downloading file: got exit code ${bold(code)}\n`)
-      process.exit(0)
-    } else {
-      rl.close()
-      process.stdin.removeAllListeners('keypress')
-      playFile(filePath, VIDEO_PLAYER)
-    }
-  })
-}
-*/
-
-// TODO make this nice.
 const uglyKeypressFunction = (char, props) => {
 
-  //
   // handle keys
-  //
+
   if (props.name === 'backspace') {
     render = true
     input = input.substring(0, input.length - 1)
@@ -120,7 +69,6 @@ const uglyKeypressFunction = (char, props) => {
     selection = matches[position]
   }
   
-  // TODO just have the first one selected by default.
   else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
     selection = matches[0]
     cursorTo(process.stdout, 0, process.stdout.rows - 4)
@@ -132,9 +80,9 @@ const uglyKeypressFunction = (char, props) => {
     input = input.concat(char)
   }
 
-  //
-  // handle renders
-  //
+  // handle display
+
+  // TODO images
   if (render) {
     render = false   
     matches = fzf.find(input).map(obj => obj.item.name)
@@ -162,12 +110,13 @@ const uglyKeypressFunction = (char, props) => {
   }
 }
 
-// renders the initial results.
+
+// render the initial results
+// TODO just have the first one selected by default.
 const initialDisplay = results
   .slice(0, process.stdout.rows - 7)
   .map(item => item.name)
   .join('\n')
-
 clear(`\n${initialDisplay}`)
 
 rl.input.on('keypress', uglyKeypressFunction)
