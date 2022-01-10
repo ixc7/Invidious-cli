@@ -1,21 +1,22 @@
-import { spawn } from 'child_process'
+import { spawn, spawnSync } from 'child_process'
 
 const mktemp = async () => {
   return new Promise ((resolve, reject) => {
-    const cmd = spawn(
-      'mktemp',
-      ['-d']
-      // ['--suffix=.mp3'],
-    )
-
     let res = ''
+    const cmd = spawn('mktemp', ['-d'])
+
     cmd.stdout.on('data', d => res += d.toString('utf8'))
 
     cmd.on('exit', code => {
-      if (code === 0) resolve(res)
+      if (code === 0) resolve(res.split('\n').join(''))
       reject(false)
     })
   })
 }
 
-export default mktemp
+const mktempSync = () => {
+  const cmd = spawnSync('mktemp', ['-d'])
+  return cmd.stdout.toString('utf8').split('\n').join('')
+}
+
+export { mktemp, mktempSync }

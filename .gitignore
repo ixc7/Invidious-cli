@@ -1,6 +1,4 @@
 node_modules/
-*.cast
-*.md
 package-lock.json
-results.json
-etc.js
+notes.md
+temp.js

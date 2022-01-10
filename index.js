@@ -3,7 +3,7 @@ import { rmSync } from 'fs'
 import { spawn } from 'child_process'
 import { Fzf } from 'fzf'
 import searchRecursive from './search.js'
-import mktemp from './mktemp.js'
+import { mktempSync } from './mktemp.js'
 
 if (!process.argv[2]) {
   console.log('please enter a search term')
@@ -46,14 +46,14 @@ console.log(
   .join('\n')
 )
 
-// expects full path (mktemp + ... .mp3) from downloadFile
-const playFile = (file, application) => {
-  console.log(`\n\nopening file with \x1b[1m${application}\x1b[0m\npress q to quit\n`)
-
+const playFile = (filePath, application) => {
+  console.log(`playing file with \x1b[1m${application}\x1b[0m\npress q to quit\n`)
+  console.log(filePath)
+  console.log(`${filePath}`)
   const player = spawn(
     application,
     [
-      file,
+      filePath,
       '--audio-pitch-correction=no',
       '--loop'
     ],
@@ -66,26 +66,26 @@ const playFile = (file, application) => {
 
   process.stdin.on('keypress', (char, props) => {
     if (char === 'q')  {
-      rmSync(file, { force: true })
+      rmSync(filePath, { force: true })
       process.exit(0)
     }
   })
 
   player.on('exit', code => {
     if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
-    rmSync(file, { force: true })
+    rmSync(filePath, { force: true })
     process.exit(0)
   })
 }
 
-const downloadFile = async (selection, fileName, videoUrl, videoDownloader) => {
+const downloadFile = (selection, fileName, videoUrl, videoDownloader) => {
   console.clear()
   console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1m${videoDownloader}\x1b[0m\npress q to cancel\n`)
 
   // TODO new Promise?
-  const directory = await mktemp()
+  const directory = mktempSync()
   const format = 'm4a'
-  const fullpath = `${directory}/${fileName}.${format}` 
+  const filePath = `${directory}/${fileName}.${format}` 
 
   // TODO external?
   const quitListener = createInterface({
@@ -98,7 +98,7 @@ const downloadFile = async (selection, fileName, videoUrl, videoDownloader) => {
     if (char === 'q')  {
       quitListener.close()
       process.stdin.removeAllListeners('keypress')
-      rmSync(`${fullpath}.part`, { force: true })
+      rmSync(`${filePath}.part`, { force: true })
       console.log('\ndownload cancelled\n')
       process.exit(0)
     }
@@ -110,7 +110,7 @@ const downloadFile = async (selection, fileName, videoUrl, videoDownloader) => {
       `--format=${format}`,
       '--quiet',
       '--progress',
-      `--output=${fullpath}`,
+      `--output=${filePath}`,
       videoUrl
     ],
     {
@@ -122,14 +122,14 @@ const downloadFile = async (selection, fileName, videoUrl, videoDownloader) => {
     if (code !== 0) {
       console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
       process.exit(0)
-    } else {
-      quitListener.close()
-      process.stdin.removeAllListeners('keypress')
-      playFile(fullpath, VIDEO_PLAYER)
-    }
+    } 
+    quitListener.close()
+    process.stdin.removeAllListeners('keypress')
+    playFile(filePath, VIDEO_PLAYER)
   })
 }
 
+// TODO
 const uglyKeypressFunction = (char, props) => {
   if (props.name === 'backspace') {
     newchar = true
