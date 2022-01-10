@@ -46,8 +46,8 @@ console.log(
   .join('\n')
 )
 
-// expects full path (mktemp + ... .mp3) from runDownloader
-const runVideoPlayer = (file, application) => {
+// expects full path (mktemp + ... .mp3) from downloadFile
+const playFile = (file, application) => {
   console.log(`\n\nopening file with \x1b[1m${application}\x1b[0m\npress q to quit\n`)
 
   const player = spawn(
@@ -78,18 +78,21 @@ const runVideoPlayer = (file, application) => {
   })
 }
 
-const runDownloader = async (selection, fileName, videoUrl, videoDownloader) => {
+const downloadFile = async (selection, fileName, videoUrl, videoDownloader) => {
   console.clear()
   console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1m${videoDownloader}\x1b[0m\npress q to cancel\n`)
 
+  // TODO new Promise?
   const directory = await mktemp()
-  const fullpath = `${directory}/${fileName}.mp3` 
+  const format = 'm4a'
+  const fullpath = `${directory}/${fileName}.${format}` 
 
   // TODO external?
   const quitListener = createInterface({
     input: process.stdin,
     output: process.stdout
   })
+
   // TODO external?
   process.stdin.on('keypress', (char, props) => {
     if (char === 'q')  {
@@ -99,14 +102,12 @@ const runDownloader = async (selection, fileName, videoUrl, videoDownloader) => 
       console.log('\ndownload cancelled\n')
       process.exit(0)
     }
-  })
+  })  
 
   const downloader = spawn(
     videoDownloader,
     [
-      '--extract-audio',
-      '--audio-format=mp3',
-      '--audio-quality=0',
+      `--format=${format}`,
       '--quiet',
       '--progress',
       `--output=${fullpath}`,
@@ -117,7 +118,6 @@ const runDownloader = async (selection, fileName, videoUrl, videoDownloader) => 
     }
   )
 
-
   downloader.on('exit', code => {
     if (code !== 0) {
       console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
@@ -125,12 +125,12 @@ const runDownloader = async (selection, fileName, videoUrl, videoDownloader) => 
     } else {
       quitListener.close()
       process.stdin.removeAllListeners('keypress')
-      runVideoPlayer(fullpath, VIDEO_PLAYER)
+      playFile(fullpath, VIDEO_PLAYER)
     }
   })
 }
 
-const handleKeypress = (char, props) => {
+const uglyKeypressFunction = (char, props) => {
   if (props.name === 'backspace') {
     newchar = true
     input = input.substring(0, input.length - 1)
@@ -141,7 +141,7 @@ const handleKeypress = (char, props) => {
         const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
         rl.close()
         process.stdin.removeAllListeners('keypress')
-        runDownloader(selection, fileName, videoUrl, VIDEO_DOWNLOADER)
+        downloadFile(selection, fileName, videoUrl, VIDEO_DOWNLOADER)
     }
   } 
   else if (props.name === 'down' && matches[position + 1]) {
@@ -189,4 +189,4 @@ const handleKeypress = (char, props) => {
   }
 }
 
-rl.input.on('keypress', handleKeypress)
+rl.input.on('keypress', uglyKeypressFunction)
