@@ -1,24 +1,15 @@
 import { createInterface, cursorTo } from 'readline'
-import { rmSync } from 'fs'
 import { spawn, spawnSync } from 'child_process'
+import { rmSync } from 'fs'
 import { Fzf } from 'fzf'
+import { bold, clear, mkInterface } from './util.js'
+import downloadFile from './downloadFile.js'
+// import playFile from './playFile.js'
 import search from './search.js'
 
 const VIDEO_DOWNLOADER = 'yt-dlp'
 const VIDEO_PLAYER = 'mpv'
-const FILE_FORMAT = 'm4a'
 const MAX_PAGES = 5
-
-const bold = input => `\x1b[1m${input}\x1b[0m`
-const clearBefore = input => process.stdout.write(`\x1b[0m\x1Bc\x1b[3J\x1b[?25l${input || ''}`)
-
-const mkInterface = (opts = {}) => {
-  return createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    ...opts
-  })
-}
 
 const userInput = process.argv.slice(2).join(' ') || await new Promise((resolve, reject) => {
   const rl = mkInterface({ prompt: 'search: ' }) 
@@ -40,13 +31,6 @@ if (!results.length) {
   process.exit(0)
 }
 
-// renders the initial results.
-clearBefore(results
-  .slice(0, process.stdout.rows - 5)
-  .map(item => item.name)
-  .join('\n')
-)
-
 const rl = mkInterface()
 const fzf = new Fzf(results, { selector: item => item.name })
 
@@ -56,37 +40,10 @@ let render = false
 let selection = false
 let matches = results.map(item => item.name)
 
-// open player
-const playFile = (filePath, application) => {
-  console.log(`playing file with ${bold(application)}\npress ${bold('q')} to quit\n`)
-
-  const player = spawn(
-    application,
-    [filePath, '--audio-pitch-correction=no', '--loop'],
-    { stdio: ['pipe', process.stdout, process.stderr] }
-  )
-
-  player.on('exit', code => {
-    if (code !== 0) console.log(`error opening file: got exit code ${bold(code)}\n`)
-    rmSync(filePath, { force: true })
-    process.exit(0)
-  })
-
-  process.stdin.pipe(player.stdin)
-
-  process.stdin.on('keypress', (char, props) => {
-    if (char === 'q')  {
-      player.kill()
-      rmSync(filePath, { force: true })
-      process.exit(0)
-    }
-  })
-}
-
+/*
 // download audio
-const downloadFile = (selection, file, url, application) => {
-clearBefore(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
-  const format = FILE_FORMAT
+const downloadFile = (selection, file, url, application = 'yt-dlp', format = 'm4a') => {
+  clear(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
   const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
   const filePath = `${directory}/${file}.${format}` 
 
@@ -128,12 +85,10 @@ clearBefore(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file 
     }
   })
 }
-
+*/
 
 // TODO make this nice.
 const uglyKeypressFunction = (char, props) => {
-
-
 
   //
   // handle keys
@@ -149,7 +104,7 @@ const uglyKeypressFunction = (char, props) => {
         process.stdin.removeAllListeners('keypress')
         const url = fzf.find(selection)[0].item.value
         const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
-        downloadFile(selection, fileName, url, VIDEO_DOWNLOADER)
+        downloadFile(selection, fileName, url)
     }
   }
 
@@ -177,39 +132,42 @@ const uglyKeypressFunction = (char, props) => {
     input = input.concat(char)
   }
 
-
-  
   //
   // handle renders
   //
   if (render) {
     render = false   
     matches = fzf.find(input).map(obj => obj.item.name)
-    clearBefore()
+    clear()
     
     if (position >= matches.length) {
       position = 0
       selection = matches[0] || false
     }
-    
+
     if (matches[0]) {
       const display = matches
-      .slice(position)
-      .slice(0, process.stdout.rows - 7)
-      .map(item => {
-        if (item === selection) return bold(item)
-        return item
-      })
-      .join('\n')
-      // console.log(display)
+        .slice(position)
+        .slice(0, process.stdout.rows - 7)
+        .map(item => {
+          if (item === selection) return bold(item)
+          return item
+        })
+        .join('\n')
       console.log(`\n${display}`)
     } 
 
     cursorTo(process.stdout, 0, process.stdout.rows - 4)
-    process.stdout.write(`selection: ${selection ? (position + 1) + ': ' : ''} ${selection || 'none'}\ninput: ${input}`)
+    process.stdout.write(`selection: ${selection ? (position + 1) + ' -' : ''} ${selection || 'none'}\ninput: ${input}`)
   }
-
-  
 }
+
+// renders the initial results.
+const initialDisplay = results
+  .slice(0, process.stdout.rows - 7)
+  .map(item => item.name)
+  .join('\n')
+
+clear(`\n${initialDisplay}`)
 
 rl.input.on('keypress', uglyKeypressFunction)
