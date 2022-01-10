@@ -60,7 +60,6 @@ console.log(
 )
 
 const playFile = (filePath, application) => {
-  // console.log(`playing file with \x1b[1m${application}\x1b[0m\npress q to quit\n`)
   console.log(`playing file with ${bold(application)}\npress ${bold('q')} to quit\n`)
 
   const player = spawn(
@@ -79,13 +78,13 @@ const playFile = (filePath, application) => {
 
   process.stdin.on('keypress', (char, props) => {
     if (char === 'q')  {
+      player.kill()
       rmSync(filePath, { force: true })
       process.exit(0)
     }
   })
 
   player.on('exit', code => {
-    // if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
     if (code !== 0) console.log(`error opening file: got exit code ${bold(code)}\n`)
     rmSync(filePath, { force: true })
     process.exit(0)
