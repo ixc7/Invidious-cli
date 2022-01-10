@@ -9,28 +9,25 @@ const VIDEO_PLAYER = 'mpv'
 const FILE_FORMAT = 'm4a'
 const MAX_PAGES = 3
 
-let userInput = false
-
-const getUserInput = () => {
-  return new Promise((resolve, reject) => {
-    const rl = createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      prompt: 'search: '
-    })
-    rl.on('line', x => {
-      if (x.split('').filter(i => i !== ' ').length > 0) resolve(x)
-      rl.prompt()
-    })
-    rl.prompt()
+const mkInterface = (opts = {}) => {
+  return createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    ...opts
   })
 }
 
-if (process.argv[2]) {
-  userInput = process.argv.slice(2).join(' ')
-} else {
-  userInput = await getUserInput()
-}
+const userInput = process.argv.slice(2).join(' ') || await new Promise((resolve, reject) => {
+  const rl = mkInterface({prompt: 'search: '}) 
+  rl.on('line', line => {
+    if (line.split('').filter(i => i !== ' ').length > 0) {
+      rl.close()
+      resolve(line)
+    }
+    rl.prompt()
+  })
+  rl.prompt()
+})
 
 console.log(`searching for ${userInput}`)
 const results = await search(userInput, MAX_PAGES)
@@ -40,10 +37,7 @@ if (!results.length) {
   process.exit(0)
 }
 
-const rl = createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
+const rl = mkInterface()
 
 const fzf = new Fzf(results, {
   selector: item => item.name
@@ -51,7 +45,7 @@ const fzf = new Fzf(results, {
 
 let input = ''
 let position = 0
-let newchar = false
+let render = false
 let selection = false
 let matches = results.map(item => item.name)
 
@@ -94,22 +88,22 @@ const playFile = (filePath, application) => {
   })
 }
 
-const downloadFile = (selection, fileName, videoUrl, videoDownloader) => {
+const downloadFile = (selection, file, url, application) => {
   console.clear()
-  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1m${videoDownloader}\x1b[0m\npress q to cancel\n`)
+  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${url}\x1b[0m\n\ndownloading file with \x1b[1m${application}\x1b[0m\npress q to cancel\n`)
 
   const format = FILE_FORMAT
   const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
-  const filePath = `${directory}/${fileName}.${format}` 
+  const filePath = `${directory}/${file}.${format}` 
 
   const downloader = spawn(
-    videoDownloader,
+    application,
     [
       `--format=${format}`,
       '--quiet',
       '--progress',
       `--output=${filePath}`,
-      videoUrl
+      url
     ],
     {
       stdio: ['pipe', process.stdout, process.stderr]
@@ -117,15 +111,16 @@ const downloadFile = (selection, fileName, videoUrl, videoDownloader) => {
   )
 
   // TODO external? 1
-  const quitListener = createInterface({
-    input: process.stdin,
-    output: process.stdout
-  })
+  // const rl = createInterface({
+    // input: process.stdin,
+    // output: process.stdout
+  // })
+  const rl = mkInterface()
 
   // TODO external? 2
-  process.stdin.on('keypress', (char, props) => {
+  rl.input.on('keypress', (char, props) => {
     if (char === 'q')  {
-      quitListener.close()
+      rl.close()
       process.stdin.removeAllListeners('keypress')
       downloader.kill()
       rmSync(`${filePath}.part`, { force: true })
@@ -139,7 +134,7 @@ const downloadFile = (selection, fileName, videoUrl, videoDownloader) => {
       console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
       process.exit(0)
     } else {
-      quitListener.close()
+      rl.close()
       process.stdin.removeAllListeners('keypress')
       playFile(filePath, VIDEO_PLAYER)
     }
@@ -150,41 +145,40 @@ const downloadFile = (selection, fileName, videoUrl, videoDownloader) => {
 // TODO
 const uglyKeypressFunction = (char, props) => {
   if (props.name === 'backspace') {
-    newchar = true
+    render = true
     input = input.substring(0, input.length - 1)
   }
   else if (props.name === 'return') {
     if (selection) {
-        const videoUrl = fzf.find(selection)[0].item.value
+        const url = fzf.find(selection)[0].item.value
         const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
         rl.close()
         process.stdin.removeAllListeners('keypress')
-        downloadFile(selection, fileName, videoUrl, VIDEO_DOWNLOADER)
+        downloadFile(selection, fileName, url, VIDEO_DOWNLOADER)
     }
   } 
   else if (props.name === 'down' && matches[position + 1]) {
-    newchar = true
+    render = true
     position += 1
     selection = matches[position]
   }
   else if (props.name === 'up' && matches[position - 1]) {
-    newchar = true
+    render = true
     position -= 1
     selection = matches[position]
   }
   else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
     selection = matches[0]
-    // cursorTo(process.stdout, 0, process.stdout.rows - 4)
-    cursorTo(process.stdin, 0, process.stdout.rows - 4)
+    cursorTo(process.stdout, 0, process.stdout.rows - 4)
     console.log(`selection: ${selection || none}\ninput: ${input || none}`)
   }
   else if (char && !props.sequence.includes('\x1b')) {
-    newchar = true
+    render = true
     input = input.concat(char)
   }
 
-  if (newchar) {
-    newchar = false   
+  if (render) {
+    render = false   
     matches = fzf.find(input).map(obj => obj.item.name)
     console.clear()
 
@@ -203,8 +197,7 @@ const uglyKeypressFunction = (char, props) => {
       .join('\n')
     )
 
-    cursorTo(process.stdin, 0, process.stdout.rows - 4)
-    // cursorTo(process.stdout, 0, process.stdout.rows - 4)
+    cursorTo(process.stdout, 0, process.stdout.rows - 4)
     process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
   }
 }

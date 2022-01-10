@@ -3,3 +3,4 @@ package-lock.json
 notes.md
 temp.js
 *.webm*
+.DS_Store
