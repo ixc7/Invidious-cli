@@ -9,6 +9,8 @@ const VIDEO_PLAYER = 'mpv'
 const FILE_FORMAT = 'm4a'
 const MAX_PAGES = 3
 
+const bold = input => `\x1b[1m${input}\x1b[0m`
+
 const mkInterface = (opts = {}) => {
   return createInterface({
     input: process.stdin,
@@ -29,7 +31,7 @@ const userInput = process.argv.slice(2).join(' ') || await new Promise((resolve,
   rl.prompt()
 })
 
-console.log(`searching for ${userInput}`)
+console.log(`searching for ${bold(userInput)}`)
 const results = await search(userInput, MAX_PAGES)
 
 if (!results.length) {
@@ -58,7 +60,8 @@ console.log(
 )
 
 const playFile = (filePath, application) => {
-  console.log(`playing file with \x1b[1m${application}\x1b[0m\npress q to quit\n`)
+  // console.log(`playing file with \x1b[1m${application}\x1b[0m\npress q to quit\n`)
+  console.log(`playing file with ${bold(application)}\npress ${bold('q')} to quit\n`)
 
   const player = spawn(
     application,
@@ -82,7 +85,8 @@ const playFile = (filePath, application) => {
   })
 
   player.on('exit', code => {
-    if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
+    // if (code !== 0) console.log(`\x1b[1merror opening file: got exit code ${code}\x1b[0m\n`)
+    if (code !== 0) console.log(`error opening file: got exit code ${bold(code)}\n`)
     rmSync(filePath, { force: true })
     process.exit(0)
   })
@@ -90,7 +94,7 @@ const playFile = (filePath, application) => {
 
 const downloadFile = (selection, file, url, application) => {
   console.clear()
-  console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${url}\x1b[0m\n\ndownloading file with \x1b[1m${application}\x1b[0m\npress q to cancel\n`)
+  console.log(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
 
   const format = FILE_FORMAT
   const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
@@ -110,14 +114,8 @@ const downloadFile = (selection, file, url, application) => {
     }
   )
 
-  // TODO external? 1
-  // const rl = createInterface({
-    // input: process.stdin,
-    // output: process.stdout
-  // })
   const rl = mkInterface()
 
-  // TODO external? 2
   rl.input.on('keypress', (char, props) => {
     if (char === 'q')  {
       rl.close()
@@ -131,7 +129,7 @@ const downloadFile = (selection, file, url, application) => {
 
   downloader.on('exit', code => {
     if (code !== 0) {
-      console.log(`\x1b[1merror downloading file: got exit code ${code}\x1b[0m\n`)
+      console.log(`error downloading file: got exit code ${bold(code)}\n`)
       process.exit(0)
     } else {
       rl.close()
@@ -191,7 +189,7 @@ const uglyKeypressFunction = (char, props) => {
       matches
       .slice(0, process.stdout.rows - 5)
       .map(item => {
-        if (item === selection) return `\x1b[1m${item}\x1b[0m`
+        if (item === selection) return bold(item)
         return item
       })
       .join('\n')
