@@ -7,7 +7,8 @@ import search from './search.js'
 const VIDEO_DOWNLOADER = 'yt-dlp'
 const VIDEO_PLAYER = 'mpv'
 const FILE_FORMAT = 'm4a'
-const MAX_PAGES = 3
+const MAX_PAGES = 2
+const clear = '\x1b[?25h\x1b[0m\x1Bc\x1b[3J'
 
 const bold = input => `\x1b[1m${input}\x1b[0m`
 
@@ -20,7 +21,7 @@ const mkInterface = (opts = {}) => {
 }
 
 const userInput = process.argv.slice(2).join(' ') || await new Promise((resolve, reject) => {
-  const rl = mkInterface({prompt: 'search: '}) 
+  const rl = mkInterface({ prompt: 'search: ' }) 
   rl.on('line', line => {
     if (line.split('').filter(i => i !== ' ').length > 0) {
       rl.close()
@@ -39,19 +40,8 @@ if (!results.length) {
   process.exit(0)
 }
 
-const rl = mkInterface()
-
-const fzf = new Fzf(results, {
-  selector: item => item.name
-})
-
-let input = ''
-let position = 0
-let render = false
-let selection = false
-let matches = results.map(item => item.name)
-
-console.clear()
+// console.clear()
+process.stdout.write(clear)
 console.log(
   results
   .slice(0, process.stdout.rows - 5)
@@ -59,20 +49,29 @@ console.log(
   .join('\n')
 )
 
+const rl = mkInterface()
+const fzf = new Fzf(results, { selector: item => item.name })
+
+let input = ''
+let position = 0
+let render = false
+let selection = false
+let matches = results.map(item => item.name)
+
 const playFile = (filePath, application) => {
   console.log(`playing file with ${bold(application)}\npress ${bold('q')} to quit\n`)
 
   const player = spawn(
     application,
-    [
-      filePath,
-      '--audio-pitch-correction=no',
-      '--loop'
-    ],
-    {
-      stdio: ['pipe', process.stdout, process.stderr]
-    }
+    [filePath, '--audio-pitch-correction=no', '--loop'],
+    { stdio: ['pipe', process.stdout, process.stderr] }
   )
+
+  player.on('exit', code => {
+    if (code !== 0) console.log(`error opening file: got exit code ${bold(code)}\n`)
+    rmSync(filePath, { force: true })
+    process.exit(0)
+  })
 
   process.stdin.pipe(player.stdin)
 
@@ -83,17 +82,11 @@ const playFile = (filePath, application) => {
       process.exit(0)
     }
   })
-
-  player.on('exit', code => {
-    if (code !== 0) console.log(`error opening file: got exit code ${bold(code)}\n`)
-    rmSync(filePath, { force: true })
-    process.exit(0)
-  })
 }
 
 const downloadFile = (selection, file, url, application) => {
-  console.clear()
-  console.log(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
+  // console.clear()
+  console.log(`${clear}\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
 
   const format = FILE_FORMAT
   const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
@@ -136,10 +129,9 @@ const downloadFile = (selection, file, url, application) => {
       playFile(filePath, VIDEO_PLAYER)
     }
   })
-  
 }
 
-// TODO
+// TODO fix this
 const uglyKeypressFunction = (char, props) => {
   if (props.name === 'backspace') {
     render = true
@@ -153,7 +145,7 @@ const uglyKeypressFunction = (char, props) => {
         process.stdin.removeAllListeners('keypress')
         downloadFile(selection, fileName, url, VIDEO_DOWNLOADER)
     }
-  } 
+  }
   else if (props.name === 'down' && matches[position + 1]) {
     render = true
     position += 1
@@ -177,7 +169,8 @@ const uglyKeypressFunction = (char, props) => {
   if (render) {
     render = false   
     matches = fzf.find(input).map(obj => obj.item.name)
-    console.clear()
+    // console.clear()
+    process.stdout.write(clear)
 
     if (position >= matches.length) {
       position = 0
@@ -188,6 +181,7 @@ const uglyKeypressFunction = (char, props) => {
       matches
       .slice(0, process.stdout.rows - 5)
       .map(item => {
+        // TODO fix this
         if (item === selection) return bold(item)
         return item
       })
