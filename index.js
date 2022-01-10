@@ -8,8 +8,8 @@ const VIDEO_DOWNLOADER = 'yt-dlp'
 const VIDEO_PLAYER = 'mpv'
 const FILE_FORMAT = 'm4a'
 const MAX_PAGES = 2
-const clear = '\x1b[?25h\x1b[0m\x1Bc\x1b[3J'
 
+const clear = () => process.stdout.write('\x1b[?25h\x1b[0m\x1Bc\x1b[3J')
 const bold = input => `\x1b[1m${input}\x1b[0m`
 
 const mkInterface = (opts = {}) => {
@@ -40,8 +40,7 @@ if (!results.length) {
   process.exit(0)
 }
 
-// console.clear()
-process.stdout.write(clear)
+clear()
 console.log(
   results
   .slice(0, process.stdout.rows - 5)
@@ -85,8 +84,8 @@ const playFile = (filePath, application) => {
 }
 
 const downloadFile = (selection, file, url, application) => {
-  // console.clear()
-  console.log(`${clear}\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
+  clear()
+  console.log(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
 
   const format = FILE_FORMAT
   const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
@@ -169,9 +168,8 @@ const uglyKeypressFunction = (char, props) => {
   if (render) {
     render = false   
     matches = fzf.find(input).map(obj => obj.item.name)
-    // console.clear()
-    process.stdout.write(clear)
-
+    clear()
+    
     if (position >= matches.length) {
       position = 0
       selection = matches[0] || false
