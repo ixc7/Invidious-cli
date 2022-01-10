@@ -1,6 +1,6 @@
 import { createInterface, cursorTo } from 'readline'
 import { rmSync } from 'fs'
-import { spawn } from 'child_process'
+import { spawn, spawnSync } from 'child_process'
 import { Fzf } from 'fzf'
 import searchRecursive from './search.js'
 import { mktempSync } from './mktemp.js'
@@ -83,7 +83,8 @@ const downloadFile = (selection, fileName, videoUrl, videoDownloader) => {
   console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1m${videoDownloader}\x1b[0m\npress q to cancel\n`)
 
   // TODO new Promise?
-  const directory = mktempSync()
+  // const directory = mktempSync()
+  const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
   const format = 'm4a'
   const filePath = `${directory}/${fileName}.${format}` 
 
