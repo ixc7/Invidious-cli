@@ -2,22 +2,40 @@ import { createInterface, cursorTo } from 'readline'
 import { rmSync } from 'fs'
 import { spawn, spawnSync } from 'child_process'
 import { Fzf } from 'fzf'
-import searchRecursive from './search.js'
+import search from './search.js'
 
-if (!process.argv[2]) {
-  console.log('please enter a search term')
-  process.exit(0)
-}
-
-const searchTerm = process.argv.slice(2).join(' ')
 const VIDEO_DOWNLOADER = 'yt-dlp'
 const VIDEO_PLAYER = 'mpv'
+const FILE_FORMAT = 'm4a'
 const MAX_PAGES = 3
 
-console.log(`searching for ${searchTerm}`)
-const searchResults = await searchRecursive(searchTerm, MAX_PAGES)
+let userInput = false
 
-if (!searchResults.length) {
+const getUserInput = () => {
+  return new Promise((resolve, reject) => {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      prompt: 'search: '
+    })
+    rl.on('line', x => {
+      if (x.split('').filter(i => i !== ' ').length > 0) resolve(x)
+      rl.prompt()
+    })
+    rl.prompt()
+  })
+}
+
+if (process.argv[2]) {
+  userInput = process.argv.slice(2).join(' ')
+} else {
+  userInput = await getUserInput()
+}
+
+console.log(`searching for ${userInput}`)
+const results = await search(userInput, MAX_PAGES)
+
+if (!results.length) {
   console.log('no results')
   process.exit(0)
 }
@@ -27,7 +45,7 @@ const rl = createInterface({
   output: process.stdout
 })
 
-const fzf = new Fzf(searchResults, {
+const fzf = new Fzf(results, {
   selector: item => item.name
 })
 
@@ -35,11 +53,11 @@ let input = ''
 let position = 0
 let newchar = false
 let selection = false
-let matches = searchResults.map(item => item.name)
+let matches = results.map(item => item.name)
 
 console.clear()
 console.log(
-  searchResults
+  results
   .slice(0, process.stdout.rows - 5)
   .map(item => item.name)
   .join('\n')
@@ -47,6 +65,7 @@ console.log(
 
 const playFile = (filePath, application) => {
   console.log(`playing file with \x1b[1m${application}\x1b[0m\npress q to quit\n`)
+
   const player = spawn(
     application,
     [
@@ -79,12 +98,9 @@ const downloadFile = (selection, fileName, videoUrl, videoDownloader) => {
   console.clear()
   console.log(`\nvideo: \x1b[1m${selection}\x1b[0m\nurl: \x1b[1m${videoUrl}\x1b[0m\n\ndownloading file with \x1b[1m${videoDownloader}\x1b[0m\npress q to cancel\n`)
 
-  // TODO new Promise?
-  // const directory = mktempSync()
+  const format = FILE_FORMAT
   const directory = spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
-  const format = 'm4a'
   const filePath = `${directory}/${fileName}.${format}` 
-
 
   const downloader = spawn(
     videoDownloader,
@@ -158,7 +174,8 @@ const uglyKeypressFunction = (char, props) => {
   }
   else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
     selection = matches[0]
-    cursorTo(process.stdout, 0, process.stdout.rows - 4)
+    // cursorTo(process.stdout, 0, process.stdout.rows - 4)
+    cursorTo(process.stdin, 0, process.stdout.rows - 4)
     console.log(`selection: ${selection || none}\ninput: ${input || none}`)
   }
   else if (char && !props.sequence.includes('\x1b')) {
@@ -186,7 +203,8 @@ const uglyKeypressFunction = (char, props) => {
       .join('\n')
     )
 
-    cursorTo(process.stdout, 0, process.stdout.rows - 4)
+    cursorTo(process.stdin, 0, process.stdout.rows - 4)
+    // cursorTo(process.stdout, 0, process.stdout.rows - 4)
     process.stdout.write(`selection: ${selection || 'none'}\ninput: ${input}`)
   }
 }
