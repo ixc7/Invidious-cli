@@ -7,6 +7,11 @@ const getServers = () => {
   return new Promise(resolve => {
     const req = https.request('https://api.invidious.io/instances.json')
 
+    req.on('error', e => {
+      console.log(`  + error fetching servers (${e}).`)
+      process.exit(0)
+    })
+
     req.on('response', res => {
       let str = ''
       res.on('data', d => str += d.toString('utf8'))
@@ -42,6 +47,20 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
 
     const req = https.request(query.href)
     req.setHeader('Accept', 'application/json')
+
+    // TODO dont duplicate this
+    req.on('error', async (e) => {
+      console.log(`  + '${server}' cannot be reached (${e}).`)
+      server = hosts[(hosts.length - serverIndex)]
+      serverIndex +=1
+      if (serverIndex < serverCount) {
+        console.log(`  + trying '${server}'`)
+        resolve(await searchSingle(searchTerm, env, page, server, serverIndex))
+      } else {
+        console.log(bold('no servers available.'))
+        process.exit(0)
+      }
+    })
 
     req.on('response', res => {
       let resToString  = ''
@@ -85,6 +104,14 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
     })
 
     req.end()
+
+    // catch (e) {
+      // console.log(`  + '${server}' returned a connection error (${e}).`)
+      // server = hosts[(hosts.length - serverIndex)]
+      // serverIndex +=1
+      // console.log(`  + trying '${server}'`)
+      // resolve(await searchSingle(searchTerm, env, page, server, serverIndex))
+    // }
   })
 }
 

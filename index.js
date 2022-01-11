@@ -4,31 +4,41 @@ import { bold, clear, mkInterface, mkTemp } from './util.js'
 import downloadFile from './downloadFile.js'
 import search from './search.js'
 
-// TODO consolidate this and the search function call into one function?
-const searchPrompt = ()  => {
-  return new Promise((resolve, reject) => {
-    const rl = mkInterface({ prompt: 'search: ' }) 
-    rl.on('line', line => {
-      if (line.split('').filter(i => i !== ' ').length > 0) {
-        rl.close()
-        resolve(line)
-      }
+
+const runSearch = async (input, maxPages = 5) => {
+  const searchPrompt = () => {
+    return new Promise((resolve, reject) => {
+      const rl = mkInterface({ prompt: 'search: ' }) 
+      rl.on('line', line => {
+        if (line.split('').filter(i => i !== ' ').length > 0) {
+          rl.close()
+          resolve(line)
+        }
+        rl.prompt()
+      })
       rl.prompt()
     })
-    rl.prompt()
-  })
+  }
+
+  const searchTerm = input || await searchPrompt()
+
+  console.log(`searching for ${bold(searchTerm)}`)
+  let res = await search(searchTerm, maxPages)
+
+  if (!res.length) {
+    console.log('no results')
+    input = await searchPrompt()
+    res = await runSearch(input, maxPages)
+  }
+
+  return res
 }
 
-let searchTerm = process.argv.slice(2).join(' ') || await searchPrompt()
-console.log(`searching for ${bold(searchTerm)}`)
+let userInput = process.argv.slice(2).join(' ') || false
+const initialResults = await runSearch(userInput)
 
-let maxPages = 5
-let initialResults = await search(searchTerm, maxPages)
 
-if (!initialResults.length) {
-  console.log('no results')
-  process.exit(0)
-}
+
 
 const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder) => {
   let rl = mkInterface()
@@ -90,16 +100,16 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
       render = true
       position -= 1
     }
-    else if (props.name === 'up' && matchList.length === 1 || props.name === 'down' && matchList.length === 1) {
-      selection = matchList[0]
-      cursorTo(process.stdout, 0, process.stdout.rows - 4)
-      process.stdout.write(`selection: ${position + ': ' || ''} ${selection || 'none'}\ninput: ${input}`)
-    }
     else if (char && !props.sequence.includes('\x1b')) {
       render = true
       input = input.concat(char)
     }
 
+    if (matchList.length === 1) {
+      render = true
+      position = 0
+      selection = matchList[0]
+    }
 
     // TODO thumbnails
     if (render) {
