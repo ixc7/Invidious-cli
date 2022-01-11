@@ -89,12 +89,10 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
     else if (props.name === 'down') {
       render = true
       position += 1
-      // selection = matchList[position] || false
     }
     else if (props.name === 'up') {
       render = true
       position -= 1
-      // selection = matchList[position] || false
     }
     else if (char && !props.sequence.includes('\x1b')) {
       render = true
@@ -124,7 +122,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
       }
 
       else {
-        selection = matchList[position] || false
+        selection = matchingItems[position] || false
       } 
 
       if (matchingItems[0]) {
