@@ -91,15 +91,19 @@ const uglyKeypressFunction = (char, props) => {
     }
 
     if (matches[0]) {
-      const display = matches
+      const display = matches        
+        // TODO IMPORTANT this produces duplicate bold texts! FIX this
+        .map((item, index) => {
+          // if (item.includes(selection) && matches.indexOf(item) === position) return bold(item)
+          // if (matches.indexOf(item) === position) {
+          if (index === position) {
+            return bold(item) 
+          } else {
+            return item
+          }
+        })
         .slice(position)
         .slice(0, process.stdout.rows - 30)
-        
-        // TODO IMPORTANT this produces duplicate matches! FIX this
-        .map(item => {
-          if (item === selection) return bold(item)
-          return item
-        })
         .join('\n')
         
       // so the thumbnail is gonna be 22-23 high

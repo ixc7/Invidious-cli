@@ -69,6 +69,7 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
                   value: `${server}/watch?v=${item.videoId}`,
                   thumbnails: item.videoThumbnails[3].url
                   // <server>/vi/<url>/hqdefault.jpg
+                  // TODO video id? for downloading/finding thumbnails
                 }
               })
             })
