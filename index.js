@@ -4,7 +4,6 @@ import { bold, clear, mkInterface, mkTemp } from './util.js'
 import downloadFile from './downloadFile.js'
 import search from './search.js'
 
-
 // TODO consolidate this and the search function call into one function?
 const searchPrompt = ()  => {
   return new Promise((resolve, reject) => {
@@ -31,14 +30,14 @@ if (!initialResults.length) {
   process.exit(0)
 }
 
-const makeKeypressFunction = async (matchList, searchList, destinationFolder) => {
+const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder) => {
   let rl = mkInterface()
-  let fzf = new Fzf(searchList, { selector: item => item.name })
+  let fzf = new Fzf(searchResultsList, { selector: item => item.name })
   let input = ''
   let render = false
-  let selection = false
   let position = 0
-
+  let selection = matchList[0]
+  
   const uglyKeypressFunction = async (char, props) => {
 
     // handle keys
@@ -73,12 +72,12 @@ const makeKeypressFunction = async (matchList, searchList, destinationFolder) =>
           clear()
           cursorTo(process.stdout, 0, 23)
           console.log(
-            newMatchList
+            newSearchResults
               .slice(0, process.stdout.rows - 30)
               .map(item => item.name)
               .join('\n')
           )
-          
+        
           const newRl = mkInterface()
           const newKeypressHandler = await makeKeypressFunction(newMatchList, newSearchResults, destinationFolder)
           newRl.input.on('keypress', newKeypressHandler)
@@ -86,18 +85,16 @@ const makeKeypressFunction = async (matchList, searchList, destinationFolder) =>
       }
     }
 
-    // else if (props.name === 'down' && matchList[position + 1]) {
     else if (props.name === 'down') {
       render = true
       position += 1
-      selection = matchList[position]
+      // selection = matchList[position]
     }
 
-    // else if (props.name === 'up' && matchList[position - 1]) {
     else if (props.name === 'up') {
       render = true
       position -= 1
-      selection = matchList[position]
+      // selection = matchList[position]
     }
     
     else if (props.name === 'up' && matchList.length === 1 || props.name === 'down' && matchList.length === 1) {
@@ -150,8 +147,22 @@ const makeKeypressFunction = async (matchList, searchList, destinationFolder) =>
     }
   }
 
+  // clear()
+  // cursorTo(process.stdout, 0, 23)
+  // console.log(matchList.slice(0, process.stdout.rows - 30).map(item => item.name).join('\n'))
+  // console.log(matchList)
+  // console.log('aaaaahahahahaha fuck youuuuu')
+  
+          clear()
+          cursorTo(process.stdout, 0, 23)
+          console.log(
+            searchResultsList
+              .slice(0, process.stdout.rows - 30)
+              .map(item => item.name)
+              .join('\n')
+          )
+  
   return uglyKeypressFunction
-
 }
 
 const folder = mkTemp()
@@ -160,6 +171,7 @@ const initialMatches = initialResults.map(item => item.name)
 
 // render the initial results
 // TODO just have the first one selected by default.
+/*
 clear()
 cursorTo(process.stdout, 0, 23)
 console.log(
@@ -167,7 +179,7 @@ console.log(
     .slice(0, process.stdout.rows - 30)
     .map(item => item.name)
     .join('\n')
-)
+)*/
 
 
 let initialKeypressHandler = await makeKeypressFunction(initialMatches, initialResults, folder)
