@@ -4,21 +4,25 @@ import { bold, clear, mkInterface, mkTemp } from './util.js'
 import downloadFile from './downloadFile.js'
 import search from './search.js'
 
-const searchTerm = process.argv.slice(2).join(' ') || await new Promise((resolve, reject) => {
-  const rl = mkInterface({ prompt: 'search: ' }) 
-  rl.on('line', line => {
-    if (line.split('').filter(i => i !== ' ').length > 0) {
-      rl.close()
-      resolve(line)
-    }
+const searchPrompt = ()  => {
+  return new Promise((resolve, reject) => {
+    const rl = mkInterface({ prompt: 'search: ' }) 
+    rl.on('line', line => {
+      if (line.split('').filter(i => i !== ' ').length > 0) {
+        rl.close()
+        resolve(line)
+      }
+      rl.prompt()
+    })
     rl.prompt()
   })
-  rl.prompt()
-})
+}
+
+let searchTerm = process.argv.slice(2).join(' ') || await searchPrompt()
 
 console.log(`searching for ${bold(searchTerm)}`)
 const maxPages = 5
-const results = await search(searchTerm, maxPages)
+let results = await search(searchTerm, maxPages)
 
 if (!results.length) {
   console.log('no results')
@@ -31,11 +35,15 @@ let render = false
 let selection = false
 let matches = results.map(item => item.name)
 
-const rl = mkInterface()
+let rl = mkInterface()
 const fzf = new Fzf(results, { selector: item => item.name })
 const tempDir = mkTemp()
 
-const uglyKeypressFunction = (char, props) => {
+
+// TODO MAKE THIS SO YOU CAN REINITIALIZE IT WITH NEW DATA EVERY TIME.
+const uglyKeypressFunction = async (char, props) => {
+
+  let newDisplayData = false
 
   // handle keys
 
@@ -50,7 +58,31 @@ const uglyKeypressFunction = (char, props) => {
       process.stdin.removeAllListeners('keypress')
       const url = fzf.find(selection)[0].item.value
       const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
-      downloadFile(selection, fileName, url, tempDir)
+
+      try {
+        await downloadFile(selection, fileName, url, tempDir)
+        // process.exit(0)
+      } catch {
+        rl.close()
+        process.stdin.removeAllListeners('keypress')
+        let newSearchTerm = await searchPrompt()
+        const newSearchResults = await search(newSearchTerm, maxPages)
+        
+        // const reloadedDisplay = newSearchResults
+        newDisplayData = newSearchResults
+          .slice(0, process.stdout.rows - 30)
+          .map(item => item.name)
+          .join('\n')
+        
+        // clear(`\n${initialDisplay}`)
+        clear()
+        cursorTo(process.stdout, 0, 23)
+        console.log(newDisplayData)
+        rl = mkInterface()
+        rl.input.on('keypress', uglyKeypressFunction)
+        
+        
+      }
     }
   }
 
@@ -108,7 +140,12 @@ const uglyKeypressFunction = (char, props) => {
         
       // so the thumbnail is gonna be 22-23 high
       cursorTo(process.stdout, 0, 23)
+      if (newDisplayData) {
+        console.log(newDisplayData)
+      } else {
+        
       console.log(display)
+      }
     } 
 
     cursorTo(process.stdout, 0, process.stdout.rows - 4)

@@ -1,4 +1,5 @@
 import https from 'https'
+import { cursorTo } from 'readline'
 import { bold } from './util.js'
 
 // get server urls
@@ -30,7 +31,7 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
   let server = serverName || hosts[0]
   let serverCount = hosts.length
 
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const query = new URL(
       `/api/v1/search`, 
       `${server}/api`
@@ -67,11 +68,7 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
                 return {
                   name: item.title,
                   value: `${server}/watch?v=${item.videoId}`,
-                  thumbnails: `${server}/vi/${item.videoId}/hqdefault.jpg`
-                  // thumbnails: item.videoThumbnails[0].url || 'none'
-                  // thumbnails: item.videoThumbnails[3].url
-                  // <server>/vi/<url>/hqdefault.jpg
-                  // TODO video id? for downloading/finding thumbnails
+                  thumbnail: `${server}/vi/${item.videoId}/hqdefault.jpg`
                 }
               })
             })
@@ -98,8 +95,10 @@ const searchRecursive = async (searchTerm = false, max = 1, environment = false)
   let server = env.hosts[0]
   let final = []
   
+  console.clear()
+
   for (let i = 1; i < (max + 1); i += 1) {
-    console.clear()
+    cursorTo(process.stdout, 0, 0)
     console.log(`fetching page ${bold(i)} of ${bold(max)}`)
     if (server) console.log(`server: ${bold(server)}`)
     const res = await searchSingle(searchTerm, env, i, server)
