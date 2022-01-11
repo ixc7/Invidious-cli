@@ -104,14 +104,6 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
     })
 
     req.end()
-
-    // catch (e) {
-      // console.log(`  + '${server}' returned a connection error (${e}).`)
-      // server = hosts[(hosts.length - serverIndex)]
-      // serverIndex +=1
-      // console.log(`  + trying '${server}'`)
-      // resolve(await searchSingle(searchTerm, env, page, server, serverIndex))
-    // }
   })
 }
 

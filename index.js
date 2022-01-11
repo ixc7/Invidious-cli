@@ -37,9 +37,8 @@ const runSearch = async (input, maxPages = 5) => {
 let userInput = process.argv.slice(2).join(' ') || false
 const initialResults = await runSearch(userInput)
 
-
-const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder) => {
-  let rl = mkInterface()
+const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder, rl) => {
+  // let rl = mkInterface()
   let fzf = new Fzf(searchResultsList, { selector: item => item.name })
   let input = ''
   let render = false
@@ -68,6 +67,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
           rl.close()
           process.stdin.removeAllListeners('keypress')
           if (e) console.log('error downloading file', e)
+          // position = 0
           const newSearchResults = await runSearch()
           const newMatchList = newSearchResults.map(item => item.name)
 
@@ -81,7 +81,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
           )
         
           const newRl = mkInterface()
-          const newKeypressHandler = await makeKeypressFunction(newMatchList, newSearchResults, destinationFolder)
+          const newKeypressHandler = await makeKeypressFunction(newMatchList, newSearchResults, destinationFolder, newRl)
           newRl.input.on('keypress', newKeypressHandler)
         }
       }
@@ -89,17 +89,19 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
     else if (props.name === 'down') {
       render = true
       position += 1
+      // selection = matchList[position] || false
     }
     else if (props.name === 'up') {
       render = true
       position -= 1
+      // selection = matchList[position] || false
     }
     else if (char && !props.sequence.includes('\x1b')) {
       render = true
       input = input.concat(char)
     }
 
-    if (matchList.length === 1) {
+   else if (matchList.length === 1 && (props.name === 'up' || props.name === 'down')) {
       render = true
       position = 0
       selection = matchList[0]
@@ -119,6 +121,10 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
       else if (position < 0) {
         position = matchingItems.length - 1
         selection = matchingItems[matchingItems.length - 1] || false
+      }
+
+      else {
+        selection = matchList[position] || false
       } 
 
       if (matchingItems[0]) {
@@ -162,5 +168,5 @@ const folder = mkTemp()
 const initialRl = mkInterface()
 const initialMatches = initialResults.map(item => item.name)
 
-let initialKeypressHandler = await makeKeypressFunction(initialMatches, initialResults, folder)
+let initialKeypressHandler = await makeKeypressFunction(initialMatches, initialResults, folder, initialRl)
 initialRl.input.on('keypress', initialKeypressHandler)
