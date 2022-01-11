@@ -38,8 +38,6 @@ let userInput = process.argv.slice(2).join(' ') || false
 const initialResults = await runSearch(userInput)
 
 
-
-
 const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder) => {
   let rl = mkInterface()
   let fzf = new Fzf(searchResultsList, { selector: item => item.name })
@@ -70,11 +68,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
           rl.close()
           process.stdin.removeAllListeners('keypress')
           if (e) console.log('error downloading file', e)
-          
-          const newSearchTerm = await searchPrompt()
-          console.log(`searching for ${bold(newSearchTerm)}`)
-          
-          const newSearchResults = await search(newSearchTerm, maxPages)
+          const newSearchResults = await runSearch()
           const newMatchList = newSearchResults.map(item => item.name)
 
           clear()
