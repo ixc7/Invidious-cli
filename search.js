@@ -1,7 +1,6 @@
 import https from 'https'
 import { bold } from './util.js'
 
-
 // get server urls
 const getServers = () => {
   return new Promise(resolve => {
@@ -97,6 +96,7 @@ const searchRecursive = async (searchTerm = false, max = 1, environment = false)
   let final = []
   
   for (let i = 1; i < (max + 1); i += 1) {
+    console.clear()
     console.log(`fetching page ${bold(i)} of ${bold(max)}`)
     if (server) console.log(`server: ${bold(server)}`)
     const res = await searchSingle(searchTerm, env, i, server)

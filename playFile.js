@@ -6,7 +6,7 @@ import { bold } from './util.js'
 const playFile = (fileName, directory, application ='mpv') => {
   console.log(`\nplaying file with ${bold(application)}\npress ${bold('q')} to quit\n`)
 
-  const filePath = '${directory}/${fileName}'
+  const filePath = `${directory}/${fileName}`
   
   const player = spawn(
     application,
@@ -18,7 +18,7 @@ const playFile = (fileName, directory, application ='mpv') => {
 
   player.on('exit', code => {
     if (code !== 0) console.log(`error opening file: got exit code ${bold(code)}\n`)
-    rmSync(filePath, { force: true })
+    rmdirSync(directory, { recursive: true, force: true })
     process.exit(0)
   })
 
