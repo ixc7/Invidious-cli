@@ -1,4 +1,6 @@
 import https from 'https'
+import { bold } from './util.js'
+
 
 // get server urls
 const getServers = () => {
@@ -15,11 +17,13 @@ const getServers = () => {
         )
         .filter(item => !item[0].includes('.onion'))
         .map(item => `https://${item[0]}`)
-
+        resolve({ hosts })
+        /*
         resolve({
           hosts,
-          serverMax: hosts.length 
+          serverCount: hosts.length 
         })
+        */
       })
     })
 
@@ -29,11 +33,10 @@ const getServers = () => {
 
 // get 1 page
 const searchSingle = async (searchTerm, environment = false, page = 1, serverName = false, serverIndex = 0) => {
-  let server = serverName
-  let env = environment
-  if (!serverName) server = env.hosts[0]
-  if (!environment) env = await getServers()
-  let { hosts, serverMax } = env
+  let env = environment || await getServers()
+  let { hosts } = env
+  let server = serverName || hosts[0]
+  let serverCount = hosts.length
 
   return new Promise(resolve => {
     const query = new URL(
@@ -53,15 +56,15 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
 
       res.on('end', async () => {
         if (res.statusCode !== 200) {
-          console.log(`'${server}' returned an error (${res.statusCode}).`)
+          console.log(`  + '${server}' returned an error (${res.statusCode}).`)
           serverIndex +=1
           server = hosts[(hosts.length - serverIndex)]
 
-          if (serverIndex < serverMax) {
-            console.log(`trying '${server}'`)
+          if (serverIndex < serverCount) {
+            console.log(`  + trying '${server}'`)
             resolve(await searchSingle(searchTerm, env, page, server, serverIndex))
           } else {
-            console.log('no servers available.')
+            console.log(bold('no servers available.'))
             process.exit(0)
           }
         } else {
@@ -79,10 +82,10 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
             })
           }
           catch {
-            console.log(`'${server}' returned an invalid response.`)
+            console.log(`  + '${server}' returned an invalid response.`)
             server = hosts[(hosts.length - serverIndex)]
             serverIndex +=1
-            console.log(`trying '${server}'`)
+            console.log(`  + trying '${server}'`)
             resolve(await searchSingle(searchTerm, env, page, server, serverIndex))
           }
         }
@@ -94,14 +97,14 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
 }
 
 // get n pages
-const searchRecursive = async (searchTerm, max = 1) => {
+const searchRecursive = async (searchTerm = false, max = 1, environment = false) => {
   if (!searchTerm) return false
-  let env = await getServers()
+  let env = environment || await getServers()
+  let server = env.hosts[0]
   let final = []
-  let server = false
 
   // TODO dont duplicate this
-  const bold = input => `\x1b[1m${input}\x1b[0m`
+  // const bold = input => `\x1b[1m${input}\x1b[0m`
   
   for (let i = 1; i < (max + 1); i += 1) {
     console.log(`fetching page ${bold(i)} of ${bold(max)}`)

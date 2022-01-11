@@ -1,12 +1,8 @@
-import { createInterface, cursorTo } from 'readline'
-import { spawn, spawnSync } from 'child_process'
-import { rmSync } from 'fs'
+import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
-import { bold, clear, mkInterface } from './util.js'
+import { bold, clear, mkInterface, mkTemp } from './util.js'
 import downloadFile from './downloadFile.js'
 import search from './search.js'
-
-const maxPages = 5
 
 const searchTerm = process.argv.slice(2).join(' ') || await new Promise((resolve, reject) => {
   const rl = mkInterface({ prompt: 'search: ' }) 
@@ -21,6 +17,7 @@ const searchTerm = process.argv.slice(2).join(' ') || await new Promise((resolve
 })
 
 console.log(`searching for ${bold(searchTerm)}`)
+const maxPages = 5
 const results = await search(searchTerm, maxPages)
 
 if (!results.length) {
@@ -36,7 +33,7 @@ let matches = results.map(item => item.name)
 
 const rl = mkInterface()
 const fzf = new Fzf(results, { selector: item => item.name })
-
+const tempDir = mkTemp()
 
 const uglyKeypressFunction = (char, props) => {
 
@@ -49,11 +46,11 @@ const uglyKeypressFunction = (char, props) => {
 
   else if (props.name === 'return') {
     if (selection) {
-        rl.close()
-        process.stdin.removeAllListeners('keypress')
-        const url = fzf.find(selection)[0].item.value
-        const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
-        downloadFile(selection, fileName, url)
+      rl.close()
+      process.stdin.removeAllListeners('keypress')
+      const url = fzf.find(selection)[0].item.value
+      const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
+      downloadFile(selection, fileName, url, tempDir)
     }
   }
 
@@ -82,7 +79,7 @@ const uglyKeypressFunction = (char, props) => {
 
   // handle display
 
-  // TODO images
+  // TODO thumbnails
   if (render) {
     render = false   
     matches = fzf.find(input).map(obj => obj.item.name)
@@ -96,13 +93,18 @@ const uglyKeypressFunction = (char, props) => {
     if (matches[0]) {
       const display = matches
         .slice(position)
-        .slice(0, process.stdout.rows - 7)
+        .slice(0, process.stdout.rows - 30)
+        
+        // TODO IMPORTANT this produces duplicate matches! FIX this
         .map(item => {
           if (item === selection) return bold(item)
           return item
         })
         .join('\n')
-      console.log(`\n${display}`)
+        
+      // so the thumbnail is gonna be 22-23 high
+      cursorTo(process.stdout, 0, 23)
+      console.log(display)
     } 
 
     cursorTo(process.stdout, 0, process.stdout.rows - 4)
@@ -110,13 +112,12 @@ const uglyKeypressFunction = (char, props) => {
   }
 }
 
-
 // render the initial results
 // TODO just have the first one selected by default.
 const initialDisplay = results
-  .slice(0, process.stdout.rows - 7)
+  .slice(0, process.stdout.rows - 30)
   .map(item => item.name)
   .join('\n')
-clear(`\n${initialDisplay}`)
 
+clear(`\n${initialDisplay}`)
 rl.input.on('keypress', uglyKeypressFunction)
