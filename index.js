@@ -59,9 +59,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
         } catch (e) {
           rl.close()
           process.stdin.removeAllListeners('keypress')
-
-
-          if (e) console.log(e)
+          if (e) console.log('error downloading file', e)
           
           const newSearchTerm = await searchPrompt()
           console.log(`searching for ${bold(newSearchTerm)}`)
@@ -84,33 +82,26 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
         }
       }
     }
-
     else if (props.name === 'down') {
       render = true
       position += 1
-      // selection = matchList[position]
     }
-
     else if (props.name === 'up') {
       render = true
       position -= 1
-      // selection = matchList[position]
     }
-    
     else if (props.name === 'up' && matchList.length === 1 || props.name === 'down' && matchList.length === 1) {
       selection = matchList[0]
       cursorTo(process.stdout, 0, process.stdout.rows - 4)
       process.stdout.write(`selection: ${position + ': ' || ''} ${selection || 'none'}\ninput: ${input}`)
     }
-
     else if (char && !props.sequence.includes('\x1b')) {
       render = true
       input = input.concat(char)
     }
 
-    // handle drawing the screen
-    // TODO thumbnails
 
+    // TODO thumbnails
     if (render) {
       render = false   
       const matchingItems = fzf.find(input).map(obj => obj.item.name)
@@ -137,30 +128,28 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
           .slice(0, process.stdout.rows - 30)
           .join('\n')
           
-        // so the thumbnail is gonna be 22-23 high
         cursorTo(process.stdout, 0, 23)
         console.log(display)
       } 
 
       cursorTo(process.stdout, 0, process.stdout.rows - 4)
-      process.stdout.write(`selection: ${selection ? (position + 1) + ' -' : ''} ${selection || 'none'}\ninput: ${input}`)
+      process.stdout.write(
+        `selection: ${selection ? (position + 1) + ' -' : ''} ${selection || 'none'}\ninput: ${input}`
+      )
     }
   }
 
-  // clear()
-  // cursorTo(process.stdout, 0, 23)
-  // console.log(matchList.slice(0, process.stdout.rows - 30).map(item => item.name).join('\n'))
-  // console.log(matchList)
-  // console.log('aaaaahahahahaha fuck youuuuu')
-  
-          clear()
-          cursorTo(process.stdout, 0, 23)
-          console.log(
-            searchResultsList
-              .slice(0, process.stdout.rows - 30)
-              .map(item => item.name)
-              .join('\n')
-          )
+  clear()
+  cursorTo(process.stdout, 0, 23)
+  console.log(
+    searchResultsList
+      .slice(0, process.stdout.rows - 30)
+      .map((item, index) => {
+        if (index === 0) return bold(item.name)
+        return item.name
+      })
+      .join('\n')
+  )
   
   return uglyKeypressFunction
 }
@@ -168,19 +157,6 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
 const folder = mkTemp()
 const initialRl = mkInterface()
 const initialMatches = initialResults.map(item => item.name)
-
-// render the initial results
-// TODO just have the first one selected by default.
-/*
-clear()
-cursorTo(process.stdout, 0, 23)
-console.log(
-  initialResults
-    .slice(0, process.stdout.rows - 30)
-    .map(item => item.name)
-    .join('\n')
-)*/
-
 
 let initialKeypressHandler = await makeKeypressFunction(initialMatches, initialResults, folder)
 initialRl.input.on('keypress', initialKeypressHandler)
