@@ -34,11 +34,10 @@ const runSearch = async (input, maxPages = 5) => {
   return res
 }
 
-let userInput = process.argv.slice(2).join(' ') || false
-const initialResults = await runSearch(userInput)
+// let userInput = process.argv.slice(2).join(' ') || false
+// const initialResults = await runSearch(userInput)
 
 const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder, rl) => {
-  // let rl = mkInterface()
   let fzf = new Fzf(searchResultsList, { selector: item => item.name })
   let input = ''
   let render = false
@@ -162,9 +161,11 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
   return uglyKeypressFunction
 }
 
+const userInput = process.argv.slice(2).join(' ') || false
+const initialResults = await runSearch(userInput)
+const initialMatches = initialResults.map(item => item.name)
 const folder = mkTemp()
 const initialRl = mkInterface()
-const initialMatches = initialResults.map(item => item.name)
 
 let initialKeypressHandler = await makeKeypressFunction(initialMatches, initialResults, folder, initialRl)
 initialRl.input.on('keypress', initialKeypressHandler)
