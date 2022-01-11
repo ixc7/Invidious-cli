@@ -67,15 +67,17 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
                 return {
                   name: item.title,
                   value: `${server}/watch?v=${item.videoId}`,
-                  thumbnails: item.videoThumbnails[3].url
+                  thumbnails: `${server}/vi/${item.videoId}/hqdefault.jpg`
+                  // thumbnails: item.videoThumbnails[0].url || 'none'
+                  // thumbnails: item.videoThumbnails[3].url
                   // <server>/vi/<url>/hqdefault.jpg
                   // TODO video id? for downloading/finding thumbnails
                 }
               })
             })
           }
-          catch {
-            console.log(`  + '${server}' returned an invalid response.`)
+          catch (e) {
+            console.log(`  + '${server}' returned an invalid response (${e}).`)
             server = hosts[(hosts.length - serverIndex)]
             serverIndex +=1
             console.log(`  + trying '${server}'`)
