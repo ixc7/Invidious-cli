@@ -29,21 +29,36 @@ if (!results.length) {
   process.exit(0)
 }
 
-let input = ''
-let position = 0
-let render = false
-let selection = false
 let matches = results.map(item => item.name)
+// let formatted = matches
+
+// const formatMatches = (input) => {
+  // return input
+    // .slice(0, process.stdout.rows - 30)
+    // .map(item => item.name)
+    // .join('\n')
+// }
+
 
 let rl = mkInterface()
-const fzf = new Fzf(results, { selector: item => item.name })
+// let fzf = new Fzf(results, { selector: item => item.name })
 const tempDir = mkTemp()
 
 
 // TODO MAKE THIS SO YOU CAN REINITIALIZE IT WITH NEW DATA EVERY TIME.
+const makeKeypressFunction = async (matchList, searchList) => {
+
+let rl = mkInterface()
+let fzf = new Fzf(searchList, { selector: item => item.name })
+
+let input = ''
+let render = false
+let selection = false
+let position = 0
+
 const uglyKeypressFunction = async (char, props) => {
 
-  let newDisplayData = false
+  // let newDisplayData = false
 
   // handle keys
 
@@ -61,45 +76,49 @@ const uglyKeypressFunction = async (char, props) => {
 
       try {
         await downloadFile(selection, fileName, url, tempDir)
-        // process.exit(0)
+        process.exit(0)
       } catch {
         rl.close()
         process.stdin.removeAllListeners('keypress')
-        let newSearchTerm = await searchPrompt()
+        
+        const newSearchTerm = await searchPrompt()
         const newSearchResults = await search(newSearchTerm, maxPages)
-        
-        // const reloadedDisplay = newSearchResults
-        newDisplayData = newSearchResults
-          .slice(0, process.stdout.rows - 30)
-          .map(item => item.name)
-          .join('\n')
-        
-        // clear(`\n${initialDisplay}`)
+        const newMatchList = newSearchResults.map(item => item.name)
+
         clear()
         cursorTo(process.stdout, 0, 23)
-        console.log(newDisplayData)
-        rl = mkInterface()
-        rl.input.on('keypress', uglyKeypressFunction)
+        console.log(
+          newMatchList
+            .slice(0, process.stdout.rows - 30)
+            .map(item => item.name)
+            .join('\n')
+        )
+        
+        const newRl = mkInterface()
+        const newKeypressHandler = await makeKeypressFunction(newMatchList, newSearchResults)
+        // const newKeypressHandler = uglyKeypressFunction
+        // const newKeypressHandler = this
+        newRl.input.on('keypress', newKeypressHandler)
         
         
       }
     }
   }
 
-  else if (props.name === 'down' && matches[position + 1]) {
+  else if (props.name === 'down' && matchList[position + 1]) {
     render = true
     position += 1
-    selection = matches[position]
+    selection = matchList[position]
   }
 
-  else if (props.name === 'up' && matches[position - 1]) {
+  else if (props.name === 'up' && matchList[position - 1]) {
     render = true
     position -= 1
-    selection = matches[position]
+    selection = matchList[position]
   }
   
-  else if (props.name === 'up' && matches.length === 1 || props.name === 'down' && matches.length === 1) {
-    selection = matches[0]
+  else if (props.name === 'up' && matchList.length === 1 || props.name === 'down' && matchList.length === 1) {
+    selection = matchList[0]
     cursorTo(process.stdout, 0, process.stdout.rows - 4)
     process.stdout.write(`selection: ${position + ': ' || ''} ${selection || 'none'}\ninput: ${input}`)
   }
@@ -114,38 +133,28 @@ const uglyKeypressFunction = async (char, props) => {
   // TODO thumbnails
   if (render) {
     render = false   
-    matches = fzf.find(input).map(obj => obj.item.name)
+    const matchingItems = fzf.find(input).map(obj => obj.item.name)
     clear()
     
-    if (position >= matches.length) {
+    if (position >= matchingItems.length) {
       position = 0
-      selection = matches[0] || false
+      selection = matchingItems[0] || false
     }
 
-    if (matches[0]) {
-      const display = matches        
-        // TODO IMPORTANT this produces duplicate bold texts! FIX this
+    if (matchingItems[0]) {
+      const display = matchingItems
         .map((item, index) => {
-          // if (item.includes(selection) && matches.indexOf(item) === position) return bold(item)
-          // if (matches.indexOf(item) === position) {
-          if (index === position) {
-            return bold(item) 
-          } else {
-            return item
-          }
+          if (index === position) return bold(item) 
+          return item
         })
+        
         .slice(position)
         .slice(0, process.stdout.rows - 30)
         .join('\n')
         
       // so the thumbnail is gonna be 22-23 high
       cursorTo(process.stdout, 0, 23)
-      if (newDisplayData) {
-        console.log(newDisplayData)
-      } else {
-        
       console.log(display)
-      }
     } 
 
     cursorTo(process.stdout, 0, process.stdout.rows - 4)
@@ -153,6 +162,9 @@ const uglyKeypressFunction = async (char, props) => {
   }
 }
 
+return uglyKeypressFunction
+
+}
 // render the initial results
 // TODO just have the first one selected by default.
 const initialDisplay = results
@@ -164,4 +176,6 @@ const initialDisplay = results
 clear()
 cursorTo(process.stdout, 0, 23)
 console.log(initialDisplay)
-rl.input.on('keypress', uglyKeypressFunction)
+let initialKeypressHandler = await makeKeypressFunction(matches, results)
+
+rl.input.on('keypress', initialKeypressHandler)
