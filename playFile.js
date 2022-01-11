@@ -1,11 +1,13 @@
 import { spawn } from 'child_process'
-import { rmSync } from 'fs'
+import { rmdirSync } from 'fs'
 import { bold } from './util.js'
 
 // open player
-const playFile = (filePath, application) => {
+const playFile = (fileName, directory, application ='mpv') => {
   console.log(`\nplaying file with ${bold(application)}\npress ${bold('q')} to quit\n`)
 
+  const filePath = '${directory}/${fileName}'
+  
   const player = spawn(
     application,
     [filePath, '--audio-pitch-correction=no', '--loop'],
@@ -23,7 +25,7 @@ const playFile = (filePath, application) => {
   process.stdin.on('keypress', (char, props) => {
     if (char === 'q')  {
       player.kill()
-      rmSync(filePath, { force: true })
+      rmdirSync(directory, { recursive: true, force: true })
       process.exit(0)
     }
   })

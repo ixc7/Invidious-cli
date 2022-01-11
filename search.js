@@ -5,25 +5,18 @@ import { bold } from './util.js'
 // get server urls
 const getServers = () => {
   return new Promise(resolve => {
-    const req = https.request('https://api.invidious.io/instances.json?pretty=1')
+    const req = https.request('https://api.invidious.io/instances.json')
 
     req.on('response', res => {
       let str = ''
-
       res.on('data', d => str += d.toString('utf8'))
+
       res.on('end', () => {
-        const hosts = (
-          JSON.parse(str)
-        )
-        .filter(item => !item[0].includes('.onion'))
-        .map(item => `https://${item[0]}`)
+        const hosts = (JSON.parse(str))
+          .filter(item => !item[0].includes('.onion'))
+          .map(item => `https://${item[0]}`)
+
         resolve({ hosts })
-        /*
-        resolve({
-          hosts,
-          serverCount: hosts.length 
-        })
-        */
       })
     })
 
@@ -102,9 +95,6 @@ const searchRecursive = async (searchTerm = false, max = 1, environment = false)
   let env = environment || await getServers()
   let server = env.hosts[0]
   let final = []
-
-  // TODO dont duplicate this
-  // const bold = input => `\x1b[1m${input}\x1b[0m`
   
   for (let i = 1; i < (max + 1); i += 1) {
     console.log(`fetching page ${bold(i)} of ${bold(max)}`)

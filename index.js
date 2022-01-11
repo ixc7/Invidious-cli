@@ -119,5 +119,8 @@ const initialDisplay = results
   .map(item => item.name)
   .join('\n')
 
-clear(`\n${initialDisplay}`)
+// clear(`\n${initialDisplay}`)
+clear()
+cursorTo(process.stdout, 0, 23)
+console.log(initialDisplay)
 rl.input.on('keypress', uglyKeypressFunction)
