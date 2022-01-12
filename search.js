@@ -16,12 +16,26 @@ const getServers = () => {
       let str = ''
       res.on('data', d => str += d.toString('utf8'))
 
-      res.on('end', () => {
+      res.on('end', async () => {
         const hosts = (JSON.parse(str))
           .filter(item => !item[0].includes('.onion'))
           .map(item => `https://${item[0]}`)
-
-        resolve({ hosts })
+          
+        if ( hosts.length ) {
+          resolve({ hosts })
+        }
+        
+        // fallback to parsing markdown document if API is down.
+        else {
+          const fallbackResults = await getServersFallback()
+          if (fallbackResults.length) {
+            resolve({ hosts: fallbackResults })
+          }
+          else {
+            console.log(`  + error fetching servers (empty response).`)
+            process.exit(0)
+          }
+        }
       })
     })
 
@@ -81,10 +95,10 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
           }
         } else {
           try {
-            const { author, viewCount, publishedText, lengthSeconds, title, videoId } = item
             resolve({
               server,
               results: JSON.parse(resToString, 0, 2).map(item => {
+            const { author, viewCount, publishedText, lengthSeconds, title, videoId } = item
                 return {
                   title,
                   url: `${server}/watch?v=${videoId}`,
