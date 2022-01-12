@@ -66,10 +66,10 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
           const newMatchList = newSearchResults.map(item => item.title)
 
           clear()
-          cursorTo(process.stdout, 0, 23)
+          cursorTo(process.stdout, 0, 1)
           console.log(
             newSearchResults
-              .slice(0, process.stdout.rows - 30)
+              .slice(0, process.stdout.rows - 9)
               .map(item => item.title)
               .join('\n')
           )
@@ -127,25 +127,49 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
           })
           
           .slice(position)
-          .slice(0, process.stdout.rows - 30)
+          .slice(0, process.stdout.rows - 9)
           .join('\n')
           
-        cursorTo(process.stdout, 0, 23)
+        cursorTo(process.stdout, 0, 1)
         console.log(display)
       } 
 
-      cursorTo(process.stdout, 0, process.stdout.rows - 4)
-      process.stdout.write(
-        `selection: ${selection ? (position + 1) + ' -' : ''} ${selection || 'none'}\ninput: ${input}`
-      )
+      let infoSearch = false
+      
+      if (matchingItems[position]) {
+        infoSearch = fzf.find(matchingItems[position])
+      }
+      
+      let info = {
+        author: false,
+        viewCount: false,
+        publishedText: false,
+        lengthSeconds: false
+      }
+
+      if (infoSearch) {
+        info = infoSearch[0].item.info
+      }
+      // [0].item.info
+      // const { thumbnail, author, viewCount, publishedText, lengthSeconds } = info
+
+      
+      cursorTo(process.stdout, 0, process.stdout.rows - 7)
+      // process.stdout.write(
+      process.stdout.write(`selection: ${selection ? (position + 1) + ' -' : ''} ${selection || 'none'}`)
+        process.stdout.write(`\nauthor: ${info.author || 'none'}`)
+        process.stdout.write(`\nviews: ${info.viewCount || 'none'}`)
+        process.stdout.write(`\nadded: ${info.publishedText || 'none'}`)
+        process.stdout.write(`\nlength: ${info.lengthSeconds || 'none'} seconds\n`)
+        process.stdout.write(input)
     }
   }
 
   clear()
-  cursorTo(process.stdout, 0, 23)
+  cursorTo(process.stdout, 0, 1)
   console.log(
     searchResultsList
-      .slice(0, process.stdout.rows - 30)
+      .slice(0, process.stdout.rows - 9)
       .map((item, index) => {
         if (index === 0) return bold(item.title)
         return item.title
