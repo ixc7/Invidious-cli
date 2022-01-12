@@ -4,7 +4,6 @@ import { bold, clear, mkInterface, mkTemp } from './util.js'
 import downloadFile from './downloadFile.js'
 import search from './search.js'
 
-
 const runSearch = async (input, maxPages = 5) => {
   const searchPrompt = () => {
     return new Promise((resolve, reject) => {
@@ -30,15 +29,11 @@ const runSearch = async (input, maxPages = 5) => {
     input = await searchPrompt()
     res = await runSearch(input, maxPages)
   }
-
   return res
 }
 
-// let userInput = process.argv.slice(2).join(' ') || false
-// const initialResults = await runSearch(userInput)
-
 const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder, rl) => {
-  let fzf = new Fzf(searchResultsList, { selector: item => item.name })
+  let fzf = new Fzf(searchResultsList, { selector: item => item.title })
   let input = ''
   let render = false
   let position = 0
@@ -56,7 +51,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
       if (selection) {
         rl.close()
         process.stdin.removeAllListeners('keypress')
-        const url = fzf.find(selection)[0].item.value
+        const url = fzf.find(selection)[0].item.url
         const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
 
         try {
@@ -68,14 +63,14 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
           if (e) console.log('error downloading file', e)
           // position = 0
           const newSearchResults = await runSearch()
-          const newMatchList = newSearchResults.map(item => item.name)
+          const newMatchList = newSearchResults.map(item => item.title)
 
           clear()
           cursorTo(process.stdout, 0, 23)
           console.log(
             newSearchResults
               .slice(0, process.stdout.rows - 30)
-              .map(item => item.name)
+              .map(item => item.title)
               .join('\n')
           )
         
@@ -107,7 +102,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
     // TODO thumbnails
     if (render) {
       render = false   
-      const matchingItems = fzf.find(input).map(obj => obj.item.name)
+      const matchingItems = fzf.find(input).map(obj => obj.item.title)
       clear()
       
       if (position > matchingItems.length - 1) {
@@ -152,8 +147,8 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
     searchResultsList
       .slice(0, process.stdout.rows - 30)
       .map((item, index) => {
-        if (index === 0) return bold(item.name)
-        return item.name
+        if (index === 0) return bold(item.title)
+        return item.title
       })
       .join('\n')
   )
@@ -163,7 +158,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
 
 const userInput = process.argv.slice(2).join(' ') || false
 const initialResults = await runSearch(userInput)
-const initialMatches = initialResults.map(item => item.name)
+const initialMatches = initialResults.map(item => item.title)
 const folder = mkTemp()
 const initialRl = mkInterface()
 

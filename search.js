@@ -81,13 +81,20 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
           }
         } else {
           try {
+            const { author, viewCount, publishedText, lengthSeconds, title, videoId } = item
             resolve({
               server,
               results: JSON.parse(resToString, 0, 2).map(item => {
                 return {
-                  name: item.title,
-                  value: `${server}/watch?v=${item.videoId}`,
-                  thumbnail: `${server}/vi/${item.videoId}/hqdefault.jpg`
+                  title,
+                  url: `${server}/watch?v=${videoId}`,
+                  info: {
+                    thumbnail: `${server}/vi/${videoId}/hqdefault.jpg`,
+                    author,
+                    viewCount,
+                    publishedText,
+                    lengthSeconds
+                  }
                 }
               })
             })
@@ -108,7 +115,7 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
 }
 
 // get n pages
-const searchRecursive = async (searchTerm = false, max = 1, environment = false) => {
+const searchMultiple = async (searchTerm = false, max = 1, environment = false) => {
   if (!searchTerm) return false
   let env = environment || await getServers()
   let server = env.hosts[0]
@@ -129,4 +136,4 @@ const searchRecursive = async (searchTerm = false, max = 1, environment = false)
   return final
 }
 
-export default searchRecursive
+export default searchMultiple
