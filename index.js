@@ -5,7 +5,8 @@ import downloadFile from './downloadFile.js'
 import search from './search.js'
 
 const runSearch = async (input, maxPages = 5) => {
-  const searchPrompt = () => {
+
+  const promptUser = () => {
     return new Promise((resolve, reject) => {
       const rl = mkInterface({ prompt: 'search: ' }) 
       rl.on('line', line => {
@@ -19,16 +20,17 @@ const runSearch = async (input, maxPages = 5) => {
     })
   }
 
-  const searchTerm = input || await searchPrompt()
-
+  const searchTerm = input || await promptUser()
+  
   console.log(`searching for ${bold(searchTerm)}`)
   let res = await search(searchTerm, maxPages)
 
   if (!res.length) {
     console.log('no results')
-    input = await searchPrompt()
+    input = await promptUser()
     res = await runSearch(input, maxPages)
   }
+
   return res
 }
 
@@ -61,11 +63,11 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
           rl.close()
           process.stdin.removeAllListeners('keypress')
           if (e) console.log('error downloading file', e)
-          // position = 0
           const newSearchResults = await runSearch()
           const newMatchList = newSearchResults.map(item => item.title)
 
-          clear()
+          console.clear()
+          // clear()
           cursorTo(process.stdout, 0, 1)
           console.log(
             newSearchResults
@@ -92,29 +94,28 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
       render = true
       input = input.concat(char)
     }
-
-   else if (matchList.length === 1 && (props.name === 'up' || props.name === 'down')) {
+    else if (matchList.length === 1 && (props.name === 'up' || props.name === 'down')) {
       render = true
       position = 0
       selection = matchList[0]
     }
 
+    // handle display
     // TODO thumbnails
     if (render) {
       render = false   
       const matchingItems = fzf.find(input).map(obj => obj.item.title)
-      clear()
+      console.clear()
+      // clear()
       
       if (position > matchingItems.length - 1) {
         position = 0
         selection = matchingItems[0] || false
       } 
-
       else if (position < 0) {
         position = matchingItems.length - 1
         selection = matchingItems[matchingItems.length - 1] || false
       }
-
       else {
         selection = matchingItems[position] || false
       } 
@@ -125,7 +126,6 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
             if (index === position) return bold(item) 
             return item
           })
-          
           .slice(position)
           .slice(0, process.stdout.rows - 9)
           .join('\n')
@@ -134,12 +134,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
         console.log(display)
       } 
 
-      let infoSearch = false
-      
-      if (matchingItems[position]) {
-        infoSearch = fzf.find(matchingItems[position])
-      }
-      
+      let foundInfo = false
       let info = {
         author: false,
         viewCount: false,
@@ -147,25 +142,21 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
         lengthSeconds: false
       }
 
-      if (infoSearch) {
-        info = infoSearch[0].item.info
-      }
-      // [0].item.info
-      // const { thumbnail, author, viewCount, publishedText, lengthSeconds } = info
-
+      if (matchingItems[position]) foundInfo = fzf.find(matchingItems[position])
+      if (foundInfo) info = foundInfo[0].item.info
       
       cursorTo(process.stdout, 0, process.stdout.rows - 7)
-      // process.stdout.write(
       process.stdout.write(`selection: ${selection ? (position + 1) + ' -' : ''} ${selection || 'none'}`)
-        process.stdout.write(`\nauthor: ${info.author || 'none'}`)
-        process.stdout.write(`\nviews: ${info.viewCount || 'none'}`)
-        process.stdout.write(`\nadded: ${info.publishedText || 'none'}`)
-        process.stdout.write(`\nlength: ${info.lengthSeconds || 'none'} seconds\n`)
+        process.stdout.write(`\nauthor: ${info.author || ''}`)
+        process.stdout.write(`\nviews: ${info.viewCount || ''}`)
+        process.stdout.write(`\nadded: ${info.publishedText || ''}`)
+        process.stdout.write(`\nlength: ${info.lengthSeconds || ''}\n`)
         process.stdout.write(input)
     }
   }
 
-  clear()
+  console.clear()
+  // clear()
   cursorTo(process.stdout, 0, 1)
   console.log(
     searchResultsList

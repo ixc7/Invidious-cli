@@ -5,7 +5,9 @@ import playFile from './playFile.js'
 
 // download audio
 const downloadFile = (selection, file, url, directory, format = 'm4a', application = 'yt-dlp', filePlayer = 'mpv') => {
-  clear(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
+  // clear()
+  console.clear()
+  console.log(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
 
   const fileName = `${file}.${format}`
   const filePath = `${directory}/${fileName}`
@@ -35,19 +37,16 @@ const downloadFile = (selection, file, url, directory, format = 'm4a', applicati
     }
   })
   return new Promise((resolve, reject) => {
-    
-  downloader.on('exit', code => {
-    if (code !== 0) {
-      console.log(`error downloading file: got exit code ${bold(code)}\n`)
-      // process.exit(0)
-      reject()
-      
-    } else {
-      rl.close()
-      process.stdin.removeAllListeners('keypress')
-      playFile(fileName, directory, filePlayer)
-    }
-  })
+    downloader.on('exit', code => {
+      if (code !== 0) {
+        console.log(`error downloading file: got exit code ${bold(code)}\n`)
+        reject()
+      } else {
+        rl.close()
+        process.stdin.removeAllListeners('keypress')
+        playFile(fileName, directory, filePlayer)
+      }
+    })
   })
 }
 
