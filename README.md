@@ -8,7 +8,7 @@ links:
 ---
 
 requirements:
-+ youtube-dl/yt-dlp
++ yt-dlp (youtube-dl)
 + mpv
 
 ---
