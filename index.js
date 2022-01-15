@@ -2,8 +2,9 @@ import { bold, mkInterface, mkTemp, mkPrompt } from './util.js'
 import handleKeypress from './keypress.js'
 import search from './search.js'
 
-const runSearch = async (input, maxPages = 5) => {
+const initSearch = async (input, maxPages = 5) => {
   const searchTerm = input || await mkPrompt()
+  
   console.log(`searching for ${bold(searchTerm)}`)
   let res = await search(searchTerm, maxPages)
 
@@ -16,11 +17,11 @@ const runSearch = async (input, maxPages = 5) => {
   return res
 }
 
-const userInput = process.argv.slice(2).join(' ') || false
-const initialResults = await runSearch(userInput)
-const initialMatches = initialResults.map(item => item.title)
+const args = process.argv.slice(2).join(' ') || false
+const results = await initSearch(args)
+const matches = results.map(i => i.title)
 const folder = mkTemp()
-const initialRl = mkInterface()
+const rl = mkInterface()
+const handler = await handleKeypress(matches, results, folder, rl)
 
-let initialKeypressHandler = await handleKeypress(initialMatches, initialResults, folder, initialRl)
-initialRl.input.on('keypress', initialKeypressHandler)
+rl.input.on('keypress', handler)

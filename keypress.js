@@ -1,7 +1,7 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
-import { bold } from './util.js'
 import { downloadFile } from './download.js'
+import { bold } from './util.js'
 
 const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder, rl) => {
   let fzf = new Fzf(searchResultsList, { selector: item => item.title })
