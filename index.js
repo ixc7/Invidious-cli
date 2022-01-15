@@ -1,17 +1,19 @@
 import { bold, mkInterface, mkTemp, mkPrompt } from './util.js'
 import handleKeypress from './keypress.js'
 import search from './search.js'
+import options from './options.js'
 
-const initSearch = async (input, maxPages = 5) => {
+const initSearch = async (input) => {
+  const { pages } = options
   const searchTerm = input || await mkPrompt()
   
   console.log(`searching for ${bold(searchTerm)}`)
-  let res = await search(searchTerm, maxPages)
+  let res = await search(searchTerm, pages)
 
   if (!res.length) {
     console.log('no results')
     input = await mkPrompt()
-    res = await runSearch(input, maxPages)
+    res = await runSearch(input, pages)
   }
 
   return res

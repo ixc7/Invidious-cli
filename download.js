@@ -1,21 +1,15 @@
 import { spawn } from 'child_process'
 import { rmdirSync } from 'fs'
 import { bold, mkInterface, mkTemp } from './util.js'
-import defaultOptions from './options.js'
-// const defaultOptions = {
-  // format: 'm4a',
-  // downloader: 'yt-dlp',
-  // player: 'mpv',
-  // playerOptions: ['--audio-pitch-correction=no', '--loop']
-// }
+import options from './options.js'
 
 const cleanup = dir => {
   if (dir) rmdirSync(dir, { recursive: true, force: true })
   process.exit(0)
 }
 
-const openPlayer = (file, dir, opts = defaultOptions) => {
-  const { player, playerOptions } = opts
+const openPlayer = (file, dir) => {
+  const { player, playerOptions } = options
   const filePath = `${dir}/${file}`
   const child = spawn(
     player,
@@ -42,8 +36,8 @@ const openPlayer = (file, dir, opts = defaultOptions) => {
   })
 }
 
-const downloadFile = (title, file, url, dir, opts = defaultOptions) => {
-  const { format, downloader, player } = opts
+const downloadFile = (title, file, url, dir) => {
+  const { format, downloader, player } = options
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
   const rl = mkInterface()

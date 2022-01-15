@@ -136,7 +136,7 @@ const searchMultiple = async (searchTerm = false, max = 1, environment = false) 
   let final = []
   
   console.clear()
-
+  
   for (let i = 1; i < (max + 1); i += 1) {
     cursorTo(process.stdout, 0, 0)
     console.log(`fetching page ${bold(i)} of ${bold(max)}`)
