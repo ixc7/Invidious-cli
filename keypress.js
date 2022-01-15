@@ -1,7 +1,7 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
 import { bold } from './util.js'
-import downloadFile from './downloadFile.js'
+import { downloadFile } from './download.js'
 
 const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder, rl) => {
   let fzf = new Fzf(searchResultsList, { selector: item => item.title })
@@ -11,8 +11,6 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
   let selection = matchList[0]
   
   const uglyKeypressFunction = async (char, props) => {
-
-    // handle keys
     if (props.name === 'backspace') {
       render = true
       input = input.substring(0, input.length - 1)
@@ -32,9 +30,10 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
           rl.close()
           process.stdin.removeAllListeners('keypress')
           if (e) console.log('error downloading file', e)
+
           const newSearchResults = await runSearch()
           const newMatchList = newSearchResults.map(item => item.title)
-
+          
           console.clear()
           cursorTo(process.stdout, 0, 1)
           console.log(

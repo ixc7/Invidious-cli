@@ -1,5 +1,5 @@
 import { bold, mkInterface, mkTemp, mkPrompt } from './util.js'
-import handleKeypress from './handleKeypress.js'
+import handleKeypress from './keypress.js'
 import search from './search.js'
 
 const runSearch = async (input, maxPages = 5) => {
