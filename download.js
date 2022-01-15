@@ -2,78 +2,108 @@ import { spawn } from 'child_process'
 import { rmdirSync } from 'fs'
 import { bold, mkInterface, mkTemp } from './util.js'
 
-// open player
-const openPlayer = (fileName, directory, application ='mpv', opts = []) => {
-  console.log(`\nplaying file with ${bold(application)}\npress ${bold('q')} to quit\n`)
+// const playerDefaultOpts = ['--audio-pitch-correction=no', '--loop']
 
-  const filePath = `${directory}/${fileName}`
+const cleanup = dir => {
+  if (dir) rmdirSync(dir, { recursive: true, force: true })
+  process.exit(0)
+}
+
+const defaults = {
+  format: 'm4a',
+  downloader: 'yt-dlp',
+  player: 'mpv',
+  playerOpts: ['--audio-pitch-correction=no', '--loop']
+}
+
+// open player
+// const openPlayer = (file, dir, player  = defaults.player, opts = defaults.playerOpts) => {
+const openPlayer = (file, dir, opts = defaults) => {
+  const { player, playerOpts } = opts
+  const filePath = `${dir}/${file}`
   
-  const player = spawn(
-    application,
-    [filePath, ...opts],
-    // [filePath, '--audio-pitch-correction=no', '--loop'],
+  const child = spawn(
+    player,
+    [filePath, ...playerOpts],
     { stdio: ['pipe', process.stdout, process.stderr] }
   )
 
-  process.stdin.pipe(player.stdin)
+  process.stdin.pipe(child.stdin)
 
-  player.on('exit', code => {
+  child.on('spawn', () => console.log(`playing file with ${bold(player)}\npress ${bold('q')} to quit\n`))
+
+  child.on('exit', code => {
     if (code !== 0) console.log(`error opening file: got exit code ${bold(code)}\n`)
-    rmdirSync(directory, { recursive: true, force: true })
-    process.exit(0)
+    cleanup(dir)
+    // rmdirSync(dir, { recursive: true, force: true })
+    // process.exit(0)
   })
 
   process.stdin.on('keypress', (char, props) => {
     if (char === 'q')  {
-      player.kill()
-      rmdirSync(directory, { recursive: true, force: true })
-      process.exit(0)
+      child.kill()
+      cleanup(dir)
+      // rmdirSync(dir, { recursive: true, force: true })
+      // process.exit(0)
     }
   })
 }
 
 
 // download url
-const downloadFile = (selection, file, url, directory, format = 'm4a', application = 'yt-dlp', filePlayer = 'mpv') => {
-  console.clear()
-  console.log(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
-
+const downloadFile = (selection, file, url, dir, opts = defaults) => {
+  const { format, downloader, player } = opts
   const fileName = `${file}.${format}`
-  const filePath = `${directory}/${fileName}`
+  const filePath = `${dir}/${fileName}`
+
   const rl = mkInterface()
-  
-  const downloader = spawn(
-    application,
+
+  const child = spawn(
+    downloader,
     [
-      `--format=${format}`,
       '--quiet',
       '--progress',
+      `--format=${format}`,
       `--output=${filePath}`,
       url
     ],
     { stdio: ['pipe', process.stdout, process.stderr] }
   )
+
+  child.on('spawn', () => {
+    console.clear()
+    console.log(`
+      \rvideo: ${bold(selection)}
+      \rurl: ${bold(url)}
+
+      \rdownloading file with ${bold(downloader)}
+      \rpress ${bold('q')} to cancel
+    `)
+
+  })
   
   rl.input.on('keypress', (char, props) => {
     if (char === 'q')  {
       rl.close()
+      child.kill()
       process.stdin.removeAllListeners('keypress')
-      downloader.kill()
-      rmdirSync(directory, { recursive: true, force: true })
-
       console.log('\ndownload cancelled\n')
-      process.exit(0)
+
+      cleanup(dir)
+      // rmdirSync(dir, { recursive: true, force: true })
+      // process.exit(0)
     }
   })
+  
   return new Promise((resolve, reject) => {
-    downloader.on('exit', code => {
+    child.on('exit', code => {
       if (code !== 0) {
         console.log(`error downloading file: got exit code ${bold(code)}\n`)
         reject()
       } else {
         rl.close()
         process.stdin.removeAllListeners('keypress')
-        openPlayer(fileName, directory, filePlayer)
+        openPlayer(fileName, dir)
       }
     })
   })
