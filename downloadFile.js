@@ -1,11 +1,10 @@
 import { spawn } from 'child_process'
 import { rmdirSync } from 'fs'
-import { bold, clear, mkInterface, mkTemp } from './util.js'
+import { bold, mkInterface, mkTemp } from './util.js'
 import playFile from './playFile.js'
 
 // download audio
 const downloadFile = (selection, file, url, directory, format = 'm4a', application = 'yt-dlp', filePlayer = 'mpv') => {
-  // clear()
   console.clear()
   console.log(`\nvideo: ${bold(selection)}\nurl: ${bold(url)}\n\ndownloading file with ${bold(application)}\npress ${bold('q')} to cancel\n`)
 
