@@ -1,19 +1,19 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
 import { downloadFile } from './download.js'
-import { bold } from './util.js'
+import { bold, mkPrompt, mkInterface } from './util.js'
 import search from './search.js'
+import options from './options.js'
 
-const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) => {
+const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => {
   let fzf = new Fzf(searchResultsList, { selector: item => item.title })
   let input = ''
   let render = false
   let position = 0
   let selection = matchList[0]
 
-
-  // -- PARSE
-  const handler = async (char, props) => {
+  // ----
+  const parser = async (char, props) => {
     if (props.name === 'backspace') {
       render = true
       input = input.substring(0, input.length - 1)
@@ -36,8 +36,10 @@ const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) =>
           process.stdin.removeAllListeners('keypress')
           if (e) console.log('error downloading file\n', e)
 
-          const newSearchResults = await search()
-          const newMatchList = newSearchResults.map(item => item.title)
+          const newSearchTerm = await mkPrompt()
+          console.log(`searching for ${bold(newSearchTerm)}`)
+          const newSearchResults = await search(newSearchTerm, options.pages)
+          const newMatchList = newSearchResults.map(m => m.title)
           
           console.clear()
           cursorTo(process.stdout, 0, 1)
@@ -48,9 +50,8 @@ const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) =>
           )
         
           const newRl = mkInterface()
-          const newKeypressHandler = await mkHandler(newMatchList, newSearchResults, destinationFolder, newRl)
-
-          newRl.input.on('keypress', newKeypressHandler)
+          const newParser = await mkParser(newMatchList, newSearchResults, destinationFolder, newRl)
+          newRl.input.on('keypress', newParser)
         }
       }
     }
@@ -130,6 +131,7 @@ const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) =>
         process.stdout.write(input)
     }
   }
+ // ----
 
   console.clear()
   cursorTo(process.stdout, 0, 1)
@@ -142,8 +144,8 @@ const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) =>
       })
       .join('\n')
   )
-  
-  return handler
+
+  return parser
 }
 
-export default mkHandler
+export default mkParser
