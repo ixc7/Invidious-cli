@@ -3,14 +3,16 @@ import { Fzf } from 'fzf'
 import { downloadFile } from './download.js'
 import { bold } from './util.js'
 
-const makeKeypressFunction = async (matchList, searchResultsList, destinationFolder, rl) => {
+const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) => {
   let fzf = new Fzf(searchResultsList, { selector: item => item.title })
   let input = ''
   let render = false
   let position = 0
   let selection = matchList[0]
+
   
-  const uglyKeypressFunction = async (char, props) => {
+  // -- PARSE
+  const handler = async (char, props) => {
     if (props.name === 'backspace') {
       render = true
       input = input.substring(0, input.length - 1)
@@ -29,22 +31,21 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
         } catch (e) {
           rl.close()
           process.stdin.removeAllListeners('keypress')
-          if (e) console.log('error downloading file', e)
+          if (e) console.log('error downloading file\n', e)
 
           const newSearchResults = await runSearch()
           const newMatchList = newSearchResults.map(item => item.title)
           
           console.clear()
           cursorTo(process.stdout, 0, 1)
-          console.log(
-            newSearchResults
-              .slice(0, process.stdout.rows - 9)
-              .map(item => item.title)
-              .join('\n')
+          console.log(newSearchResults
+            .slice(0, process.stdout.rows - 9)
+            .map(item => item.title)
+            .join('\n')
           )
         
           const newRl = mkInterface()
-          const newKeypressHandler = await makeKeypressFunction(newMatchList, newSearchResults, destinationFolder, newRl)
+          const newKeypressHandler = await mkHandler(newMatchList, newSearchResults, destinationFolder, newRl)
           newRl.input.on('keypress', newKeypressHandler)
         }
       }
@@ -67,7 +68,8 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
       selection = matchList[0]
     }
 
-    // handle display
+
+    // -- RENDER
     // TODO thumbnails
     if (render) {
       render = false   
@@ -133,7 +135,7 @@ const makeKeypressFunction = async (matchList, searchResultsList, destinationFol
       .join('\n')
   )
   
-  return uglyKeypressFunction
+  return handler
 }
 
-export default makeKeypressFunction
+export default mkHandler

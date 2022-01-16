@@ -14,7 +14,7 @@ const mkInterface = (opts = {}) => {
 }
 
 const mkPrompt = (prompt = 'search: ') => {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const rl = mkInterface({ prompt }) 
     rl.on('line', line => {
       if (line.split('').filter(i => i !== ' ').length > 0) {
