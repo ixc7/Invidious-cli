@@ -1,6 +1,9 @@
 import https from 'https'
 import { cursorTo } from 'readline'
-import { bold } from './util.js'
+import { bold, mkPrompt } from './util.js'
+import options from './options.js'
+
+const { pages, repeat } = options
 
 // get server urls
 const getServers = () => {
@@ -43,7 +46,7 @@ const getServers = () => {
   })
 }
 
-// get 1 page
+// get one page
 const searchSingle = async (searchTerm, environment = false, page = 1, serverName = false, serverIndex = 0) => {
   let env = environment || await getServers()
   let { hosts } = env
@@ -128,8 +131,8 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
   })
 }
 
-// get n pages
-const searchMultiple = async (searchTerm = false, max = 1, environment = false) => {
+// get multiple pages
+const searchMultiple = async (searchTerm = false, max = pages, environment = false) => {
   if (!searchTerm) return false
   let env = environment || await getServers()
   let server = env.hosts[0]
@@ -150,4 +153,22 @@ const searchMultiple = async (searchTerm = false, max = 1, environment = false) 
   return final
 }
 
-export default searchMultiple
+// repeat prompt until results are found && options.repeat === true
+const main = async (text, environment = false) => {
+  let env = environment || await getServers()
+  let input = text || await mkPrompt()
+  
+  console.log(`searching for ${bold(input)}`)
+  let res = await searchMultiple(input, pages)
+
+  if (!res.length) {
+    console.log('no results')
+    if (!repeat) process.exit(0)
+    input = await mkPrompt()
+    res = await main(input)
+  }
+
+  return res
+}
+
+export default main

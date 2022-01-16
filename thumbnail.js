@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import imageToAscii from 'image-to-ascii'
-import { mkTemp } from './util.js'
+import { mktemp } from './util.js'
 
-const directory = process.argv[3] || mkTemp() 
+const directory = process.argv[3] || mktemp() 
 const vid = process.argv[2] || 'Kq849CpGd88'
 const url = `https://vid.puffyan.us/vi/${vid}/hqdefault.jpg`
 const fileName = `${directory}/${vid}.txt`

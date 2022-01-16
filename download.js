@@ -1,9 +1,6 @@
 import { spawn } from 'child_process'
-import { rmdirSync } from 'fs'
-import { bold, mkInterface } from './util.js'
+import { bold, mkInterface, rmdir } from './util.js'
 import options from './options.js'
-
-const rmdir = dir => rmdirSync(dir, { recursive: true, force: true })
 
 const openPlayer = (file, dir) => {
     const { player, playerOptions } = options
