@@ -2,6 +2,7 @@ import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
 import { downloadFile } from './download.js'
 import { bold } from './util.js'
+import search from './search.js'
 
 const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) => {
   let fzf = new Fzf(searchResultsList, { selector: item => item.title })
@@ -10,7 +11,7 @@ const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) =>
   let position = 0
   let selection = matchList[0]
 
-  
+
   // -- PARSE
   const handler = async (char, props) => {
     if (props.name === 'backspace') {
@@ -22,18 +23,20 @@ const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) =>
       if (selection) {
         rl.close()
         process.stdin.removeAllListeners('keypress')
+
         const url = fzf.find(selection)[0].item.url
         const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
 
         try {
           await downloadFile(selection, fileName, url, destinationFolder)
           process.exit(0)
+
         } catch (e) {
           rl.close()
           process.stdin.removeAllListeners('keypress')
           if (e) console.log('error downloading file\n', e)
 
-          const newSearchResults = await runSearch()
+          const newSearchResults = await search()
           const newMatchList = newSearchResults.map(item => item.title)
           
           console.clear()
@@ -46,22 +49,27 @@ const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) =>
         
           const newRl = mkInterface()
           const newKeypressHandler = await mkHandler(newMatchList, newSearchResults, destinationFolder, newRl)
+
           newRl.input.on('keypress', newKeypressHandler)
         }
       }
     }
+
     else if (props.name === 'down') {
       render = true
       position += 1
     }
+
     else if (props.name === 'up') {
       render = true
       position -= 1
     }
+
     else if (char && !props.sequence.includes('\x1b')) {
       render = true
       input = input.concat(char)
     }
+
     else if (matchList.length === 1 && (props.name === 'up' || props.name === 'down')) {
       render = true
       position = 0
@@ -70,7 +78,6 @@ const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) =>
 
 
     // -- RENDER
-    // TODO thumbnails
     if (render) {
       render = false   
       const matchingItems = fzf.find(input).map(obj => obj.item.title)
@@ -88,6 +95,7 @@ const mkHandler = async (matchList, searchResultsList, destinationFolder, rl) =>
         selection = matchingItems[position] || false
       } 
 
+      // TODO thumbnails
       if (matchingItems[0]) {
         const display = matchingItems
           .map((item, index) => {

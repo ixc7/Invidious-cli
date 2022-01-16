@@ -1,38 +1,41 @@
 import { spawn } from 'child_process'
 import { rmdirSync } from 'fs'
-import { bold, mkInterface, mkTemp } from './util.js'
+import { bold, mkInterface } from './util.js'
 import options from './options.js'
 
-const cleanup = dir => {
-  if (dir) rmdirSync(dir, { recursive: true, force: true })
-  process.exit(0)
-}
+const rmdir = dir => rmdirSync(dir, { recursive: true, force: true })
 
 const openPlayer = (file, dir) => {
-  const { player, playerOptions } = options
-  const filePath = `${dir}/${file}`
-  const child = spawn(
-    player,
-    [filePath, ...playerOptions],
-    { stdio: ['pipe', process.stdout, process.stderr] }
-  )
-  
-  child.on('spawn', () => console.log(`
-    \rplaying file with ${bold(player)}
-    \rpress ${bold('q')} to quit
-  `))
+    const { player, playerOptions } = options
+    const filePath = `${dir}/${file}`
+    const child = spawn(
+      player,
+      [filePath, ...playerOptions],
+      { stdio: ['pipe', process.stdout, process.stderr] }
+    )
+    
+    child.on('spawn', () => console.log(`
+      \rplaying file with ${bold(player)}
+      \rpress ${bold('q')} to quit
+    `))
 
-  child.on('exit', code => {
-    if (code !== 0) console.log(`error opening file: got exit code ${bold(code)}\n`)
-    cleanup(dir)
-  })
+  return new Promise((resolve, reject) => {
+    child.on('exit', code => {
+      if (code !== 0) {
+        console.log(`error opening file: got exit code ${bold(code)}\n`)
+        reject()
+      }
+      resolve()
+    })
 
-  process.stdin.pipe(child.stdin)
-  process.stdin.on('keypress', (char, props) => {
-    if (char === 'q')  {
-      child.kill()
-      cleanup(dir)
-    }
+    process.stdin.pipe(child.stdin)
+    process.stdin.on('keypress', (char, props) => {
+      if (char === 'q')  {
+        child.kill()
+        rmdir(dir)
+        reject()
+      }
+    })
   })
 }
 
@@ -69,7 +72,8 @@ const downloadFile = (title, file, url, dir) => {
       rl.close()
       process.stdin.removeAllListeners('keypress')
       child.kill()
-      cleanup(dir)
+      rmdir(dir)
+      process.exit(0)
     }
   })
   
@@ -81,7 +85,7 @@ const downloadFile = (title, file, url, dir) => {
       } else {
         rl.close()
         process.stdin.removeAllListeners('keypress')
-        openPlayer(fileName, dir)
+        resolve(openPlayer(fileName, dir))
       }
     })
   })
