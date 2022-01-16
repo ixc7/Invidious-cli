@@ -1,31 +1,42 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs'
-import imageToAscii from 'image-to-ascii'
-import { mktemp } from './util.js'
+// import { readFileSync, writeFileSync, existsSync } from 'fs'
+// import imageToAscii from 'image-to-ascii'
+// import { mktemp } from './util.js'
 
-const directory = process.argv[3] || mktemp() 
-const vid = process.argv[2] || 'Kq849CpGd88'
-const url = `https://vid.puffyan.us/vi/${vid}/hqdefault.jpg`
-const fileName = `${directory}/${vid}.txt`
+// const directory = process.argv[3] || mktemp()
+// const directory = process.argv[3] || mktemp()
+// const vid = process.argv[2] || 'Kq849CpGd88'
+// const url = `https://vid.puffyan.us/vi/${vid}/hqdefault.jpg`
+// const url = '/Users/admin/Desktop/misc/thing-thing/title.jpg'
+// const url = '/Users/admin/Desktop/thing-thing/subject.png'
+// const url = '/Users/admin/Desktop/thing-thing/./M249_SAW.png'
+// const fileName = `${directory}/${vid}.txt`
+// const temp = `${mktemp}/temp.png`
+// const fileName = `${mkTemp()}/${input}`
 
-const render = () => {
-  console.log(readFileSync(fileName).toString())
-  process.exit(0)
-}
+// const input = process.argv.slice(2).join('') || '/Users/admin/Desktop/thing-thing/./M249_SAW.png'
+// const dir = mktemp()
+// const temp = `${dir}/temp.png`
 
-if (existsSync(fileName)) render()
+// const render = () => {
+  // console.log(readFileSync(temp).toString())
+  // process.exit(0)
+// }
 
-imageToAscii(
-  url,
-  {
-    size: {
+// if (existsSync(fileName)) render()
+
+// imageToAscii(
+  // url,
+  // {
+    // size: {
       // height: process.stdout.rows / 2
-      height: 22
-    }
-  },
-  (err, res) => {
-    if (!err) {
-      writeFileSync(fileName, res.toString())
-      render()
-    }
-  }
-)
+      // height: 22
+    // }
+  // },
+  // input,
+  // (err, res) => {
+    // if (!err) {
+      // writeFileSync(temp, res.toString())
+      // render()
+    // }
+  // }
+// )
