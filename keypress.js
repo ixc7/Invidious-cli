@@ -37,17 +37,18 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
         }
 
         if (!repeat) process.exit(0)
-        
-        let newSearchTerm = await mkPrompt()
+        const newSearchTerm = await mkPrompt()
         console.log(`searching for ${bold(newSearchTerm)}`)
-        let newSearchResults = await search(newSearchTerm, pages)
-        
+        const newSearchResults = await search(newSearchTerm, pages)
+
+        /*
         if (!newSearchResults.length) {
             console.log('no results')
             if (!repeat) process.exit(0)
             newSearchTerm = await mkPrompt()
             newSearchResults = await search(newSearchTerm, pages)
         }
+        */
         
         const newMatchList = newSearchResults.map(m => m.title)
         

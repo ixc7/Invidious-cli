@@ -1,9 +1,9 @@
 import { spawn } from 'child_process'
 import { bold, mkInterface, rmdir } from './util.js'
 import options from './options.js'
+    const { player, playerOptions, repeat } = options
 
 const openPlayer = (file, dir) => {
-    const { player, playerOptions } = options
     const filePath = `${dir}/${file}`
     const child = spawn(
       player,
@@ -40,7 +40,10 @@ const downloadFile = (title, file, url, dir) => {
   const { format, downloader, player } = options
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
+
+  // TODO is kill all other stdin listeners first handled already? does it need to be?
   const rl = mkInterface()
+  
   const child = spawn(
     downloader,
     [
@@ -63,18 +66,19 @@ const downloadFile = (title, file, url, dir) => {
     `)
   })
   
-  rl.input.on('keypress', (char, props) => {
-    if (char === 'q')  {
-      console.log('\ndownload cancelled\n')
-      rl.close()
-      process.stdin.removeAllListeners('keypress')
-      child.kill()
-      rmdir(dir)
-      process.exit(0)
-    }
-  })
-  
   return new Promise((resolve, reject) => {
+    rl.input.on('keypress', (char, props) => {
+      if (char === 'q')  {
+        rl.close()
+        process.stdin.removeAllListeners('keypress')
+        child.kill()
+        rmdir(dir)
+        console.log('\ndownload cancelled\n')
+        if (!repeat) process.exit(0)
+        reject()
+      }
+    })
+  
     child.on('exit', code => {
       if (code !== 0) {
         console.log(`error downloading file: got exit code ${bold(code)}\n`)
