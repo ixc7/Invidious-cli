@@ -8,7 +8,7 @@ allows searching for unlimited pages (unlike ytfzf)
 
 requirements:
 + yt-dlp (/youtube-dl)
-+ mpv
++ mpv (or similar)
 
 ---
 
