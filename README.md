@@ -24,4 +24,4 @@ node index.js
 
 ### demo
 
-[![asciicast](https://asciinema.org/a/461493.svg)](https://asciinema.org/a/461493)
+![demo](https://github.com/ixc7/invidious-cli/raw/master/demo.gif)
