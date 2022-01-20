@@ -2,7 +2,7 @@
 ## music player for invidious.io written in node.js
 
 search and play youtube files from the command line  
-allows searching for unlimited pages (unlike ytfzf)
+allows searching for unlimited pages
 
 ---
 
