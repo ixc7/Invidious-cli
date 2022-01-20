@@ -1,13 +1,9 @@
 import { createInterface } from 'readline'
 import { spawnSync } from 'child_process'
-// import { rmdirSync, existsSync } from 'fs'
 import { rmSync, existsSync } from 'fs'
 
 const bold = input => `\x1b[1m${input}\x1b[0m`
-
-// TODO async?
 const mktemp = () => spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
-// const rmdir = dir => existsSync(dir) && rmdirSync(dir, { recursive: true, force: true })
 const rmdir = dir => existsSync(dir) && rmSync(dir, { recursive: true, force: true })
 
 const mkInterface = (opts = {}) => {
