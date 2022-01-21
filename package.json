@@ -1,6 +1,6 @@
 {
   "name": "invidious",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "dependencies": {
     "fzf": "^0.4.1"
@@ -12,7 +12,7 @@
     "type": "git",
     "url": "git@github.com:ixc7/invidious-cli.git"
   },
-  "description": "music player for invidious.io. allows searching for unlimited pages.",
+  "description": "music player for invidious.io",
   "homepage": "https://github.com/ixc7/invidious-cli#readme",
   "keywords": [ "invidious", "cli", "music", "youtube", "youtube-dl", "yt-dlp", "mpv" ]
 }
