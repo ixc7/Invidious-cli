@@ -13,11 +13,17 @@ requirements:
 ---
 
 install:
+
+```
+npm install -g invidious
+```
+
+or
+
 ```
 git clone https://github.com/ixc7/invidious-cli.git
 cd invidious-cli
 npm install
-node index.js
 ```
 
 ---

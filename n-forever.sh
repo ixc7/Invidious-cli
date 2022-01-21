@@ -16,9 +16,8 @@ n-forever () {
   
   while true; do
     [[ ${verbose} -lt 1 ]] || echo "take: ${take}"
-    node "${@}" && take=$(( ${take} + 1 )) || exit 0
+    ${@} && take=$(( ${take} + 1 )) || exit 0
   done
 }
 
-# n-forever "${selfdir}/index.js" || (echo "error" && cleanup)
-n-forever "index.js" || (echo "error" && cleanup)
+n-forever node index.js || (echo "error" && cleanup)
