@@ -12,11 +12,17 @@ n-forever () {
   
   while true; do
     echo "take: ${take}"
-    node "${@}" && node "${@}" || node "${@}"
-    take=$(( ${take} + 1 ))
+    # (
+      node "${@}" && take=$(( ${take} + 1 )) || cleanup
+    # ) ||
+    # (
+      # echo "nononono" && cleanup
+    # )
   done
 
   echo "complete.... this will never be reached. until we figure out how to use read here..."
 }
 
-[[  -z "${@}" ]] || (n-forever "${@}" || echo "error on runtime." && cleanup)
+# [[  -z "${@}" ]] || (n-forever "${@}" || echo "error on runtime." && cleanup)
+
+n-forever "index.js" || (echo "error" && cleanup)
