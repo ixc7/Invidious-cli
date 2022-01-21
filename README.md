@@ -16,6 +16,7 @@ install:
 
 ```
 npm install -g invidious
+inv
 ```
 
 or
