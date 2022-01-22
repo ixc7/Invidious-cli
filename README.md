@@ -7,8 +7,8 @@ allows searching for unlimited pages
 ---
 
 requirements:
-+ yt-dlp or youtube-dl
-+ mpv (or similar)
++ [yt-dlp](https://github.com/yt-dlp/yt-dlp) or [youtube-dl](https://github.com/ytdl-org/youtube-dl/)
++ [mpv](https://github.com/mpv-player/mpv) (or similar)
 
 ---
 
