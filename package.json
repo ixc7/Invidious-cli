@@ -1,6 +1,6 @@
 {
   "name": "invidious",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "type": "module",
   "dependencies": {
     "fzf": "^0.4.1"
