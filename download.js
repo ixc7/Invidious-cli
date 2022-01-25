@@ -15,6 +15,7 @@ const openPlayer = (file, dir) => {
     \rplaying file with ${bold(player)}
     \rpress ${bold('q')} to quit
   `))
+  
   process.stdin.pipe(child.stdin)
 
   return new Promise(() => {
@@ -46,16 +47,16 @@ const downloadFile = (title, file, url, dir) => {
 
   child.on('spawn', () => {
     console.clear()
-    console.log(`
-      \rvideo: ${bold(title)}
-      \rurl: ${bold(url)}\n
+    console.log(
+      `\n\rvideo: ${bold(title)}
+      \rurl: ${bold(url)}
       \rdownloading file with ${bold(downloader)}
-      \rpress ${bold('q')} to cancel
-    `)
+      \rpress ${bold('q')} to cancel`
+    )
   })
   
   rl.input.on('keypress', (char, props) => {
-    if (char === 'q')  {
+    if (char === 'q') {
       rmdir(dir)
       child.kill()
     }
@@ -64,7 +65,7 @@ const downloadFile = (title, file, url, dir) => {
   return new Promise(resolve => {
     child.on('exit', code => {
       if (code !== 0) {
-        console.log('\ndownload cancelled\n')
+        console.log('\ndownload cancelled')
         process.exit(0)
       } else {
         rl.close()

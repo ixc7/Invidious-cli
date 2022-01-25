@@ -14,78 +14,34 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
   let position = 0
   let selection = matchList[0]
 
-  // ---- PARSER
   const parser = async (char, props) => {
 
     // -- SUBMIT
-    if (props.name === 'return') {
-      if (selection) {
-        render = false
-        // rl.close()
-        // process.stdin.removeAllListeners('keypress')
-
-        const url = fzf.find(selection)[0].item.url
-        const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
-
-        try {
-          await downloadFile(selection, fileName, url, destinationFolder)
-        } 
-        catch {
-          // process.stdin.removeAllListeners('keypress')
-          // rl.close()
-          process.exit(0)
-        }
-        
-        // process.exit(0)
-
-        /*
-        const newSearchTerm = await mkPrompt()
-        console.log(`searching for ${bold(newSearchTerm)}`)
-
-        const newSearchResults = await search(newSearchTerm, pages)
-        const newMatchList = newSearchResults.map(m => m.title)
-        
-        console.clear()
-        cursorTo(process.stdout, 0, 1)
-        console.log(newSearchResults
-          .slice(0, process.stdout.rows - 9)
-          .map(item => item.title)
-          .join('\n')
-        )
-      
-        const newRl = mkInterface()
-        const newParser = await mkParser(newMatchList, newSearchResults, destinationFolder, newRl)
-        newRl.input.on('keypress', newParser)
-        */
+    if (props.name === 'return' && selection) {
+      const url = fzf.find(selection)[0].item.url
+      const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
+      try {
+        await downloadFile(selection, fileName, url, destinationFolder)
+      } 
+      catch {
+        process.exit(0)
       }
     }
+
     // -- MOVE AROUND
-    else if (props.name === 'backspace') {
-      render = true
-      input = input.substring(0, input.length - 1)
-    }
+    render = true
 
-    else if (props.name === 'down') {
-      render = true
-      position += 1
-    }
-
-    else if (props.name === 'up') {
-      render = true
-      position -= 1
-    }
-
-    else if (char && !props.sequence.includes('\x1b')) {
-      render = true
-      input = input.concat(char)
-    }
-    // --
+    if (props.name === 'backspace') input = input.substring(0, input.length - 1)
+    else if (props.name === 'down') position += 1
+    else if (props.name === 'up') position -= 1
+    else if (char && !props.sequence.includes('\x1b')) input = input.concat(char)
 
     // ---- RENDERER
     if (render) {
-      render = false   
-      const matchingItems = fzf.find(input).map(obj => obj.item.title)
       console.clear()
+      render = false   
+
+      const matchingItems = fzf.find(input).map(obj => obj.item.title)
       
       if (position > matchingItems.length - 1) {
         position = 0
@@ -95,21 +51,20 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
         position = matchingItems.length - 1
         selection = matchingItems[matchingItems.length - 1] || false
       }
-      else {
-        selection = matchingItems[position] || false
-      } 
+      else selection = matchingItems[position] || false
 
       // TODO thumbnails
       if (matchingItems[0]) {
-        const display = matchingItems
-          .map((item, index) => {
+        const display = matchingItems.map(
+          (item, index) => {
             if (index === position) return bold(item) 
             return item
-          })
-          .slice(position)
-          .slice(0, process.stdout.rows - 9)
-          .join('\n')
-          
+          }
+        )
+        .slice(position)
+        .slice(0, process.stdout.rows - 9)
+        .join('\n')
+
         cursorTo(process.stdout, 0, 1)
         console.log(display)
       } 
@@ -125,7 +80,7 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
       if (matchingItems[position]) foundInfo = fzf.find(matchingItems[position])
       if (foundInfo) info = foundInfo[0].item.info
 
-      // TODO
+      // TODO make this good
       cursorTo(process.stdout, 0, process.stdout.rows - 7)
       process.stdout.write(`
       \rselection: ${selection ? (position + 1) + ' -' : ''} ${selection || 'none'}
@@ -136,17 +91,18 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
       \r${input}`)
     }
   }
-  // --
 
   // initial render
   console.clear()
   cursorTo(process.stdout, 0, 1)
   console.log(searchResultsList
     .slice(0, process.stdout.rows - 9)
-    .map((item, index) => {
-      if (index === 0) return bold(item.title)
-      return item.title
-    })
+    .map(
+      (item, index) => {
+        if (index === 0) return bold(item.title)
+        return item.title
+      }
+    )
     .join('\n')
   )
 
