@@ -1,7 +1,7 @@
 import { bold, mkInterface, mktemp, mkPrompt } from './util.js'
 import keypress from './keypress.js'
 import search from './search.js'
-import options from './options.js'
+import config from './config.js'
 
 const results = await search(process.argv.slice(2).join(' ') || false)
 const matches = results.map(m => m.title)

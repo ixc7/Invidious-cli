@@ -7,8 +7,7 @@ const musicPlayer = {
     '--audio-pitch-correction=no',
     '--loop'
   ],
-  pages: 3, // max pages to fetch
-  repeat: true // repeat search the prompt forever
+  pages: 1 // max pages to fetch
 }
 
 const videoPlayer = {
@@ -22,8 +21,7 @@ const videoPlayer = {
     '--ontop',
     '--loop',
   ],
-  pages: 3, // max pages to fetch
-  repeat: true // repeat search the prompt forever
+  pages: 3 // max pages to fetch
 }
 
 export default musicPlayer

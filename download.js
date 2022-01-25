@@ -1,43 +1,32 @@
 import { spawn } from 'child_process'
 import { bold, mkInterface, rmdir } from './util.js'
-import options from './options.js'
-    const { player, playerOptions, repeat } = options
+import config from './config.js'
+const { player, playerOptions } = config
 
 const openPlayer = (file, dir) => {
-    const filePath = `${dir}/${file}`
-    const child = spawn(
-      player,
-      [filePath, ...playerOptions],
-      { stdio: ['pipe', process.stdout, process.stderr] }
-    )
+  const filePath = `${dir}/${file}`
+  const child = spawn(
+    player,
+    [filePath, ...playerOptions],
+    { stdio: ['pipe', process.stdout, process.stderr] }
+  )
     
-    child.on('spawn', () => console.log(`
-      \rplaying file with ${bold(player)}
-      \rpress ${bold('q')} to quit
-    `))
+  child.on('spawn', () => console.log(`
+    \rplaying file with ${bold(player)}
+    \rpress ${bold('q')} to quit
+  `))
 
-  return new Promise((resolve, reject) => {
-    child.on('exit', code => {
-      if (code !== 0) {
-        console.log(`error opening file: got exit code ${bold(code)}\n`)
-        reject()
-      }
-      resolve()
-    })
-
-    process.stdin.pipe(child.stdin)
-    process.stdin.on('keypress', (char, props) => {
-      if (char === 'q')  {
-        child.kill()
-        rmdir(dir)
-        reject()
-      }
-    })
+  child.on('exit', code => {
+    if (code !== 0) console.log('error opening file')
+    rmdir(dir)
+    process.exit(0)
   })
+
+  process.stdin.pipe(child.stdin)
 }
 
 const downloadFile = (title, file, url, dir) => {
-  const { format, downloader, player } = options
+  const { format, downloader, player } = config
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
 
@@ -74,14 +63,13 @@ const downloadFile = (title, file, url, dir) => {
         child.kill()
         rmdir(dir)
         console.log('\ndownload cancelled\n')
-        if (!repeat) process.exit(0)
-        reject()
+        process.exit(0)
       }
     })
   
     child.on('exit', code => {
       if (code !== 0) {
-        console.log(`error downloading file: got exit code ${bold(code)}\n`)
+        // console.log('error downloading file')
         reject()
       } else {
         rl.close()

@@ -1,9 +1,9 @@
 import https from 'https'
 import { cursorTo } from 'readline'
 import { bold, mkPrompt } from './util.js'
-import options from './options.js'
+import config from './config.js'
 
-const { pages, repeat } = options
+const { pages } = config
 
 // get server urls
 const getServers = () => {
@@ -153,17 +153,17 @@ const searchMultiple = async (searchTerm = false, max = pages, environment = fal
   return final
 }
 
-// repeat prompt until results are found && options.repeat === true
+// repeat prompt until results are found
 const main = async (text, environment = false) => {
   let env = environment || await getServers()
   let input = text || await mkPrompt()
   
   console.log(`searching for ${bold(input)}`)
+
   let res = await searchMultiple(input, pages)
 
   if (!res.length) {
     console.log('no results')
-    if (!repeat) process.exit(0)
     input = await mkPrompt()
     res = await main(input)
   }

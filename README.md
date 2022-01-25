@@ -28,6 +28,12 @@ npm install
 node app.js
 ```
 
+or 
+
+```
+npx invidious
+```
+
 ---
 
 ### demo

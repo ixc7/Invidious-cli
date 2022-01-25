@@ -3,9 +3,9 @@ import { Fzf } from 'fzf'
 import { downloadFile } from './download.js'
 import { bold, mkPrompt, mkInterface } from './util.js'
 import search from './search.js'
-import options from './options.js'
+import config from './config.js'
 
-const { repeat, pages } = options
+const { repeat, pages } = config
 
 const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => {
   let fzf = new Fzf(searchResultsList, { selector: item => item.title })
@@ -33,7 +33,8 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
         catch (e) {
           rl.close()
           process.stdin.removeAllListeners('keypress')
-          if (e) console.log('error downloading file\n', e)
+          console.log('error downloading file (keypress.js)\n')
+          // if (e) console.log('error downloading file\n', e, e.code)
         }
 
         if (!repeat) process.exit(0)
