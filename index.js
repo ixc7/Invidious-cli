@@ -3,7 +3,7 @@ import keypress from './keypress.js'
 import search from './search.js'
 import config from './config.js'
 
-const results = await search(process.argv.slice(2).join(' ') || false)
+const results = await search()
 const matches = results.map(m => m.title)
 const dir = mktemp()
 const rl = mkInterface()

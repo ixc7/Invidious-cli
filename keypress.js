@@ -21,8 +21,8 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
     if (props.name === 'return') {
       if (selection) {
         render = false
-        rl.close()
-        process.stdin.removeAllListeners('keypress')
+        // rl.close()
+        // process.stdin.removeAllListeners('keypress')
 
         const url = fzf.find(selection)[0].item.url
         const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
@@ -31,10 +31,14 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
           await downloadFile(selection, fileName, url, destinationFolder)
         } 
         catch {
-          rl.close()
-          process.stdin.removeAllListeners('keypress')
+          // process.stdin.removeAllListeners('keypress')
+          // rl.close()
+          process.exit(0)
         }
+        
+        // process.exit(0)
 
+        /*
         const newSearchTerm = await mkPrompt()
         console.log(`searching for ${bold(newSearchTerm)}`)
 
@@ -52,6 +56,7 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
         const newRl = mkInterface()
         const newParser = await mkParser(newMatchList, newSearchResults, destinationFolder, newRl)
         newRl.input.on('keypress', newParser)
+        */
       }
     }
     // -- MOVE AROUND

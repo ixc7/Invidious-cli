@@ -154,18 +154,16 @@ const searchMultiple = async (searchTerm = false, max = pages, environment = fal
 }
 
 // repeat prompt until results are found
-const main = async (text, environment = false) => {
+const main = async (environment = false) => {
   let env = environment || await getServers()
-  let input = text || await mkPrompt()
+  let input = await mkPrompt()
   
   console.log(`searching for ${bold(input)}`)
-
   let res = await searchMultiple(input, pages)
 
   if (!res.length) {
     console.log('no results')
-    input = await mkPrompt()
-    res = await main(input)
+    process.exit(0)
   }
 
   return res
