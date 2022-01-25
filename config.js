@@ -11,8 +11,8 @@ const audioPlayerConfig = {
     '--audio-pitch-correction=no',
     '--loop'
   ],
-  pages: 1, // max pages to fetch
-  save: true, // save downloaded files
+  pages: 4, // max pages to fetch
+  save: false, // save downloaded files
   folder: './saved-audio' // where to save
 }
 
@@ -36,4 +36,4 @@ const videoPlayerConfig = {
   folder: './saved-videos'
 }
 
-export default videoPlayerConfig
+export default audioPlayerConfig

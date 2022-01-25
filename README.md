@@ -1,5 +1,5 @@
 
-## music player for [invidious.io](https://invidious.io)
+## media player for [invidious.io](https://invidious.io)
 
 search and play youtube files from the command line  
 allows searching for unlimited pages
