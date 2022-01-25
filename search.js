@@ -68,8 +68,8 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
     // TODO dont duplicate this
     req.on('error', async (e) => {
       console.log(`  + '${server}' cannot be reached (${e}).`)
-      server = hosts[(hosts.length - serverIndex)]
       serverIndex +=1
+      server = hosts[(hosts.length - serverIndex)]
       if (serverIndex < serverCount) {
         console.log(`  + trying '${server}'`)
         resolve(await searchSingle(searchTerm, env, page, server, serverIndex))
@@ -118,8 +118,8 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
           }
           catch (e) {
             console.log(`  + '${server}' returned an invalid response (${e}).`)
-            server = hosts[(hosts.length - serverIndex)]
             serverIndex +=1
+            server = hosts[(hosts.length - serverIndex)]
             console.log(`  + trying '${server}'`)
             resolve(await searchSingle(searchTerm, env, page, server, serverIndex))
           }
