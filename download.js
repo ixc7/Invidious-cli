@@ -15,24 +15,23 @@ const openPlayer = (file, dir) => {
     \rplaying file with ${bold(player)}
     \rpress ${bold('q')} to quit
   `))
-
-  child.on('exit', code => {
-    if (code !== 0) console.log('error opening file')
-    rmdir(dir)
-    process.exit(0)
-  })
-
   process.stdin.pipe(child.stdin)
+
+  return new Promise(() => {
+    child.on('exit', code => {
+      if (code !== 0) console.log('error opening file')
+      rmdir(dir)
+      process.exit(0)
+    })
+  })
 }
 
 const downloadFile = (title, file, url, dir) => {
   const { format, downloader, player } = config
   const fileName = `${file}.${format}`
-  const filePath = `${dir}/${fileName}`
+  const filePath = `${dir}/${fileName}`  
 
-  // TODO is kill all other stdin listeners first handled already? does it need to be?
   const rl = mkInterface()
-  
   const child = spawn(
     downloader,
     [
@@ -55,22 +54,18 @@ const downloadFile = (title, file, url, dir) => {
     `)
   })
   
-  return new Promise((resolve, reject) => {
-    rl.input.on('keypress', (char, props) => {
-      if (char === 'q')  {
-        rl.close()
-        process.stdin.removeAllListeners('keypress')
-        child.kill()
-        rmdir(dir)
-        console.log('\ndownload cancelled\n')
-        process.exit(0)
-      }
-    })
+  rl.input.on('keypress', (char, props) => {
+    if (char === 'q')  {
+      rmdir(dir)
+      child.kill()
+    }
+  })
   
+  return new Promise(resolve => {
     child.on('exit', code => {
       if (code !== 0) {
-        // console.log('error downloading file')
-        reject()
+        console.log('\ndownload cancelled\n')
+        process.exit(0)
       } else {
         rl.close()
         process.stdin.removeAllListeners('keypress')
@@ -80,4 +75,4 @@ const downloadFile = (title, file, url, dir) => {
   })
 }
 
-export { downloadFile, openPlayer }
+export default downloadFile

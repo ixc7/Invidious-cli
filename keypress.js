@@ -1,6 +1,6 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
-import { downloadFile } from './download.js'
+import downloadFile from './download.js'
 import { bold, mkPrompt, mkInterface } from './util.js'
 import search from './search.js'
 import config from './config.js'
@@ -30,27 +30,15 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
         try {
           await downloadFile(selection, fileName, url, destinationFolder)
         } 
-        catch (e) {
+        catch {
           rl.close()
           process.stdin.removeAllListeners('keypress')
-          console.log('error downloading file (keypress.js)\n')
-          // if (e) console.log('error downloading file\n', e, e.code)
         }
 
-        if (!repeat) process.exit(0)
         const newSearchTerm = await mkPrompt()
         console.log(`searching for ${bold(newSearchTerm)}`)
-        const newSearchResults = await search(newSearchTerm, pages)
 
-        /*
-        if (!newSearchResults.length) {
-            console.log('no results')
-            if (!repeat) process.exit(0)
-            newSearchTerm = await mkPrompt()
-            newSearchResults = await search(newSearchTerm, pages)
-        }
-        */
-        
+        const newSearchResults = await search(newSearchTerm, pages)
         const newMatchList = newSearchResults.map(m => m.title)
         
         console.clear()
