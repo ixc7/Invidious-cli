@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
-import { bold, mkInterface, rmdir } from './util.js'
+import { bold, mkInterface, mkPrompt, rmdir } from './util.js'
 import config from './config.js'
-const { player, playerOptions } = config
+const { player, playerOptions, save, folder } = config
 
 const openPlayer = (file, dir) => {
   const filePath = `${dir}/${file}`
@@ -19,16 +19,22 @@ const openPlayer = (file, dir) => {
   process.stdin.pipe(child.stdin)
 
   return new Promise(() => {
-    child.on('exit', code => {
-      if (code !== 0) console.log('error opening file')
-      rmdir(dir)
+    child.on('exit', async code => {
+      if (code !== 0) {
+        console.log('error opening file')
+        rmdir(dir)
+        process.exit(0)
+      } 
+
+      if (!save) rmdir(dir) // TODO dont delete the entire folder if not empty. could move from mktemp to destination...
+      else console.log(`saved '${file}' to '${folder}'`)
       process.exit(0)
     })
   })
 }
 
 const downloadFile = (title, file, url, dir) => {
-  const { format, downloader, player } = config
+  const { format, downloader, player, downloaderOptions } = config
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`  
 
@@ -36,10 +42,9 @@ const downloadFile = (title, file, url, dir) => {
   const child = spawn(
     downloader,
     [
-      '--quiet',
-      '--progress',
       `--format=${format}`,
       `--output=${filePath}`,
+      ...downloaderOptions,
       url
     ],
     { stdio: ['pipe', process.stdout, process.stderr] }
@@ -63,14 +68,14 @@ const downloadFile = (title, file, url, dir) => {
   })
   
   return new Promise(resolve => {
-    child.on('exit', code => {
+    child.on('exit', async code => {
       if (code !== 0) {
         console.log('\ndownload cancelled')
         process.exit(0)
       } else {
         rl.close()
         process.stdin.removeAllListeners('keypress')
-        resolve(openPlayer(fileName, dir))
+        resolve(await openPlayer(fileName, dir))
       }
     })
   })

@@ -20,12 +20,14 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
     if (props.name === 'return' && selection) {
       const url = fzf.find(selection)[0].item.url
       const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
-      try {
+      // try {
         await downloadFile(selection, fileName, url, destinationFolder)
-      } 
-      catch {
-        process.exit(0)
-      }
+                
+      // }
+      // catch {
+        // console.log('WELCOME TO THE CATCH BLOK MOTHER FUCKER.')
+        // process.exit(0)
+      // }
     }
 
     // -- MOVE AROUND
