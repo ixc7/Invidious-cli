@@ -2,7 +2,7 @@ import https from 'https'
 import { cursorTo } from 'readline'
 import { bold, mkPrompt } from './util.js'
 import config from './config.js'
-
+import fallback from './fallback.js'
 const { pages } = config
 
 // get server urls
@@ -30,7 +30,7 @@ const getServers = () => {
         
         // fallback to parsing markdown document if API is down.
         else {
-          const fallbackResults = await getServersFallback()
+          const fallbackResults = await fallback()
           if (fallbackResults.length) {
             resolve({ hosts: fallbackResults })
           }
