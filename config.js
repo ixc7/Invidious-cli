@@ -36,5 +36,5 @@ const videoPlayerConfig = {
   folder: './saved-videos'
 }
 
-// export default audioPlayerConfig
-export default videoPlayerConfig
+export default audioPlayerConfig
+// export default videoPlayerConfig
