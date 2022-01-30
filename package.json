@@ -1,6 +1,6 @@
 {
   "name": "invidious",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "dependencies": {
     "fzf": "^0.4.1"
@@ -11,6 +11,9 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:ixc7/invidious-cli.git"
+  },
+  "publishConfig": {
+    "ixc7:registry":"https://npm.pkg.github.com"
   },
   "description": "music player for invidious.io",
   "homepage": "https://github.com/ixc7/invidious-cli#readme",
