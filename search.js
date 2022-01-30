@@ -21,19 +21,15 @@ const getServers = () => {
 
       res.on('end', async () => {
         const hosts = (JSON.parse(str))
-          .filter(item => !item[0].includes('.onion'))
+          .filter(item => !item[0].includes('.onion') && item[1].api)
           .map(item => `https://${item[0]}`)
           
-        if ( hosts.length ) {
-          resolve({ hosts })
-        }
+        if ( hosts.length ) resolve({ hosts })
         
         // fallback to parsing markdown document if API is down.
         else {
           const fallbackResults = await fallback()
-          if (fallbackResults.length) {
-            resolve({ hosts: fallbackResults })
-          }
+          if (fallbackResults.length) resolve({ hosts: fallbackResults })
           else {
             console.log(`  + error fetching servers (empty response).`)
             process.exit(0)
