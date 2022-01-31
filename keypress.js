@@ -1,33 +1,25 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
 import downloadFile from './download.js'
-import { bold, mkPrompt, mkInterface } from './util.js'
+import { bold, mkPrompt, mkInterface, formatTime, noScroll, gotoTop } from './util.js'
 import search from './search.js'
 import config from './config.js'
 
 const { repeat, pages } = config
 
 const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => {
-  let fzf = new Fzf(searchResultsList, { selector: item => item.title })
+  const fzf = new Fzf(searchResultsList, { selector: item => item.title })
   let input = ''
   let render = false
   let position = 0
   let selection = matchList[0]
 
   const parser = async (char, props) => {
-
     // -- SUBMIT
     if (props.name === 'return' && selection) {
       const url = fzf.find(selection)[0].item.url
       const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
-      // try {
-        await downloadFile(selection, fileName, url, destinationFolder)
-                
-      // }
-      // catch {
-        // console.log('WELCOME TO THE CATCH BLOK MOTHER FUCKER.')
-        // process.exit(0)
-      // }
+      await downloadFile(selection, fileName, url, destinationFolder)
     }
 
     // -- MOVE AROUND
@@ -40,36 +32,35 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
 
     // ---- RENDERER
     if (render) {
-      console.clear()
-      render = false   
+      // console.clear()
+      noScroll()
+      render = false
 
       const matchingItems = fzf.find(input).map(obj => obj.item.title)
-      
+
       if (position > matchingItems.length - 1) {
         position = 0
         selection = matchingItems[0] || false
-      } 
-      else if (position < 0) {
+      } else if (position < 0) {
         position = matchingItems.length - 1
         selection = matchingItems[matchingItems.length - 1] || false
-      }
-      else selection = matchingItems[position] || false
+      } else selection = matchingItems[position] || false
 
       // TODO thumbnails
       if (matchingItems[0]) {
         const display = matchingItems.map(
           (item, index) => {
-            if (index === position) return bold(item) 
+            if (index === position) return bold(item)
             return item
           }
         )
-        .slice(position)
-        .slice(0, process.stdout.rows - 9)
-        .join('\n')
+          .slice(position)
+          .slice(0, process.stdout.rows - 9)
+          .join('\n')
 
-        cursorTo(process.stdout, 0, 1)
+        gotoTop()
         console.log(display)
-      } 
+      }
 
       let foundInfo = false
       let info = {
@@ -89,14 +80,14 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
       \rauthor: ${info.author || ''}
       \rviews: ${info.viewCount || ''}
       \radded: ${info.publishedText || ''}
-      \rlength: ${info.lengthSeconds || ''}
+      \rlength: ${formatTime(info.lengthSeconds) || ''}
       \r${input}`)
     }
   }
-
+  
   // initial render
-  console.clear()
-  cursorTo(process.stdout, 0, 1)
+  noScroll()
+  gotoTop()
   console.log(searchResultsList
     .slice(0, process.stdout.rows - 9)
     .map(

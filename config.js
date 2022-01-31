@@ -2,9 +2,9 @@
 const audioPlayerConfig = {
   format: 'm4a', // yt-dlp --list-formats <url> always has: m4a (audio), and mp4 (video)
   downloader: 'yt-dlp', // || youtube-dl
-  downloaderOptions: [ // don't use '--progress' with youtube-dl (2021.12.17)
+  downloaderOptions: [
     '--quiet',
-    '--progress'
+    '--progress' // don't use '--progress' with youtube-dl (2021.12.17)
   ],
   player: 'mpv', // || anything else that takes the filename/path as the first argument
   playerOptions: [ // || anything else
@@ -18,7 +18,7 @@ const audioPlayerConfig = {
 
 const videoPlayerConfig = {
   format: 'mp4',
-  downloader: 'yt-dlp', 
+  downloader: 'yt-dlp',
   downloaderOptions: [
     '--quiet',
     '--progress'
@@ -26,15 +26,15 @@ const videoPlayerConfig = {
   player: 'mpv',
   playerOptions: [
     '--audio-pitch-correction=no',
-    '--autofit=25%',
+    '--autofit=50%',
     '--geometry=100%:100%',
     '--ontop',
-    '--loop',
+    '--loop'
   ],
-  pages: 2,
+  pages: 10,
   save: false,
   folder: './saved-videos'
 }
 
-export default audioPlayerConfig
-// export default videoPlayerConfig
+export default videoPlayerConfig
+// export { audioPlayerConfig, videoPlayerConfig }

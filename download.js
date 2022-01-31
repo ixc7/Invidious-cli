@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import { bold, mkInterface, mkPrompt, rmdir } from './util.js'
+import { bold, mkInterface, mkPrompt, rmdir, noScroll } from './util.js'
 import config from './config.js'
 const { player, playerOptions, save, folder } = config
 
@@ -10,12 +10,12 @@ const openPlayer = (file, dir) => {
     [filePath, ...playerOptions],
     { stdio: ['pipe', process.stdout, process.stderr] }
   )
-    
+
   child.on('spawn', () => console.log(`
     \rplaying file with ${bold(player)}
     \rpress ${bold('q')} to quit
   `))
-  
+
   process.stdin.pipe(child.stdin)
 
   return new Promise(() => {
@@ -24,7 +24,7 @@ const openPlayer = (file, dir) => {
         console.log('error opening file')
         rmdir(dir)
         process.exit(0)
-      } 
+      }
 
       if (!save) rmdir(dir) // TODO dont delete the entire folder if not empty. could move from mktemp to destination...
       else console.log(`saved '${file}' to '${folder}'`)
@@ -36,7 +36,7 @@ const openPlayer = (file, dir) => {
 const downloadFile = (title, file, url, dir) => {
   const { format, downloader, player, downloaderOptions } = config
   const fileName = `${file}.${format}`
-  const filePath = `${dir}/${fileName}`  
+  const filePath = `${dir}/${fileName}`
 
   const rl = mkInterface()
   const child = spawn(
@@ -51,7 +51,8 @@ const downloadFile = (title, file, url, dir) => {
   )
 
   child.on('spawn', () => {
-    console.clear()
+    // console.clear()
+    noScroll()
     console.log(
       `\n\rvideo: ${bold(title)}
       \rurl: ${bold(url)}
@@ -59,14 +60,14 @@ const downloadFile = (title, file, url, dir) => {
       \rpress ${bold('q')} to cancel`
     )
   })
-  
+
   rl.input.on('keypress', (char, props) => {
     if (char === 'q') {
       rmdir(dir)
       child.kill()
     }
   })
-  
+
   return new Promise(resolve => {
     child.on('exit', async code => {
       if (code !== 0) {

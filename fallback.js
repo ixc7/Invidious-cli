@@ -8,15 +8,15 @@ const list = 'https://raw.githubusercontent.com/iv-org/documentation/master/Invi
 // grep server addresses from markdown
 const formatResult = arr => {
   return arr
-  .split('\n')
-  .filter(x => x.includes('https') && x.includes('*'))
-  .map(x => {
-    const start = x.indexOf('https')
-    const end = x.indexOf(')')
-    const url = x.substr(start, end - start)
-    if (url.substr(url.length - 1) === '/') return url.substr(0, url.length - 1)
-    return url
-  })
+    .split('\n')
+    .filter(x => x.includes('https') && x.includes('*'))
+    .map(x => {
+      const start = x.indexOf('https')
+      const end = x.indexOf(')')
+      const url = x.substr(start, end - start)
+      if (url.substr(url.length - 1) === '/') return url.substr(0, url.length - 1)
+      return url
+    })
 }
 
 // request document + return formatted list
