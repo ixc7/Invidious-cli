@@ -46,4 +46,4 @@ const mkPrompt = (prompt = 'search: ') => {
   })
 }
 
-export { bold, mktemp, gotoTop, /*goto,*/ noScroll, mkInterface, mkPrompt, rmdir, formatTime }
+export { bold, mktemp, gotoTop, noScroll, mkInterface, mkPrompt, rmdir, formatTime }

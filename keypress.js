@@ -1,11 +1,11 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
 import downloadFile from './download.js'
-import { bold, mkPrompt, mkInterface, formatTime, noScroll, gotoTop } from './util.js'
-import search from './search.js'
-import config from './config.js'
+import { bold, formatTime, noScroll, gotoTop } from './util.js'
+// import search from './search.js'
+// import config from './config.js'
 
-const { repeat, pages } = config
+// const { repeat, pages } = config
 
 const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => {
   const fzf = new Fzf(searchResultsList, { selector: item => item.title })
@@ -84,7 +84,7 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
       \r${input}`)
     }
   }
-  
+
   // initial render
   noScroll()
   gotoTop()

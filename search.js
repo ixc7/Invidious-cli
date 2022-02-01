@@ -16,7 +16,7 @@ const getServers = () => {
 
     req.on('response', res => {
       let str = ''
-      res.on('data', d => str += d.toString('utf8'))
+      res.on('data', d => { str += d.toString('utf8') })
 
       res.on('end', async () => {
         const hosts = (JSON.parse(str))
@@ -76,7 +76,7 @@ const searchSingle = async (searchTerm, environment = false, page = 1, serverNam
 
     req.on('response', res => {
       let resToString = ''
-      res.on('data', chunk => resToString += chunk.toString('utf8'))
+      res.on('data', chunk => { resToString += chunk.toString('utf8') })
 
       res.on('end', async () => {
         if (res.statusCode !== 200) {
@@ -154,7 +154,7 @@ const main = async (environment = false) => {
   const input = await mkPrompt()
 
   console.log(`searching for ${bold(input)}`)
-  const res = await searchMultiple(input, pages)
+  const res = await searchMultiple(input, pages, env)
 
   if (!res.length) {
     console.log('no results')

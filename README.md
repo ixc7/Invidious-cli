@@ -4,6 +4,11 @@
 search and play youtube files from the command line  
 allows searching for unlimited pages
 
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg?style=flat-square)](https://standardjs.com)
+[![invidious](https://img.shields.io/npm/v/invidious?style=flat-square)](https://www.npmjs.com/package/rpn-postfix-cli)
+
+---
+
 ---
 
 requirements:

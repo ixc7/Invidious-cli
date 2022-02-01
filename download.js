@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import { bold, mkInterface, mkPrompt, rmdir, noScroll } from './util.js'
+import { bold, mkInterface, rmdir, noScroll } from './util.js'
 import config from './config.js'
 const { player, playerOptions, save, folder } = config
 
@@ -20,6 +20,8 @@ const openPlayer = (file, dir) => {
 
   return new Promise(() => {
     child.on('exit', async code => {
+      // console.log('MPV EXIT')
+
       if (code !== 0) {
         console.log('error opening file')
         rmdir(dir)
@@ -34,7 +36,7 @@ const openPlayer = (file, dir) => {
 }
 
 const downloadFile = (title, file, url, dir) => {
-  const { format, downloader, player, downloaderOptions } = config
+  const { format, downloader, downloaderOptions } = config
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
 

@@ -1,14 +1,16 @@
-import { bold, mkInterface, mktemp, mkPrompt } from './util.js'
+import { mkInterface, mktemp } from './util.js'
 import mkParser from './keypress.js'
 import search from './search.js'
 import config from './config.js'
 
-const  dir = config.save ? config.folder : mktemp()
-// const dir = mktemp() // || THE SAVE DIR.
+const run = async () => {
+  const dir = config.save ? config.folder : mktemp()
+  const results = await search()
+  const matches = results.map(m => m.title)
+  const rl = mkInterface()
+  const handler = await mkParser(matches, results, dir, rl)
 
-const results = await search()
-const matches = results.map(m => m.title)
-const rl = mkInterface()
+  rl.input.on('keypress', handler)
+}
 
-const handler = await mkParser(matches, results, dir, rl)
-rl.input.on('keypress', handler)
+run()

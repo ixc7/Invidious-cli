@@ -1,4 +1,5 @@
 
+/*
 const audioPlayerConfig = {
   format: 'm4a', // yt-dlp --list-formats <url> always has: m4a (audio), and mp4 (video)
   downloader: 'yt-dlp', // || youtube-dl
@@ -15,8 +16,10 @@ const audioPlayerConfig = {
   save: false, // save downloaded files
   folder: './saved-audio' // where to save
 }
+*/
 
-const videoPlayerConfig = {
+// const videoPlayerConfig = {
+const defaultConfig = {
   format: 'mp4',
   downloader: 'yt-dlp',
   downloaderOptions: [
@@ -28,13 +31,13 @@ const videoPlayerConfig = {
     '--audio-pitch-correction=no',
     '--autofit=50%',
     '--geometry=100%:100%',
-    '--ontop',
-    '--loop'
+    // '--ontop',
+    '--loop',
+    '--window-minimized=yes' // (temp bugfix, keypresses get stuck on kitty terminal)
   ],
   pages: 10,
   save: false,
   folder: './saved-videos'
 }
 
-export default videoPlayerConfig
-// export { audioPlayerConfig, videoPlayerConfig }
+export default defaultConfig

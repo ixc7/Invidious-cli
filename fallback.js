@@ -25,7 +25,7 @@ const serversFromMarkdown = () => {
     const req = https.request(list)
     req.on('response', res => {
       let str = ''
-      res.on('data', d => str += d.toString('utf8'))
+      res.on('data', d => { str += d.toString('utf8') })
       res.on('end', () => resolve(formatResult(str)))
     })
     req.end()
