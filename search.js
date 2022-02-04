@@ -9,8 +9,13 @@ const getServers = () => {
   return new Promise(resolve => {
     const req = https.request('https://api.invidious.io/instances.json')
 
-    req.on('error', e => {
+    req.on('error', async (e) => {
       console.log(`  + error fetching servers (${e}).`)
+
+      // TODO remove duplicate
+      const fallbackResults = await fallback()
+      if (fallbackResults.length) resolve({ hosts: fallbackResults })
+      else console.log('  + error fetching servers (empty response).')
       process.exit(0)
     })
 
