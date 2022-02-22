@@ -13,9 +13,17 @@
     "url": "git@github.com:ixc7/invidious-cli.git"
   },
   "publishConfig": {
-    "ixc7:registry":"https://npm.pkg.github.com"
+    "ixc7:registry": "https://npm.pkg.github.com"
   },
   "description": "music player for invidious.io",
   "homepage": "https://github.com/ixc7/invidious-cli#readme",
-  "keywords": [ "invidious", "cli", "music", "youtube", "youtube-dl", "yt-dlp", "mpv" ]
+  "keywords": [
+    "invidious",
+    "cli",
+    "music",
+    "youtube",
+    "youtube-dl",
+    "yt-dlp",
+    "mpv"
+  ]
 }

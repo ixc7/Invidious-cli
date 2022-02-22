@@ -1,4 +1,3 @@
-
 ## media player for [invidious.io](https://invidious.io)
 
 search and play youtube files from the command line  
@@ -10,8 +9,9 @@ allows searching for unlimited pages
 ---
 
 requirements:
-+ [yt-dlp](https://github.com/yt-dlp/yt-dlp) or [youtube-dl](https://github.com/ytdl-org/youtube-dl/)
-+ [mpv](https://github.com/mpv-player/mpv) (or similar)
+
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) or [youtube-dl](https://github.com/ytdl-org/youtube-dl/)
+- [mpv](https://github.com/mpv-player/mpv) (or similar)
 
 ---
 
@@ -31,7 +31,7 @@ npm install
 node app.js
 ```
 
-or 
+or
 
 ```
 npx invidious

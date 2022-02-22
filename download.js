@@ -5,30 +5,29 @@ const { player, playerOptions, save, folder } = config
 
 const openPlayer = (file, dir) => {
   const filePath = `${dir}/${file}`
-  const child = spawn(
-    player,
-    [filePath, ...playerOptions],
-    { stdio: ['pipe', process.stdout, process.stderr] }
-  )
+  const child = spawn(player, [filePath, ...playerOptions], {
+    stdio: ['pipe', process.stdout, process.stderr]
+  })
 
-  child.on('spawn', () => console.log(`
+  child.on('spawn', () =>
+    console.log(`
     \rplaying file with ${bold(player)}
     \rpress ${bold('q')} to quit
-  `))
+  `)
+  )
 
   process.stdin.pipe(child.stdin)
 
   return new Promise(() => {
     child.on('exit', async code => {
-      // console.log('MPV EXIT')
-
       if (code !== 0) {
         console.log('error opening file')
         rmdir(dir)
         process.exit(0)
       }
 
-      if (!save) rmdir(dir) // TODO dont delete the entire folder if not empty. could move from mktemp to destination...
+      if (!save) rmdir(dir)
+      // TODO dont delete the entire folder if not empty. could move from mktemp to destination...
       else console.log(`saved '${file}' to '${folder}'`)
       process.exit(0)
     })
@@ -43,17 +42,11 @@ const downloadFile = (title, file, url, dir) => {
   const rl = mkInterface()
   const child = spawn(
     downloader,
-    [
-      `--format=${format}`,
-      `--output=${filePath}`,
-      ...downloaderOptions,
-      url
-    ],
+    [`--format=${format}`, `--output=${filePath}`, ...downloaderOptions, url],
     { stdio: ['pipe', process.stdout, process.stderr] }
   )
 
   child.on('spawn', () => {
-    // console.clear()
     noScroll()
     console.log(
       `\n\rvideo: ${bold(title)}
