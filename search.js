@@ -1,5 +1,6 @@
 import https from 'https'
-import { bold, mkPrompt, gotoTop, noScroll } from './util.js'
+import { cursorTo } from 'readline'
+import { bold, mkPrompt, noScroll } from './util.js'
 import config from './config.js'
 import fallback from './fallback.js'
 const { pages } = config
@@ -21,9 +22,7 @@ const getServers = () => {
 
     req.on('response', res => {
       let str = ''
-      res.on('data', d => {
-        str += d.toString('utf8')
-      })
+      res.on('data', d => (str += d.toString('utf8')))
 
       res.on('end', async () => {
         const hosts = JSON.parse(str)
@@ -31,9 +30,8 @@ const getServers = () => {
           .map(item => `https://${item[0]}`)
 
         if (hosts.length) resolve({ hosts })
-        if (hosts.length) resolve({ hosts })
-        // fallback to parsing markdown document if API is down.
         else {
+          // fallback to parsing markdown document if API is down.
           const fallbackResults = await fallback()
           if (fallbackResults.length) resolve({ hosts: fallbackResults })
           else {
@@ -56,23 +54,13 @@ const searchSingle = async (
   serverName = false,
   serverIndex = 0
 ) => {
-  // const env = environment || (await getServers())
   const { hosts } = env
   let server = serverName || hosts[0]
   const serverCount = hosts.length
 
   return new Promise((resolve, reject) => {
-    const query = new URL('/api/v1/search', `${server}/api`)
-
-    query.searchParams.set('q', searchTerm)
-    query.searchParams.set('page', page)
-
-    const req = https.request(query.href)
-    req.setHeader('Accept', 'application/json')
-
-    // TODO remove duplicate (2)
-    req.on('error', async e => {
-      console.log(`  + '${server}' cannot be reached (${e}).`)
+    const changeServer = async msg => {
+      console.log(msg)
       serverIndex += 1
       server = hosts[hosts.length - serverIndex]
       if (serverIndex < serverCount) {
@@ -80,31 +68,33 @@ const searchSingle = async (
         resolve(await searchSingle(searchTerm, env, page, server, serverIndex))
       } else {
         console.log(bold('no servers available.'))
-        process.exit(0)
+        process.exit(1)
       }
+    }
+
+    const query = new URL('/api/v1/search', `${server}/api`)
+    query.searchParams.set('q', searchTerm)
+    query.searchParams.set('page', page)
+
+    const req = https.request(query.href)
+    req.setHeader('Accept', 'application/json')
+
+    req.on('error', async e => {
+      resolve(await changeServer(`  + '${server}' cannot be reached (${e}).`))
     })
 
     req.on('response', res => {
       let resToString = ''
-      res.on('data', chunk => {
-        resToString += chunk.toString('utf8')
-      })
+
+      res.on('data', d => (resToString += d.toString('utf8')))
 
       res.on('end', async () => {
         if (res.statusCode !== 200) {
-          console.log(`  + '${server}' returned an error (${res.statusCode}).`)
-          serverIndex += 1
-          server = hosts[hosts.length - serverIndex]
-
-          if (serverIndex < serverCount) {
-            console.log(`  + trying '${server}'`)
-            resolve(
-              await searchSingle(searchTerm, env, page, server, serverIndex)
+          resolve(
+            await changeServer(
+              `  + '${server}' returned an error (${res.statusCode}).`
             )
-          } else {
-            console.log(bold('no servers available.'))
-            process.exit(0)
-          }
+          )
         } else {
           try {
             resolve({
@@ -133,12 +123,10 @@ const searchSingle = async (
               )
             })
           } catch (e) {
-            console.log(`  + '${server}' returned an invalid response (${e}).`)
-            serverIndex += 1
-            server = hosts[hosts.length - serverIndex]
-            console.log(`  + trying '${server}'`)
             resolve(
-              await searchSingle(searchTerm, env, page, server, serverIndex)
+              await changeServer(
+                `  + '${server}' returned an invalid response (${e}).`
+              )
             )
           }
         }
@@ -150,15 +138,14 @@ const searchSingle = async (
 }
 
 // get multiple pages
-const searchMultiple = async (searchTerm = false, max = pages, env) => {
-  if (!searchTerm) return false
+const searchMultiple = async (searchTerm, env, max = pages) => {
+  if (!searchTerm.length) return false
   let server = env.hosts[0]
   let final = []
 
-  noScroll()
-
   for (let i = 1; i < max + 1; i += 1) {
-    gotoTop()
+    // gotoTop()
+    cursorTo(process.stdout, 0, 1)
     console.log(`fetching page ${bold(i)} of ${bold(max)}`)
     if (server) console.log(`server: ${bold(server)}`)
     const res = await searchSingle(searchTerm, env, i, server)
@@ -175,12 +162,13 @@ const main = async (environment = false) => {
   const env = environment || (await getServers())
   const input = await mkPrompt()
 
+  noScroll()
   console.log(`searching for ${bold(input)}`)
-  const res = await searchMultiple(input, pages, env)
+  const res = await searchMultiple(input, env)
 
   if (!res.length) {
     console.log('no results')
-    process.exit(0)
+    process.exit(1)
   }
 
   return res
