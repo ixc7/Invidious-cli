@@ -1,11 +1,7 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
 import downloadFile from './download.js'
-import { bold, formatTime, noScroll, gotoTop } from './util.js'
-// import search from './search.js'
-// import config from './config.js'
-
-// const { repeat, pages } = config
+import { bold, formatTime, noScroll } from './util.js'
 
 const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => {
   const fzf = new Fzf(searchResultsList, { selector: item => item.title })
@@ -17,85 +13,82 @@ const mkParser = async (matchList, searchResultsList, destinationFolder, rl) => 
   const parser = async (char, props) => {
     // -- SUBMIT
     if (props.name === 'return' && selection) {
-      const url = fzf.find(selection)[0].item.url
-      const fileName = selection.replace(/([^a-z0-9]+)/gi, '-')
-      await downloadFile(selection, fileName, url, destinationFolder)
+      const fileName = selection.title.replace(/([^a-z0-9]+)/gi, '-')
+      await downloadFile(selection.title, fileName, selection.url, destinationFolder)
     }
 
     // -- MOVE AROUND
     render = true
-
+    
     if (props.name === 'backspace') input = input.substring(0, input.length - 1)
     else if (props.name === 'down') position += 1
     else if (props.name === 'up') position -= 1
-    else if (char && !props.sequence.includes('\x1b')) input = input.concat(char)
+    else if (char && !props.sequence.includes('\x1b')) input += char 
 
     // ---- RENDERER
     if (render) {
-      // console.clear()
       noScroll()
       render = false
 
-      const matchingItems = fzf.find(input).map(obj => obj.item.title)
+      const matchingItems = fzf.find(input).map(({item}) => {
+        return {
+          title: item.title,
+          info: item.info,
+          url: item.url
+        }
+      })
 
       if (position > matchingItems.length - 1) {
         position = 0
-        selection = matchingItems[0] || false
+        selection = matchingItems[0]
       } else if (position < 0) {
         position = matchingItems.length - 1
-        selection = matchingItems[matchingItems.length - 1] || false
-      } else selection = matchingItems[position] || false
+        selection = matchingItems[matchingItems.length - 1]
+      } else selection = matchingItems[position]
 
       // TODO thumbnails
       if (matchingItems[0]) {
         const display = matchingItems.map(
           (item, index) => {
-            if (index === position) return bold(item)
-            return item
+            if (index === position) return bold(item.title)
+            return item.title
           }
         )
-          .slice(position)
-          .slice(0, process.stdout.rows - 9)
-          .join('\n')
+        .slice(position)
+        .slice(0, process.stdout.rows - 9)
+        .join('\n')
 
-        gotoTop()
-        console.log(display)
+        cursorTo(process.stdout, 0, 0)
+        process.stdout.write(display)
       }
 
-      let foundInfo = false
-      let info = {
-        author: false,
-        viewCount: false,
-        publishedText: false,
-        lengthSeconds: false
+      if (matchingItems[position]) { 
+        cursorTo(process.stdout, 0, process.stdout.rows - 7)
+        const { author, viewCount, publishedText, lengthSeconds } = matchingItems[position].info
+        process.stdout.write(`
+          \rselection: ${selection.title}
+          \rauthor: ${author}
+          \rviewCount: ${viewCount}
+          \rPublishedText: ${publishedText}
+          \rlengthSeconds: ${formatTime(lengthSeconds)}
+        `)
       }
 
-      if (matchingItems[position]) foundInfo = fzf.find(matchingItems[position])
-      if (foundInfo) info = foundInfo[0].item.info
-
-      // TODO make this good
-      cursorTo(process.stdout, 0, process.stdout.rows - 7)
-      process.stdout.write(`
-      \rselection: ${selection ? (position + 1) + ' -' : ''} ${selection || 'none'}
-      \rauthor: ${info.author || ''}
-      \rviews: ${info.viewCount || ''}
-      \radded: ${info.publishedText || ''}
-      \rlength: ${formatTime(info.lengthSeconds) || ''}
-      \r${input}`)
+      cursorTo(process.stdout, 0, process.stdout.rows - 1)
+      process.stdout.write(`-> ${input}`)
     }
   }
 
   // initial render
+  // TODO duplicate
   noScroll()
-  gotoTop()
-  console.log(searchResultsList
+  cursorTo(process.stdout, 0, 0)
+  process.stdout.write(searchResultsList
     .slice(0, process.stdout.rows - 9)
-    .map(
-      (item, index) => {
-        if (index === 0) return bold(item.title)
-        return item.title
-      }
-    )
+    .map((item, index) => {
+      if (index === 0) return bold(item.title)
+      return item.title
+    })
     .join('\n')
   )
 
