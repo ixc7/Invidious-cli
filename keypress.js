@@ -3,6 +3,11 @@ import { Fzf } from 'fzf'
 import downloadFile from './download.js'
 import { bold, formatTime, noScroll } from './util.js'
 
+const draw = (content, x = 0, y = 0)  => {
+  cursorTo(process.stdout, x, y)
+  process.stdout.write(content) // , 'utf8'
+}
+
 const mkParser = async (searchResultsList, destinationFolder) => {
   const fzf = new Fzf(searchResultsList, { selector: item => item.title })
   let selection = false
@@ -10,14 +15,14 @@ const mkParser = async (searchResultsList, destinationFolder) => {
   let position = 0
   let input = ''
 
-  const parser = async (char, props) => {
+  const keypressParser = async (char, props) => {
     // -- SUBMIT
     if (props.name === 'return' && selection) {
       const fileName = selection.title.replace(/([^a-z0-9]+)/gi, '-')
       await downloadFile(selection.title, fileName, selection.url, destinationFolder)
     }
 
-    // -- MOVE AROUND
+    // -- MOVE AROUND FLAG
     render = true
     
     if (props.name === 'backspace') input = input.substring(0, input.length - 1)
@@ -25,17 +30,16 @@ const mkParser = async (searchResultsList, destinationFolder) => {
     else if (props.name === 'up') position -= 1
     else if (char && !props.sequence.includes('\x1b')) input += char
 
-    // ---- RENDERER
+    // ---- DRAW SCREEN
     // TODO thumbnails
     if (render) {
       render = false
-            
-      const matchingItems = fzf.find(input).map(({item}, index) => {
+
+      const matchingItems = fzf.find(input).map(({item}) => {
         return {
           title: item.title,
           info: item.info,
-          url: item.url,
-          index
+          url: item.url
         }
       })
 
@@ -43,14 +47,12 @@ const mkParser = async (searchResultsList, destinationFolder) => {
       else if (position < 0) position = matchingItems.length - 1
 
       selection = matchingItems[position]
-
       noScroll()
 
       if (selection) {
         const { author, viewCount, publishedText, lengthSeconds } = selection.info
-        
-        cursorTo(process.stdout, 0, 0)
-        process.stdout.write(
+
+        draw(
           `${bold(selection.title)}\n` +
           matchingItems
           .slice(position + 1, position + (process.stdout.rows - 9))
@@ -58,35 +60,30 @@ const mkParser = async (searchResultsList, destinationFolder) => {
           .join('\n')
         )
 
-        cursorTo(process.stdout, 0, process.stdout.rows - 7)
-        process.stdout.write(
-        `
+        draw(`
           \rselection: ${selection.title}
           \rauthor: ${author}
           \rviewCount: ${viewCount}
           \rPublishedText: ${publishedText}
           \rlengthSeconds: ${formatTime(lengthSeconds)}
-        `)
+        `, 0, process.stdout.rows - 7)
       }
 
-      cursorTo(process.stdout, 0, process.stdout.rows - 1)
-      process.stdout.write(`-> ${input}`)
+      draw(`-> ${input}`, 0, process.stdout.rows - 1)
     }
   }
 
-  // initial render
-  // TODO duplicate
+  // initial
   noScroll()
-  cursorTo(process.stdout, 0, 0)
-  process.stdout.write(
-    // `${bold(searchResultsList[0].title)}\n` +
+  draw(
+    `${bold(searchResultsList[0].title)}\n` +
     searchResultsList
-    .slice(0, process.stdout.rows - 9)
+    .slice(1, process.stdout.rows - 9)
     .map(res => res.title)
     .join('\n')
   )
 
-  return parser
+  return keypressParser
 }
 
 export default mkParser
