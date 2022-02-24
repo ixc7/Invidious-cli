@@ -1,9 +1,7 @@
 node_modules/
-
 package-lock.json
-notes.md
-temp.js
 
-*.webm*
 .DS_Store
+*.webm*
 
+notes.md

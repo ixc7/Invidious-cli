@@ -8,7 +8,7 @@ const draw = (content, x = 0, y = 0) => {
   process.stdout.write(content) // , 'utf8'
 }
 
-const mkParser = async (searchResultsList, destinationFolder) => {
+const keypressHandle = async (searchResultsList, destinationFolder) => {
   const fzf = new Fzf(searchResultsList, { selector: item => item.title })
   let selection = false
   let render = false
@@ -40,18 +40,12 @@ const mkParser = async (searchResultsList, destinationFolder) => {
     if (render) {
       render = false
 
-      const matchingItems = fzf.find(input).map(({ item }) => {
-        return {
-          title: item.title,
-          info: item.info,
-          url: item.url
-        }
-      })
+      const matchingItems = fzf.find(input).map(({ item }) => item)
 
       if (position > matchingItems.length - 1) position = 0
       else if (position < 0) position = matchingItems.length - 1
-
       selection = matchingItems[position]
+
       noScroll()
 
       if (selection) {
@@ -92,8 +86,9 @@ const mkParser = async (searchResultsList, destinationFolder) => {
         .map(res => res.title)
         .join('\n')
   )
+  draw(`-> ${input}`, 0, process.stdout.rows - 1)
 
   return keypressParser
 }
 
-export default mkParser
+export default keypressHandle

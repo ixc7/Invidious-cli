@@ -8,6 +8,9 @@
   "bin": {
     "inv": "./app.js"
   },
+  "scripts": {
+    "dev": "node todo.js | bat -lr; ${EDITOR} *.js"
+  },
   "repository": {
     "type": "git",
     "url": "git@github.com:ixc7/invidious-cli.git"

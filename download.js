@@ -1,24 +1,31 @@
 import { spawn } from 'child_process'
 import { bold, mkInterface, rmdir, noScroll } from './util.js'
-import config from './config.js'
-const { player, playerOptions, save, folder } = config
+import {
+  player,
+  playerOptions,
+  save,
+  folder,
+  format,
+  downloader,
+  downloaderOptions
+} from './config.js'
 
-const openPlayer = (file, dir) => {
-  const filePath = `${dir}/${file}`
-  const child = spawn(player, [filePath, ...playerOptions], {
-    stdio: ['pipe', process.stdout, process.stderr]
-  })
-
-  child.on('spawn', () =>
-    console.log(`
-    \rplaying file with ${bold(player)}
-    \rpress ${bold('q')} to quit
-  `)
-  )
-
-  process.stdin.pipe(child.stdin)
-
+export const openPlayer = (file, dir) => {
   return new Promise(() => {
+    const filePath = `${dir}/${file}`
+    const child = spawn(player, [filePath, ...playerOptions], {
+      stdio: ['pipe', process.stdout, process.stderr]
+    })
+
+    child.on('spawn', () =>
+      console.log(`
+        \rplaying file with ${bold(player)}
+        \rpress ${bold('q')} to quit
+      `)
+    )
+
+    process.stdin.pipe(child.stdin)
+
     child.on('exit', async code => {
       if (code !== 0) {
         console.log('error opening file')
@@ -27,15 +34,15 @@ const openPlayer = (file, dir) => {
       }
 
       if (!save) rmdir(dir)
-      // TODO dont delete the entire folder if not empty. could move from mktemp to destination...
+      // TODO dont delete the entire folder if not empty.
+      //      could move from mktemp to destination
       else console.log(`saved '${file}' to '${folder}'`)
       process.exit(0)
     })
   })
 }
 
-const downloadFile = (title, file, url, dir) => {
-  const { format, downloader, downloaderOptions } = config
+export const download = (title, file, url, dir) => {
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
 
@@ -48,12 +55,12 @@ const downloadFile = (title, file, url, dir) => {
 
   child.on('spawn', () => {
     noScroll()
-    console.log(
-      `\n\rvideo: ${bold(title)}
+    console.log(`
+      \rvideo: ${bold(title)}
       \rurl: ${bold(url)}
       \rdownloading file with ${bold(downloader)}
-      \rpress ${bold('q')} to cancel`
-    )
+      \rpress ${bold('q')} to cancel
+    `)
   })
 
   rl.input.on('keypress', (char, props) => {
@@ -77,4 +84,4 @@ const downloadFile = (title, file, url, dir) => {
   })
 }
 
-export default downloadFile
+export default download
