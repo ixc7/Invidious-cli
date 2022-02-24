@@ -1,19 +1,19 @@
 import https from 'https'
-import fallback from './fallback.js'
+import { serversMd } from './serversMd.js'
+// import serversMd from './serversMd.js'
 
-// get server urls
-const getServers = () => {
+export const getServers = () => {
   return new Promise(resolve => {
     const req = https.request('https://api.invidious.io/instances.json')
 
     req.on('error', async e => {
       console.log(`  + error fetching servers (${e}).`)
 
-      // fallback to parsing markdown document if API is down.
-      // TODO remove duplicate (1)
-      const fallbackResults = await fallback()
-      if (fallbackResults.length) resolve({ hosts: fallbackResults })
-      else console.log('  + error fetching servers (empty response).')
+      // serversMd to parsing markdown document if API is down.
+      const serversMdResults = await serversMd()
+      if (serversMdResults.length) resolve({ hosts: serversMdResults })
+
+      console.log('  + error fetching servers (empty response).')
       process.exit(1)
     })
 
@@ -27,14 +27,12 @@ const getServers = () => {
           .map(item => `https://${item[0]}`)
 
         if (hosts.length) resolve({ hosts })
+
+        const serversMdResults = await serversMd()
+        if (serversMdResults.length) resolve({ hosts: serversMdResults })
         else {
-          // TODO remove duplicate (2)
-          const fallbackResults = await fallback()
-          if (fallbackResults.length) resolve({ hosts: fallbackResults })
-          else {
-            console.log('  + error fetching servers (empty response).')
-            process.exit(1)
-          }
+          console.log('  + error fetching servers (empty response).')
+          process.exit(1)
         }
       })
     })

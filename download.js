@@ -31,6 +31,7 @@ export const openPlayer = (file, dir) => {
         console.log('error opening file')
         rmdir(dir)
         process.exit(0)
+        // process.exit(code)
       }
 
       if (!save) rmdir(dir)

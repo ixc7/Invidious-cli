@@ -3,11 +3,11 @@ import { request } from 'https'
 // fallback method to get list of invidious.io servers if the API is down
 
 // the markdown document with the list
-const markdown =
+export const markdownUrl =
   'https://raw.githubusercontent.com/iv-org/documentation/master/Invidious-Instances.md'
 
-// grep server addresses from markdown
-const formatResult = arr => {
+// grep server addresses from doc
+export const formatMd = arr => {
   return arr
     .split('\n')
     .filter(x => x.includes('https') && x.includes('*'))
@@ -22,17 +22,17 @@ const formatResult = arr => {
     })
 }
 
-// request document + return formatted list
-const serversFromMd = () => {
+// request doc + return formatted
+export const serversMd = () => {
   return new Promise(resolve => {
-    const req = request(markdown)
+    const req = request(markdownUrl)
     req.on('response', res => {
       let str = ''
       res.on('data', d => (str += d.toString('utf8')))
-      res.on('end', () => resolve(formatResult(str)))
+      res.on('end', () => resolve(formatMd(str)))
     })
     req.end()
   })
 }
 
-export default serversFromMd
+export default serversMd

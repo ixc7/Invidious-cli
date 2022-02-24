@@ -1,14 +1,13 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
-import downloadFile from './download.js'
 import { bold, formatTime, noScroll } from './util.js'
+import downloadFile from './download.js'
 
-const draw = (content, x = 0, y = 0) => {
-  cursorTo(process.stdout, x, y)
-  process.stdout.write(content) // , 'utf8'
-}
-
-const keypressHandle = async (searchResultsList, destinationFolder) => {
+export const keypressHandle = async (searchResultsList, destinationFolder) => {
+  const draw = (content, x = 0, y = 0) => {
+    cursorTo(process.stdout, x, y)
+    process.stdout.write(content) // , 'utf8'
+  }
   const fzf = new Fzf(searchResultsList, { selector: item => item.title })
   let selection = false
   let render = false
@@ -39,7 +38,6 @@ const keypressHandle = async (searchResultsList, destinationFolder) => {
     // TODO thumbnails
     if (render) {
       render = false
-
       const matchingItems = fzf.find(input).map(({ item }) => item)
 
       if (position > matchingItems.length - 1) position = 0
@@ -47,7 +45,6 @@ const keypressHandle = async (searchResultsList, destinationFolder) => {
       selection = matchingItems[position]
 
       noScroll()
-
       if (selection) {
         const { author, viewCount, publishedText, lengthSeconds } =
           selection.info
@@ -59,7 +56,6 @@ const keypressHandle = async (searchResultsList, destinationFolder) => {
               .map(res => res.title)
               .join('\n')
         )
-
         draw(
           `
           \rselection: ${selection.title}

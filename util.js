@@ -14,8 +14,8 @@ export const noScroll = () => process.stdout.write('\x1Bc\x1b[3J')
 // const goto = (x, y) => process.stdout.write(`\x1b[${y};${x}H`)
 
 export const formatTime = s => {
-  const zeros = x => {
-    const str = x.toString()
+  const zeros = n => {
+    const str = n.toString()
     if (str.length === 1) return `0${str}`
     return str
   }
@@ -24,12 +24,12 @@ export const formatTime = s => {
   return `${min}:${sec}`
 }
 
-export const mkInterface = (opts = {}) => {
-  process.stdin.removeAllListeners('keypress')
-  process.stdin.removeAllListeners('line')
+export const mkInterface = (opts, { stdin, stdout } = process) => {
+  stdin.removeAllListeners('keypress')
+  stdin.removeAllListeners('line')
   return createInterface({
-    input: process.stdin,
-    output: process.stdout,
+    input: stdin,
+    output: stdout,
     ...opts
   })
 }
@@ -37,13 +37,24 @@ export const mkInterface = (opts = {}) => {
 export const mkPrompt = (prompt = 'search: ') => {
   const rl = mkInterface({ prompt })
   return new Promise(resolve => {
-    rl.on('line', line => {
-      if (line.split('').filter(i => i !== ' ').length > 0) {
+    rl.on('line', ln => {
+      if (ln.split('').filter(i => i !== ' ').length > 0) {
         rl.close()
-        resolve(line)
+        resolve(ln)
       }
       rl.prompt()
     })
     rl.prompt()
   })
+}
+
+export default {
+  bold,
+  mktemp,
+  rmdir,
+  gotoTop,
+  noScroll,
+  formatTime,
+  mkInterface,
+  mkPrompt
 }

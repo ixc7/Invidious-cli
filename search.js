@@ -1,9 +1,8 @@
 import https from 'https'
 import { cursorTo } from 'readline'
+import { pages } from './config.js'
 import { bold, mkPrompt, noScroll } from './util.js'
-import config from './config.js'
 import getServers from './servers.js'
-const { pages } = config
 
 // get one page
 const search = async (

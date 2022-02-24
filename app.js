@@ -8,6 +8,4 @@ export const app = async () => {
   index.on('close', async () => await app())
 }
 
-export default app
-
-app()
+export default app()

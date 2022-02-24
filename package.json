@@ -9,7 +9,7 @@
     "inv": "./app.js"
   },
   "scripts": {
-    "dev": "node todo.js | bat -lr; ${EDITOR} *.js"
+    "dev": "${EDITOR} *.js"
   },
   "repository": {
     "type": "git",
