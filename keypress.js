@@ -14,9 +14,9 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
   let position = 0
   let input = ''
 
-  const keypressParser = async (char, props) => {
+  const keypressParse = async (char, { name, sequence }) => {
     // -- SUBMIT
-    if (props.name === 'return' && selection) {
+    if (name === 'return' && selection) {
       const fileName = selection.title.replace(/([^a-z0-9]+)/gi, '-')
       await downloadFile(
         selection.title,
@@ -26,25 +26,28 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
       )
     }
 
-    // -- MOVE AROUND FLAG
+    // ---- DRAW SCREEN
     render = true
 
-    if (props.name === 'backspace') input = input.substring(0, input.length - 1)
-    else if (props.name === 'down') position += 1
-    else if (props.name === 'up') position -= 1
-    else if (char && !props.sequence.includes('\x1b')) input += char
+    if (name === 'backspace') input = input.substring(0, input.length - 1)
+    else if (name === 'down' || name === 'right') position += 1
+    else if (name === 'up' || name === 'left') position -= 1
+    else if (char && !sequence.includes('\x1b') && name !== 'return') {
+      input += char
+    }
 
-    // ---- DRAW SCREEN
     // TODO thumbnails
     if (render) {
       render = false
       const matchingItems = fzf.find(input).map(({ item }) => item)
+      const len = matchingItems.length - 1
 
-      if (position > matchingItems.length - 1) position = 0
-      else if (position < 0) position = matchingItems.length - 1
+      if (position > len) position = 0
+      else if (position < 0) position = len
+
       selection = matchingItems[position]
-
       noScroll()
+
       if (selection) {
         const { author, viewCount, publishedText, lengthSeconds } =
           selection.info
@@ -84,7 +87,7 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
   )
   draw(`-> ${input}`, 0, process.stdout.rows - 1)
 
-  return keypressParser
+  return keypressParse
 }
 
 export default keypressHandle

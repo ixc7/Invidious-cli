@@ -4,7 +4,6 @@ import { pages } from './config.js'
 import { bold, mkPrompt, noScroll } from './util.js'
 import getServers from './servers.js'
 
-// get one page
 const search = async (
   searchTerm,
   env,
@@ -31,6 +30,7 @@ const search = async (
     }
 
     const query = new URL('/api/v1/search', `${server}/api`)
+
     query.searchParams.set('q', searchTerm)
     query.searchParams.set('page', page)
 
@@ -95,7 +95,6 @@ const search = async (
   })
 }
 
-// get multiple pages
 const searchMulti = async (searchTerm, env, max = pages) => {
   if (!searchTerm.length) return false
   let server = env.hosts[0]
@@ -104,7 +103,8 @@ const searchMulti = async (searchTerm, env, max = pages) => {
   for (let i = 1; i < max + 1; i += 1) {
     cursorTo(process.stdout, 0, 1)
     console.log(`fetching page ${bold(i)} of ${bold(max)}`)
-    if (server) console.log(`server: ${bold(server)}`)
+    // if (server) console.log(`server: ${bold(server)}`)
+    console.log(`server: ${bold(server)}`)
     const res = await search(searchTerm, env, i, server)
     if (!res.results.length) return final
     server = res.server
@@ -115,8 +115,8 @@ const searchMulti = async (searchTerm, env, max = pages) => {
 }
 
 // repeat prompt until results are found
-const main = async (environment = false) => {
-  const env = environment || (await getServers())
+const main = async () => {
+  const env = await getServers()
   const input = await mkPrompt()
 
   noScroll()

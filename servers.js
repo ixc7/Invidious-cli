@@ -1,6 +1,5 @@
 import https from 'https'
 import { serversMd } from './serversMd.js'
-// import serversMd from './serversMd.js'
 
 export const getServers = () => {
   return new Promise(resolve => {
@@ -9,7 +8,7 @@ export const getServers = () => {
     req.on('error', async e => {
       console.log(`  + error fetching servers (${e}).`)
 
-      // serversMd to parsing markdown document if API is down.
+      // md if API is down
       const serversMdResults = await serversMd()
       if (serversMdResults.length) resolve({ hosts: serversMdResults })
 
