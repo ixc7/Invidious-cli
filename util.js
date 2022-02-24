@@ -3,15 +3,12 @@ import { spawnSync } from 'child_process'
 import { rmSync, existsSync } from 'fs'
 
 export const bold = input => `\x1b[1m${input}\x1b[0m`
+export const gotoTop = () => process.stdout.write('\x1b[1;1H')
+export const noScroll = () => process.stdout.write('\x1Bc\x1b[3J')
 export const mktemp = () =>
   spawnSync('mktemp', ['-d']).stdout.toString('utf8').split('\n').join('')
 export const rmdir = dir =>
   existsSync(dir) && rmSync(dir, { recursive: true, force: true })
-export const gotoTop = () => process.stdout.write('\x1b[1;1H')
-export const noScroll = () => process.stdout.write('\x1Bc\x1b[3J')
-
-// renders faster than readline.cursorTo() in some cases
-// const goto = (x, y) => process.stdout.write(`\x1b[${y};${x}H`)
 
 export const formatTime = s => {
   const zeros = n => {
@@ -50,10 +47,10 @@ export const mkPrompt = (prompt = 'search: ') => {
 
 export default {
   bold,
-  mktemp,
-  rmdir,
   gotoTop,
   noScroll,
+  mktemp,
+  rmdir,
   formatTime,
   mkInterface,
   mkPrompt

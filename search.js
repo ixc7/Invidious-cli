@@ -4,7 +4,7 @@ import { pages } from './config.js'
 import { bold, mkPrompt, noScroll } from './util.js'
 import getServers from './servers.js'
 
-const search = async (
+export const searchOne = async (
   searchTerm,
   env,
   page = 1,
@@ -20,9 +20,10 @@ const search = async (
       console.log(msg)
       serverIndex += 1
       server = hosts[hosts.length - serverIndex]
+
       if (serverIndex < serverCount) {
         console.log(`  + trying '${server}'`)
-        resolve(await search(searchTerm, env, page, server, serverIndex))
+        resolve(await searchOne(searchTerm, env, page, server, serverIndex))
       } else {
         console.log(bold('no servers available.'))
         process.exit(1)
@@ -30,7 +31,6 @@ const search = async (
     }
 
     const query = new URL('/api/v1/search', `${server}/api`)
-
     query.searchParams.set('q', searchTerm)
     query.searchParams.set('page', page)
 
@@ -95,40 +95,37 @@ const search = async (
   })
 }
 
-const searchMulti = async (searchTerm, env, max = pages) => {
-  if (!searchTerm.length) return false
+export const searchMulti = async (searchTerm, env, max = pages) => {
   let server = env.hosts[0]
   let final = []
 
   for (let i = 1; i < max + 1; i += 1) {
     cursorTo(process.stdout, 0, 1)
-    console.log(`fetching page ${bold(i)} of ${bold(max)}`)
-    // if (server) console.log(`server: ${bold(server)}`)
-    console.log(`server: ${bold(server)}`)
-    const res = await search(searchTerm, env, i, server)
+    console.log(
+      `fetching page ${bold(i)} of ${bold(max)}\nserver: ${bold(server)}`
+    )
+
+    const res = await searchOne(searchTerm, env, i, server)
     if (!res.results.length) return final
     server = res.server
     final = final.concat(res.results)
   }
-
   return final
 }
 
-// repeat prompt until results are found
-const main = async () => {
+export const search = async () => {
   const env = await getServers()
   const input = await mkPrompt()
 
   noScroll()
   console.log(`searching for ${bold(input)}`)
-  const res = await searchMulti(input, env)
 
+  const res = await searchMulti(input, env)
   if (!res.length) {
     console.log('no results')
     process.exit(1)
   }
-
   return res
 }
 
-export default main
+export default search
