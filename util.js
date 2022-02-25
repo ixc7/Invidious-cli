@@ -35,6 +35,7 @@ export const mkPrompt = (prompt = 'search: ') => {
   const rl = mkInterface({ prompt })
   return new Promise(resolve => {
     rl.on('line', ln => {
+      // TODO regex
       if (ln.split('').filter(i => i !== ' ').length > 0) {
         rl.close()
         resolve(ln)

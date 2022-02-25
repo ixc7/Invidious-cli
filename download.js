@@ -17,14 +17,14 @@ export const openPlayer = (file, dir) => {
       stdio: ['pipe', process.stdout, process.stderr]
     })
 
+    process.stdin.pipe(child.stdin)
+
     child.on('spawn', () =>
       console.log(`
         \rplaying file with ${bold(player)}
         \rpress ${bold('q')} to quit
       `)
     )
-
-    process.stdin.pipe(child.stdin)
 
     child.on('exit', async code => {
       if (code !== 0) {
@@ -33,9 +33,8 @@ export const openPlayer = (file, dir) => {
         process.exit(0)
       }
 
-      if (!save) rmdir(dir)
       // TODO dont delete the entire folder if not empty.
-      //      could move from mktemp to destination
+      if (!save) rmdir(dir)
       else console.log(`saved '${file}' to '${folder}'`)
       process.exit(0)
     })
@@ -45,7 +44,6 @@ export const openPlayer = (file, dir) => {
 export const download = (title, file, url, dir) => {
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
-
   const rl = mkInterface()
   const child = spawn(
     downloader,
@@ -63,7 +61,7 @@ export const download = (title, file, url, dir) => {
     `)
   })
 
-  rl.input.on('keypress', (char, props) => {
+  rl.input.on('keypress', char => {
     if (char === 'q') {
       rmdir(dir)
       child.kill()

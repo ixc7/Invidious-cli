@@ -14,12 +14,14 @@ export const formatMd = arr => {
       const start = x.indexOf('https')
       const end = x.indexOf(')')
       const url = x.substr(start, end - start)
-      if (url.substr(url.length - 1) === '/') { return url.substr(0, url.length - 1) }
+      if (url.substr(url.length - 1) === '/') {
+        return url.substr(0, url.length - 1)
+      }
       return url
     })
 }
 
-// request doc + return formatMd( doc )
+// request doc + return formatMd(doc)
 export const serversMd = () => {
   return new Promise(resolve => {
     const req = request(markdownUrl)

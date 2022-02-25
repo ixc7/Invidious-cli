@@ -31,7 +31,9 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
     if (name === 'backspace') input = input.substring(0, input.length - 1)
     else if (name === 'down' || name === 'right') position += 1
     else if (name === 'up' || name === 'left') position -= 1
-    else if (char && !sequence.includes('\x1b') && name !== 'return') { input += char }
+    else if (char && !sequence.includes('\x1b') && name !== 'return') {
+      input += char
+    }
 
     if (position > len) position = 0
     else if (position < 0) position = len
