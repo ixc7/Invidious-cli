@@ -1,7 +1,7 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
 import { bold, formatTime, noScroll } from './util.js'
-import downloadFile from './download.js'
+import { download } from './download.js'
 
 export const keypressHandle = async (searchResultsList, destinationFolder) => {
   const fzf = new Fzf(searchResultsList, { selector: item => item.title })
@@ -11,22 +11,19 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
 
   const draw = (content, x = 0, y = 0) => {
     cursorTo(process.stdout, x, y)
-    process.stdout.write(content) // , 'utf8'
+    process.stdout.write(content)
   }
 
   const keypressRender = async (char, { name, sequence }) => {
     if (name === 'return' && selection) {
       const fileName = selection.title.replace(/([^a-z0-9]+)/gi, '-')
-      return await downloadFile(
+      return await download(
         selection.title,
         fileName,
         selection.url,
         destinationFolder
       )
     }
-
-    const matches = fzf.find(input).map(({ item }) => item)
-    const len = matches.length - 1
 
     if (name === 'backspace') input = input.substring(0, input.length - 1)
     else if (name === 'down' || name === 'right') position += 1
@@ -35,10 +32,14 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
       input += char
     }
 
+    const matches = fzf.find(input).map(({ item }) => item)
+    const len = matches.length - 1
+
     if (position > len) position = 0
     else if (position < 0) position = len
 
     selection = matches[position]
+
     noScroll()
 
     if (selection) {
@@ -78,5 +79,3 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
   draw(`-> ${input}`, 0, process.stdout.rows - 1)
   return keypressRender
 }
-
-export default keypressHandle

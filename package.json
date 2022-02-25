@@ -2,25 +2,28 @@
   "name": "invidious",
   "version": "0.1.4",
   "type": "module",
-  "dependencies": {
-    "fzf": "^0.4.1"
-  },
+  "description": "music player for invidious.io",
   "bin": {
     "inv": "./app.js"
   },
   "scripts": {
     "dev": "${EDITOR} *.js",
-    "lint": "eslint ."
+    "lint": "eslint --fix ."
+  },
+  "dependencies": {
+    "fzf": "^0.4.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.2.0"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:ixc7/invidious-cli.git"
   },
-  "publishConfig": {
-    "ixc7:registry": "https://npm.pkg.github.com"
-  },
-  "description": "music player for invidious.io",
-  "homepage": "https://github.com/ixc7/invidious-cli#readme",
   "keywords": [
     "invidious",
     "cli",
@@ -29,12 +32,5 @@
     "youtube-dl",
     "yt-dlp",
     "mpv"
-  ],
-  "devDependencies": {
-    "eslint": "^7.32.0",
-    "eslint-config-standard": "^16.0.3",
-    "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.2.0"
-  }
+  ]
 }

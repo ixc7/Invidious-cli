@@ -2,18 +2,18 @@ import { spawn } from 'child_process'
 import { bold, mkInterface, rmdir, noScroll } from './util.js'
 import {
   player,
-  playerOptions,
+  playerOpts,
   save,
   folder,
   format,
   downloader,
-  downloaderOptions
+  downloaderOpts
 } from './config.js'
 
-export const openPlayer = (file, dir) => {
+export const open = (file, dir) => {
   return new Promise(() => {
     const filePath = `${dir}/${file}`
-    const child = spawn(player, [filePath, ...playerOptions], {
+    const child = spawn(player, [filePath, ...playerOpts], {
       stdio: ['pipe', process.stdout, process.stderr]
     })
 
@@ -33,7 +33,7 @@ export const openPlayer = (file, dir) => {
         process.exit(0)
       }
 
-      // TODO dont delete the entire folder if not empty.
+      // TODO do not delete the entire folder
       if (!save) rmdir(dir)
       else console.log(`saved '${file}' to '${folder}'`)
       process.exit(0)
@@ -47,7 +47,7 @@ export const download = (title, file, url, dir) => {
   const rl = mkInterface()
   const child = spawn(
     downloader,
-    [`--format=${format}`, `--output=${filePath}`, ...downloaderOptions, url],
+    [`--format=${format}`, `--output=${filePath}`, ...downloaderOpts, url],
     { stdio: ['pipe', process.stdout, process.stderr] }
   )
 
@@ -76,10 +76,8 @@ export const download = (title, file, url, dir) => {
       } else {
         rl.close()
         process.stdin.removeAllListeners('keypress')
-        resolve(await openPlayer(fileName, dir))
+        resolve(await open(fileName, dir))
       }
     })
   })
 }
-
-export default download

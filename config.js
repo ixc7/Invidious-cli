@@ -4,8 +4,8 @@ export const player = 'mpv'
 export const folder = './savedMedia'
 export const save = false
 export const pages = 3
-export const downloaderOptions = ['--quiet', '--progress']
-export const playerOptions = [
+export const downloaderOpts = ['--quiet', '--progress']
+export const playerOpts = [
   '--audio-pitch-correction=no',
   '--autofit=50%',
   '--geometry=100%:100%',
@@ -15,9 +15,9 @@ export const playerOptions = [
 export default {
   format,
   downloader,
-  downloaderOptions,
+  downloaderOpts,
   player,
-  playerOptions,
+  playerOpts,
   save,
   folder,
   pages

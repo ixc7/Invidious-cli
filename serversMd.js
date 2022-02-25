@@ -33,5 +33,3 @@ export const serversMd = () => {
     req.end()
   })
 }
-
-export default serversMd

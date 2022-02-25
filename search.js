@@ -2,7 +2,7 @@ import https from 'https'
 import { cursorTo } from 'readline'
 import { pages } from './config.js'
 import { bold, mkPrompt, noScroll } from './util.js'
-import getServers from './servers.js'
+import { servers } from './servers.js'
 
 export const searchOne = async (
   searchTerm,
@@ -113,8 +113,8 @@ export const searchMulti = async (searchTerm, env, max = pages) => {
   return final
 }
 
-export const search = async () => {
-  const env = await getServers()
+export const searchPrompt = async () => {
+  const env = await servers()
   const input = await mkPrompt()
 
   noScroll()
@@ -127,5 +127,3 @@ export const search = async () => {
   }
   return res
 }
-
-export default search

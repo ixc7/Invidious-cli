@@ -1,7 +1,7 @@
 import https from 'https'
 import { serversMd } from './serversMd.js'
 
-export const getServers = () => {
+export const servers = () => {
   return new Promise(resolve => {
     const req = https.request('https://api.invidious.io/instances.json')
 
@@ -39,5 +39,3 @@ export const getServers = () => {
     req.end()
   })
 }
-
-export default getServers
