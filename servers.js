@@ -11,8 +11,8 @@ export const servers = () => {
       // md if API is down
       const serversMdResults = await serversMd()
       if (serversMdResults.length) resolve({ hosts: serversMdResults })
-
-      console.log('  + error fetching servers (empty response).')
+      else console.log('  + error fetching servers (empty response).')
+      
       process.exit(1)
     })
 
@@ -26,12 +26,14 @@ export const servers = () => {
           .map(item => `https://${item[0]}`)
 
         if (hosts.length) resolve({ hosts })
-
-        const serversMdResults = await serversMd()
-        if (serversMdResults.length) resolve({ hosts: serversMdResults })
         else {
-          console.log('  + error fetching servers (empty response).')
-          process.exit(1)
+
+        	const serversMdResults = await serversMd()
+        	if (serversMdResults.length) resolve({ hosts: serversMdResults })
+          else {
+          	console.log('  + error fetching servers (empty response).')
+          	process.exit(1)
+          }
         }
       })
     })
