@@ -1,6 +1,6 @@
 {
   "name": "invidious",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "description": "music player for invidious.io",
   "bin": {
@@ -24,6 +24,7 @@
     "type": "git",
     "url": "git@github.com:ixc7/invidious-cli.git"
   },
+  "license": "MIT",
   "keywords": [
     "invidious",
     "cli",
