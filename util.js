@@ -8,6 +8,8 @@ export const gotoTop = () => process.stdout.write('\x1b[1;1H')
 
 export const noScroll = () => process.stdout.write('\x1Bc\x1b[3J')
 
+export const sanitize = str => str.replace(/([^a-z0-9]+)/gi, '-')
+
 export const mktemp = () =>
   spawnSync('mktemp', ['-d']).stdout.toString('utf8').replaceAll('\n', '')
 

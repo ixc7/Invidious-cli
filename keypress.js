@@ -1,13 +1,15 @@
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
-import { bold, formatTime, noScroll } from './util.js'
+import { bold, formatTime, noScroll, sanitize } from './util.js'
 import { download } from './download.js'
 
 export const keypressHandle = async (searchResultsList, destinationFolder) => {
   const fzf = new Fzf(searchResultsList, { selector: item => item.title })
   let selection = false
-  let position = 9999
   let input = ''
+
+  // TODO don't use 9999.
+  let position = 9999
 
   const draw = (content, x = 0, y = 0) => {
     cursorTo(process.stdout, x, y)
@@ -16,10 +18,9 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
 
   const keypressRender = async (char, { name, sequence }) => {
     if (name === 'return' && selection) {
-      const fileName = selection.title.replace(/([^a-z0-9]+)/gi, '-')
       return await download(
         selection.title,
-        fileName,
+        sanitize(selection.title),
         selection.url,
         destinationFolder
       )
@@ -28,9 +29,7 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
     if (name === 'backspace') input = input.substring(0, input.length - 1)
     else if (name === 'down' || name === 'right') position += 1
     else if (name === 'up' || name === 'left') position -= 1
-    else if (char && !sequence.includes('\x1b') && name !== 'return') {
-      input += char
-    }
+    else if (char && !sequence.includes('\x1b') && name !== 'return') input += char
 
     const matches = fzf.find(input).map(({ item }) => item)
     const len = matches.length - 1
