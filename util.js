@@ -13,8 +13,7 @@ export const sanitize = str => str.replace(/([^a-z0-9]+)/gi, '-')
 export const mktemp = () =>
   spawnSync('mktemp', ['-d']).stdout.toString('utf8').replaceAll('\n', '')
 
-export const rmdir = dir =>
-  existsSync(dir) && rmSync(dir, { recursive: true, force: true })
+export const rmdir = dir => existsSync(dir) && rmSync(dir, { recursive: true, force: true })
 
 export const formatTime = s => {
   const zeros = n => {

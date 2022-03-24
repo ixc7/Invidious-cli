@@ -17,18 +17,34 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
   }
 
   const keypressRender = async (char, { name, sequence }) => {
-    if (name === 'return' && selection) {
-      return await download(
-        selection.title,
-        sanitize(selection.title),
-        selection.url,
-        destinationFolder
-      )
+    const keymap = {
+      down: () => { position += 1 },
+      right: () => { position += 1 },
+      up: () => { position -= 1 },
+      left: () => { position -= 1 },
+      return: async () => {
+        if (selection) {
+          return await download(
+            selection.title,
+            sanitize(selection.title),
+            selection.url,
+            destinationFolder
+          )
+        }
+      },
+      backspace: () => { input = input.substring(0, input.length - 1) },
+      q: () => {
+        // ctrl-q
+        if (sequence === '\x11') {
+          noScroll()
+          process.exit(0)
+        }
+        input += 'q'
+      }
+
     }
 
-    if (name === 'backspace') input = input.substring(0, input.length - 1)
-    else if (name === 'down' || name === 'right') position += 1
-    else if (name === 'up' || name === 'left') position -= 1
+    if (keymap[name]) await keymap[name]()
     else if (char && !sequence.includes('\x1b') && name !== 'return') input += char
 
     const matches = fzf.find(input).map(({ item }) => item)

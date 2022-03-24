@@ -1,13 +1,13 @@
 import { request } from 'https'
 // fallback method to get servers if API is down
 
-// the document with the list
+// md w/ list of servers
 export const markdownUrl =
   'https://raw.githubusercontent.com/iv-org/documentation/master/Invidious-Instances.md'
 
-// get server addresses from doc
-export const formatMd = arr => {
-  return arr
+// filter urls from md
+export const formatMd = arr =>
+  arr
     .split('\n')
     .filter(x => x.includes('https') && x.includes('*'))
     .map(x => {
@@ -19,9 +19,8 @@ export const formatMd = arr => {
       }
       return url
     })
-}
 
-// request doc + return formatMd(doc)
+// request + return list of server urls
 export const serversMd = () => {
   return new Promise(resolve => {
     const req = request(markdownUrl)

@@ -10,9 +10,10 @@ export const servers = () => {
 
       // md if API is down
       const serversMdResults = await serversMd()
+
       if (serversMdResults.length) resolve({ hosts: serversMdResults })
       else console.log('  + error fetching servers (empty response).')
-      
+
       process.exit(1)
     })
 
@@ -27,12 +28,11 @@ export const servers = () => {
 
         if (hosts.length) resolve({ hosts })
         else {
-
-        	const serversMdResults = await serversMd()
-        	if (serversMdResults.length) resolve({ hosts: serversMdResults })
+          const serversMdResults = await serversMd()
+          if (serversMdResults.length) resolve({ hosts: serversMdResults })
           else {
-          	console.log('  + error fetching servers (empty response).')
-          	process.exit(1)
+            console.log('  + error fetching servers (empty response).')
+            process.exit(1)
           }
         }
       })

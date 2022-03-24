@@ -38,7 +38,7 @@ export const searchOne = async (
     req.setHeader('Accept', 'application/json')
 
     req.on('error', async e => {
-      resolve(await changeServer(`  + '${server}' cannot be reached (${e}).`))
+      resolve(await changeServer(`  + '${server}' cannot be reached (${e.message || e}).`))
     })
 
     req.on('response', res => {
@@ -48,24 +48,13 @@ export const searchOne = async (
 
       res.on('end', async () => {
         if (res.statusCode !== 200) {
-          resolve(
-            await changeServer(
-              `  + '${server}' returned an error (${res.statusCode}).`
-            )
-          )
+          resolve(await changeServer(`  + '${server}' returned an error (${res.statusCode}).`))
         } else {
           try {
             resolve({
               server,
               results: JSON.parse(resToString, 0, 2).map(
-                ({
-                  author,
-                  viewCount,
-                  publishedText,
-                  lengthSeconds,
-                  title,
-                  videoId
-                }) => {
+                ({ author, viewCount, publishedText, lengthSeconds, title, videoId }) => {
                   return {
                     title,
                     url: `${server}/watch?v=${videoId}`,
@@ -81,11 +70,7 @@ export const searchOne = async (
               )
             })
           } catch (e) {
-            resolve(
-              await changeServer(
-                `  + '${server}' returned an invalid response (${e}).`
-              )
-            )
+            resolve(await changeServer(`  + '${server}' returned an invalid response (${e.message || e}).`))
           }
         }
       })
@@ -101,9 +86,7 @@ export const searchMulti = async (searchTerm, env, max = pages) => {
 
   for (let i = 1; i < max + 1; i += 1) {
     cursorTo(process.stdout, 0, 1)
-    console.log(
-      `fetching page ${bold(i)} of ${bold(max)}\nserver: ${bold(server)}`
-    )
+    console.log(`fetching page ${bold(i)} of ${bold(max)}\nserver: ${bold(server)}`)
 
     const res = await searchOne(searchTerm, env, i, server)
     if (!res.results.length) return final
