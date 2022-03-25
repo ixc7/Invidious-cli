@@ -4,12 +4,11 @@ import { bold, formatTime, noScroll, sanitize } from './util.js'
 import { download } from './download.js'
 
 export const keypressHandle = async (searchResultsList, destinationFolder) => {
-  const fzf = new Fzf(searchResultsList, { selector: item => item.title })
+  let position = Infinity
   let selection = false
   let input = ''
 
-  // TODO don't use 9999.
-  let position = 9999
+  const fzf = new Fzf(searchResultsList, { selector: item => item.title })
 
   const draw = (content, x = 0, y = 0) => {
     cursorTo(process.stdout, x, y)
