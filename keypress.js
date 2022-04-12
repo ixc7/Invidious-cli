@@ -8,7 +8,8 @@ export const keypressHandle = async (searchResultsList, destinationFolder) => {
   let selection = false
   let input = ''
 
-  const fzf = new Fzf(searchResultsList, { selector: item => item.title })
+  const fzf = new Fzf(searchResultsList, { selector: item => item.title || '' })
+  console.log(fzf)
 
   const draw = (content, x = 0, y = 0) => {
     cursorTo(process.stdout, x, y)
