@@ -19,6 +19,7 @@ export const open = (file, dir) => {
 
     process.stdin.pipe(child.stdin)
 
+    // TODO fix keypress sending to mpv
     child.on('spawn', () =>
       console.log(`
         \rplaying file with ${bold(player)}
@@ -35,12 +36,15 @@ export const open = (file, dir) => {
 
       // TODO do not delete the entire folder
       if (!save) rmdir(dir)
+
+      // TODO else, prompt
       else console.log(`saved '${file}' to '${folder}'`)
       process.exit(0)
     })
   })
 }
 
+// TODO expect object {}
 export const download = (title, file, url, dir) => {
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
@@ -72,10 +76,12 @@ export const download = (title, file, url, dir) => {
     child.on('exit', async code => {
       if (code !== 0) {
         console.log('\ndownload cancelled')
+        // EXIT loop
         process.exit(0)
       } else {
         rl.close()
         process.stdin.removeAllListeners('keypress')
+        // CONTINUE loop
         resolve(await open(fileName, dir))
       }
     })
