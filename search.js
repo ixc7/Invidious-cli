@@ -41,9 +41,16 @@ export const searchOne = async (
       resolve(await changeServer(`  + '${server}' cannot be reached (${e.message || e}).`))
     })
 
+    // // (TEMP) for servers testing.
+    // let resToString = ''
+    // const accumulate = (r, s) => {
+    //   return r.on('data', d => (s += d.toString('utf8')))
+    // }
+    // accumulate(res, resToString)
+
+    // TODO string util [3]
     req.on('response', res => {
       let resToString = ''
-
       res.on('data', d => (resToString += d.toString('utf8')))
 
       res.on('end', async () => {

@@ -21,6 +21,7 @@ export const formatMd = arr =>
     })
 
 // request + return list of server urls
+// TODO string util [2]
 export const serversMd = () => {
   return new Promise(resolve => {
     const req = request(markdownUrl)

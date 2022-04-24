@@ -7,7 +7,8 @@ export const run = async () => {
   const dir = save ? folder : mktemp()
   const results = await searchPrompt()
   const rl = mkInterface()
-  const handler = await keypressHandle(results, dir, rl)
+  const handler = await keypressHandle(results, dir)
+  // const handler = await keypressHandle(results, dir, rl)
 
   rl.input.on('keypress', handler)
 }

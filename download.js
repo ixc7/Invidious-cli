@@ -20,6 +20,7 @@ export const open = (file, dir) => {
     process.stdin.pipe(child.stdin)
 
     // TODO fix keypress sending to mpv
+    //      ffmpeg
     child.on('spawn', () =>
       console.log(`
         \rplaying file with ${bold(player)}
@@ -76,11 +77,13 @@ export const download = (title, file, url, dir) => {
     child.on('exit', async code => {
       if (code !== 0) {
         console.log('\ndownload cancelled')
+
         // EXIT loop
         process.exit(0)
       } else {
         rl.close()
         process.stdin.removeAllListeners('keypress')
+
         // CONTINUE loop
         resolve(await open(fileName, dir))
       }
