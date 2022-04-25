@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { cursorTo } from 'readline'
 import { Fzf } from 'fzf'
 import { bold, formatTime, noScroll, sanitize } from './util.js'

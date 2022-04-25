@@ -1,8 +1,14 @@
+#!/usr/bin/env node
+
+// TODO ffmpeg
+//      spotdl
+//      vlc
+//      youtube-dl
+
 export const format = 'mp4'
 export const downloader = 'yt-dlp'
 export const player = 'mpv'
 export const folder = './savedMedia'
-// export const save = true
 export const save = false
 export const pages = 3
 export const downloaderOpts = ['--quiet', '--progress']

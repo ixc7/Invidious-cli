@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { spawn } from 'child_process'
 import { bold, mkInterface, rmdir, noScroll } from './util.js'
 import {

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import https from 'https'
 import { cursorTo } from 'readline'
 import { pages } from './config.js'

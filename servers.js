@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import https from 'https'
 import { serversMd } from './serversMd.js'
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { request } from 'https'
 // fallback method to get servers if API is down
 
