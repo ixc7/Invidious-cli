@@ -1,33 +1,8 @@
-# Invidious Documentation: API
+# Invidious API Documentation
 
 ---
 
-# Table of contents
-
-• Language
-• Pretty
-• Fields
-    □ GET /api/v1/stats
-    □ GET /api/v1/videos/:id
-    □ GET /api/v1/annotations/:id
-    □ GET /api/v1/comments/:id
-    □ GET /api/v1/captions/:id
-    □ GET /api/v1/trending
-    □ GET /api/v1/popular
-    □ GET /api/v1/channels/:ucid
-    □ GET /api/v1/channels/:ucid/videos, /api/v1/channels/videos/:ucid
-    □ GET /api/v1/channels/:ucid/latest, /api/v1/channels/latest/:ucid
-    □ GET /api/v1/channels/playlists/:ucid, /api/v1/channels/:ucid/playlists
-    □ GET /api/v1/channels/comments/:ucid, /api/v1/channels/:ucid/comments
-    □ GET /api/v1/channels/search/:ucid
-    □ GET /api/v1/search/suggestions
-    □ GET /api/v1/search
-    □ GET /api/v1/playlists/:plid
-    □ GET /api/v1/mixes/:rdid
-
----
-
-# Language
+## Language
 
 All endpoints that return a JSON body support &hl=LANGUAGE for translating
 fields into the desired language. A list of languages are provided in List of
@@ -35,23 +10,41 @@ URL parameters.
 
 ---
 
-# Pretty
+## Pretty
 
 All endpoints that return a JSON body support &pretty=1 for printing the
 response as formatted JSON.
 
 ---
 
-# Fields
+## Fields
 
 All endpoints that return a JSON body support the fields API for specifying
 desired fields to reduce bandwidth consumption. This can be used by adding &
 fields=FIELDS with the desired fields, for example /api/v1/videos/aqz-KE-bpKQ?
 fields=videoId,title,description&pretty=1.
 
+GET /api/v1/stats
+GET /api/v1/videos/:id
+GET /api/v1/annotations/:id
+GET /api/v1/comments/:id
+GET /api/v1/captions/:id
+GET /api/v1/trending
+GET /api/v1/popular
+GET /api/v1/channels/:ucid
+GET /api/v1/channels/:ucid/videos, /api/v1/channels/videos/:ucid
+GET /api/v1/channels/:ucid/latest, /api/v1/channels/latest/:ucid
+GET /api/v1/channels/playlists/:ucid, /api/v1/channels/:ucid/playlists
+GET /api/v1/channels/comments/:ucid, /api/v1/channels/:ucid/comments
+GET /api/v1/channels/search/:ucid
+GET /api/v1/search/suggestions
+GET /api/v1/search
+GET /api/v1/playlists/:plid
+GET /api/v1/mixes/:rdid
 
+---
 
-## GET /api/v1/stats
+### GET /api/v1/stats
 
 *Schema*
 
@@ -77,10 +70,9 @@ fields=videoId,title,description&pretty=1.
   }
 }
 ```
+---
 
-
-
-## GET /api/v1/videos/:id
+### GET /api/v1/videos/:id
 
 *Schema*
 
@@ -198,9 +190,9 @@ fields=videoId,title,description&pretty=1.
 |--------|---------------------------------------|
 | region | ISO 3166 country code (default: "US") |
 
+---
 
-
-## GET /api/v1/annotations/:id
+### GET /api/v1/annotations/:id
 
 **Parameters**
 
@@ -212,9 +204,9 @@ Returns annotation XML from YouTube's /annotations_invideo endpoint.
 Alternatively it provides access to legacy annotation data using this
 collection on archive.org.
 
+---
 
-
-## GET /api/v1/comments/:id
+### GET /api/v1/comments/:id
 
 *Schema*
 
@@ -264,9 +256,9 @@ collection on archive.org.
 | source       | "youtube", "reddit" (default: youtube) |
 | continuation | String                                 |
 
+---
 
-
-## GET /api/v1/captions/:id
+### GET /api/v1/captions/:id
 
 *Schema*
 
@@ -296,9 +288,9 @@ Captions can also be selected with an ISO lang, e.g. &lang=en, tlang will
 auto-translate from English into the requested language (if English captions
 are available).
 
+---
 
-
-## GET /api/v1/trending
+### GET /api/v1/trending
 
 *Schema*
 
@@ -342,9 +334,9 @@ are available).
 | type   | "music", "gaming", "news", "movies"   |
 | region | ISO 3166 country code (default: "US") |
 
+---
 
-
-## GET /api/v1/popular
+### GET /api/v1/popular
 
 *Schema*
 
@@ -376,9 +368,9 @@ are available).
 ]
 ```
 
+---
 
-
-## GET /api/v1/channels/:ucid
+### GET /api/v1/channels/:ucid
 
 *Schema*
 
@@ -465,9 +457,9 @@ are available).
 Note that a channel's username (if it doesn't include spaces) is also valid in
 place of ucid, e.g. /api/v1/channels/BlenderFoundation.
 
+---
 
-
-## GET /api/v1/channels/:ucid/videos, /api/v1/channels/videos/:ucid
+### GET /api/v1/channels/:ucid/videos, /api/v1/channels/videos/:ucid
 
 *Schema*
 
@@ -508,9 +500,9 @@ place of ucid, e.g. /api/v1/channels/BlenderFoundation.
 | page    | Int32                                           |
 | sort_by | "newest", "oldest", "popular" (default: newest) |
 
+---
 
-
-## GET /api/v1/channels/:ucid/latest, /api/v1/channels/latest/:ucid
+### GET /api/v1/channels/:ucid/latest, /api/v1/channels/latest/:ucid
 
 ```js
 [
@@ -541,9 +533,9 @@ place of ucid, e.g. /api/v1/channels/BlenderFoundation.
 ]
 ```
 
+---
 
-
-## GET /api/v1/channels/playlists/:ucid, /api/v1/channels/:ucid/playlists
+### GET /api/v1/channels/playlists/:ucid, /api/v1/channels/:ucid/playlists
 
 ```js
 {
@@ -582,9 +574,9 @@ place of ucid, e.g. /api/v1/channels/BlenderFoundation.
 | continuation | String                     |
 | sort_by      | "oldest", "newest", "last" |
 
+---
 
-
-## GET /api/v1/channels/comments/:ucid, /api/v1/channels/:ucid/comments
+### GET /api/v1/channels/comments/:ucid, /api/v1/channels/:ucid/comments
 
 ```js
 {
@@ -675,9 +667,9 @@ Attachments will only be present on top-level comments.
 |--------------|--------|
 | continuation | String |
 
+---
 
-
-## GET /api/v1/channels/search/:ucid
+### GET /api/v1/channels/search/:ucid
 
 *Schema*
 
@@ -761,9 +753,9 @@ Attachments will only be present on top-level comments.
 | q     | String |
 | page  | Int32  |
 
+---
 
-
-## GET /api/v1/search/suggestions
+### GET /api/v1/search/suggestions
 
 *Schema*
 
@@ -780,9 +772,9 @@ Attachments will only be present on top-level comments.
 |-------|--------|
 | q     | String |
 
+---
 
-
-## GET /api/v1/search
+### GET /api/v1/search
 
 *Schema*
 
@@ -872,9 +864,9 @@ Attachments will only be present on top-level comments.
 | features | "hd", "subtitles", "creative_commons", "3d", "live", "purchased", "4k", "360", "location", "hdr" (comma separated: e.g. "&features=hd,subtitles,3d,live") |
 | region   | ISO 3166 country code (default: "US")                   |
 
+---
 
-
-## GET /api/v1/playlists/:plid
+### GET /api/v1/playlists/:plid
 
 *Schema*
 
@@ -928,9 +920,9 @@ Attachments will only be present on top-level comments.
 |-------|-------|
 | page  | Int32 |
 
+---
 
-
-## GET /api/v1/mixes/:rdid
+### GET /api/v1/mixes/:rdid
 
 *Schema*
 
