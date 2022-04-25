@@ -3,7 +3,8 @@
 import https from 'https'
 import { cursorTo } from 'readline'
 import { pages } from './config.js'
-import { bold, mkPrompt, noScroll } from './util.js'
+// import { bold, mkPrompt, noScroll } from './util.js'
+import { bold, mkPrompt } from './util.js'
 import { servers } from './servers.js'
 
 export const searchOne = async (
@@ -109,7 +110,8 @@ export const searchPrompt = async () => {
   const env = await servers()
   const input = await mkPrompt()
 
-  noScroll()
+  // noScroll()
+  console.clear()
   console.log(`searching for ${bold(input)}`)
 
   const res = await searchMulti(input, env)

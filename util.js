@@ -10,7 +10,6 @@ export const bold = input => `\x1b[1m${input}\x1b[0m`
 export const gotoTop = () => cursorTo(0, 0)
 
 // export const noScroll = () => process.stdout.write('\x1Bc\x1b[3J')
-export const noScroll = () => console.clear()
 
 export const sanitize = str => str.replace(/([^a-z0-9]+)/gi, '-')
 
@@ -19,7 +18,7 @@ export const mktemp = () =>
 
 export const rmdir = dir => existsSync(dir) && rmSync(dir, { recursive: true, force: true })
 
-export const formatTime = s => {
+export const fmtTime = s => {
   const zeros = n => {
     const str = n.toString()
     if (str.length === 1) return `0${str}`

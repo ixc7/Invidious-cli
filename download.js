@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { spawn } from 'child_process'
-import { bold, mkInterface, rmdir, noScroll } from './util.js'
+// import { bold, mkInterface, rmdir, noScroll } from './util.js'
+import { bold, mkInterface, rmdir } from './util.js'
 import {
   player,
   playerOpts,
@@ -59,7 +60,8 @@ export const download = (title, file, url, dir) => {
   )
 
   child.on('spawn', () => {
-    noScroll()
+    // noScroll()
+    console.clear()
     console.log(`
       \rvideo: ${bold(title)}
       \rurl: ${bold(url)}

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-import { request } from 'https'
 // fallback method to get servers if API is down
 
-// md w/ list of servers
+import { request } from 'https'
+
+// markdown document w/ list of servers
 export const markdownUrl =
   'https://raw.githubusercontent.com/iv-org/documentation/master/Invidious-Instances.md'
 
