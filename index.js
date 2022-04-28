@@ -10,7 +10,6 @@ export const run = async () => {
   const results = await searchPrompt()
   const rl = mkInterface()
   const handler = await keypressHandle(results, dir)
-  // const handler = await keypressHandle(results, dir, rl)
 
   rl.input.on('keypress', handler)
 }

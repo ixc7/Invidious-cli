@@ -4,43 +4,39 @@
 
 ## Language
 
-All endpoints that return a JSON body support &hl=LANGUAGE for translating
-fields into the desired language. A list of languages are provided in List of
-URL parameters.
+All endpoints that return a JSON body support `&hl=LANGUAGE` for translating fields into the desired language.
+A list of languages are provided in List of URL parameters.
 
 ---
 
 ## Pretty
 
-All endpoints that return a JSON body support &pretty=1 for printing the
-response as formatted JSON.
+All endpoints that return a JSON body support `&pretty=1` for printing the response as formatted JSON.
 
 ---
 
 ## Fields
 
-All endpoints that return a JSON body support the fields API for specifying
-desired fields to reduce bandwidth consumption. This can be used by adding &
-fields=FIELDS with the desired fields, for example /api/v1/videos/aqz-KE-bpKQ?
-fields=videoId,title,description&pretty=1.
+All endpoints that return a JSON body support the fields API for specifying desired fields to reduce bandwidth consumption.
+This can be used by adding `&fields=FIELDS` with the desired fields, for example `/api/v1/videos/aqz-KE-bpKQ?fields=videoId,title,description&pretty=1`.
 
-GET /api/v1/stats
-GET /api/v1/videos/:id
-GET /api/v1/annotations/:id
-GET /api/v1/comments/:id
-GET /api/v1/captions/:id
-GET /api/v1/trending
-GET /api/v1/popular
-GET /api/v1/channels/:ucid
-GET /api/v1/channels/:ucid/videos, /api/v1/channels/videos/:ucid
-GET /api/v1/channels/:ucid/latest, /api/v1/channels/latest/:ucid
-GET /api/v1/channels/playlists/:ucid, /api/v1/channels/:ucid/playlists
-GET /api/v1/channels/comments/:ucid, /api/v1/channels/:ucid/comments
-GET /api/v1/channels/search/:ucid
-GET /api/v1/search/suggestions
-GET /api/v1/search
-GET /api/v1/playlists/:plid
-GET /api/v1/mixes/:rdid
++ GET /api/v1/`stats`
++ GET /api/v1/`videos/:id`
++ GET /api/v1/`annotations/:id`
++ GET /api/v1/`comments/:id`
++ GET /api/v1/`captions/:id`
++ GET /api/v1/`trending`
++ GET /api/v1/`popular`
++ GET /api/v1/`channels/:ucid`
++ GET /api/v1/`channels/:ucid/videos`, /api/v1/`channels/videos/:ucid`
++ GET /api/v1/`channels/:ucid/latest`, /api/v1/`channels/latest/:ucid`
++ GET /api/v1/`channels/playlists/:ucid`, /api/v1/`channels/:ucid/playlists`
++ GET /api/v1/`channels/comments/:ucid`, /api/v1/`channels/:ucid/comments`
++ GET /api/v1/`channels/search/:ucid`
++ GET /api/v1/`search/suggestions`
++ GET /api/v1/`search`
++ GET /api/v1/`playlists/:plid`
++ GET /api/v1/`mixes/:rdid`
 
 ---
 
@@ -618,7 +614,7 @@ The authorId for top-level comments will always(?) be the same as the requested
 channel. Top-level comments will also have an optional attachment, which can be
 one of:
 
-```
+```js
 {
     type: "image",
     imageThumbnails: [

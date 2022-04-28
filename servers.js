@@ -8,7 +8,7 @@ export const servers = () => {
     const req = https.request('https://api.invidious.io/instances.json')
 
     req.on('error', async e => {
-      console.log(`  + error fetching servers (${e}).`)
+      console.log(`  + error fetching servers (${e.message || e}).`)
 
       // md if API is down
       const serversMdResults = await serversMd()
