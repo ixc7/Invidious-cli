@@ -1,5 +1,43 @@
 #!/usr/bin/env node
 
+const videoThumbnails = [
+  {
+    quality: String,
+    url: String,
+    width: Number,
+    height: Number
+  }
+]
+
+const authorThumbnails = [
+  {
+    url: String,
+    width: Number,
+    height: Number
+  }
+]
+
+const author = {
+  author: String,
+  authorId: String,
+  authorUrl: String
+}
+
+const video = {
+  ...author,
+  title: String,
+  videoId: String,
+  videoThumbnails,
+  description: String,
+  descriptionHtml: String,
+  viewCount: Number,
+  published: Number,
+  publishedText: String,
+  lengthSeconds: Number,
+  paid: Boolean,
+  premium: Boolean
+}
+
 export const schema = {
   channels: {
     // GET /api/v1/channels/:ucid
@@ -11,18 +49,11 @@ export const schema = {
 
     // Note that a channel's username (if it doesn't include spaces) is also valid in
     // place of ucid, e.g. /api/v1/channels/BlenderFoundation.
+
     ucid: {
-      author: String,
-      authorId: String,
-      authorUrl: String,
+      ...author,
+      authorThumbnails,
       authorBanners: [
-        {
-          url: String,
-          width: Number,
-          height: Number
-        }
-      ],
-      authorThumbnails: [
         {
           url: String,
           width: Number,
@@ -39,43 +70,12 @@ export const schema = {
       descriptionHtml: String,
       allowedRegions: Array(String),
       latestVideos: [
-        {
-          title: String,
-          videoId: String,
-          author: String,
-          authorId: String,
-          authorUrl: String,
-
-          videoThumbnails: [
-            {
-              quality: String,
-              url: String,
-              width: Number,
-              height: Number
-            }
-          ],
-          description: String,
-          descriptionHtml: String,
-          viewCount: Number,
-          published: Number,
-          publishedText: String,
-          lengthSeconds: Number,
-          paid: Boolean,
-          premium: Boolean
-        }
+        { ...video }
       ],
       relatedChannels: [
         {
-          author: String,
-          authorId: String,
-          authorUrl: String,
-          authorThumbnails: [
-            {
-              url: String,
-              width: Number,
-              height: Number
-            }
-          ]
+          ...author,
+          authorThumbnails
         }
       ]
     },
@@ -88,34 +88,10 @@ export const schema = {
       // |---------|-------------------------------------------------|
       // | page    | Number                                          |
       // | sort_by | "newest", "oldest", "popular" (default: newest) |
-      {
-        title: String,
-        videoId: String,
-        author: String,
-        authorId: String,
-        authorUrl: String,
 
-        videoThumbnails: [
-          {
-            quality: String,
-            url: String,
-            width: Number,
-            height: Number
-          }
-        ],
-        description: String,
-        descriptionHtml: String,
-
-        viewCount: Number,
-        published: Number,
-        publishedText: String,
-        lengthSeconds: Number,
-        paid: Boolean,
-        premium: Boolean
-      }
+      { ...video }
     ]
   },
-
   search: [
     // GET /api/v1/search
 
@@ -132,70 +108,37 @@ export const schema = {
     // |          | "purchased", "4k", "360", "location", "hdr"              |
     // |          | (comma separated: e.g. "&features=hd,subtitles,3d,live") |
     // | region   | ISO 3166 country code (default: "US")                    |
+
     {
       // Case 1
+
       type: 'video',
-      title: String,
-      videoId: String,
-      author: String,
-      authorId: String,
-      authorUrl: String,
-      videoThumbnails: [
-        {
-          quality: String,
-          url: String,
-          width: Number,
-          height: Number
-        }
-      ],
-      description: String,
-      descriptionHtml: String,
-      viewCount: Number,
-      published: Number,
-      publishedText: String,
-      lengthSeconds: Number,
       liveNow: Boolean,
-      paid: Boolean,
-      premium: Boolean
+      ...video
     },
     {
       // Case 2
+
       type: 'playlist',
+      ...author,
       title: String,
       playlistId: String,
-      author: String,
-      authorId: String,
-      authorUrl: String,
       videoCount: Number,
       videos: [
         {
           title: String,
           videoId: String,
           lengthSeconds: Number,
-          videoThumbnails: [
-            {
-              quality: String,
-              url: String,
-              width: Number,
-              height: Number
-            }
-          ]
+          videoThumbnails
         }
       ]
     },
     {
       // Case 3
+
       type: 'channel',
-      author: String,
-      authorId: String,
-      authorUrl: String,
-      authorThumbnails: [
-        {
-          url: String,
-          width: Number,
-          height: Number
-        }
-      ],
+      ...author,
+      authorThumbnails,
       subCount: Number,
       videoCount: Number,
       description: String,
