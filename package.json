@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dev": "${EDITOR} *.js",
-    "lint": "eslint --fix ."
+    "lint": "eslint --fix .",
+    "schema": "json node gql.js"
   },
   "dependencies": {
     "fzf": "^0.4.1"
