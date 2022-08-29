@@ -1,7 +1,4 @@
-#!/usr/bin/env node
-
 import { spawn } from 'child_process'
-// import { bold, mkInterface, rmdir, noScroll } from './util.js'
 import { bold, mkInterface, rmdir } from './util.js'
 import {
   player,
@@ -52,7 +49,9 @@ export const open = (file, dir) => {
 export const download = (title, file, url, dir) => {
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
+
   const rl = mkInterface()
+
   const child = spawn(
     downloader,
     [`--format=${format}`, `--output=${filePath}`, ...downloaderOpts, url],
@@ -60,7 +59,6 @@ export const download = (title, file, url, dir) => {
   )
 
   child.on('spawn', () => {
-    // noScroll()
     console.clear()
     console.log(`
       \rvideo: ${bold(title)}
@@ -82,13 +80,13 @@ export const download = (title, file, url, dir) => {
       if (code !== 0) {
         console.log('\ndownload cancelled')
 
-        // EXIT loop
+        // EXIT infinite loop
         process.exit(0)
       } else {
         rl.close()
         process.stdin.removeAllListeners('keypress')
 
-        // CONTINUE loop
+        // CONTINUE infinite loop
         resolve(await open(fileName, dir))
       }
     })

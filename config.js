@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // TODO ffmpeg
 //      spotdl
 //      vlc

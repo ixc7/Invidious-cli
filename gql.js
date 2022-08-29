@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const videoThumbnails = [
   {
     quality: 'String',
@@ -116,6 +114,7 @@ export const schema = {
       playlistId: 'String',
       videoCount: 'Number',
       videos: [
+        // TODO expand the playlist videos
         {
           title: 'String',
           videoId: 'String',
@@ -126,6 +125,7 @@ export const schema = {
     },
     {
       // Case 3
+      // TODO filter channel results out for now
       type: 'channel',
       ...author,
       authorThumbnails,
@@ -136,23 +136,15 @@ export const schema = {
     }
   ],
   videos: {
-  // GET /api/v1/videos/:id
-  // Parameters
-  //
-  // | field  | value                                 |
-  // |--------|---------------------------------------|
-  // | region | ISO 3166 country code (default: "US") |
+    // GET /api/v1/videos/:id
+    // Parameters
+    // | field  | value                                 |
+    // |--------|---------------------------------------|
+    // | region | ISO 3166 country code (default: "US") |
     video: {
       title: 'String',
       videoId: 'String',
-      videoThumbnails: [
-        {
-          quality: 'String',
-          url: 'String',
-          width: 'Int32',
-          height: 'Int32'
-        }
-      ],
+      videoThumbnails,
       description: 'String',
       descriptionHtml: 'String',
       published: 'Int64',
@@ -170,13 +162,7 @@ export const schema = {
       author: 'String',
       authorId: 'String',
       authorUrl: 'String',
-      authorThumbnails: [
-        {
-          url: 'String',
-          width: 'Int32',
-          height: 'Int32'
-        }
-      ],
+      authorThumbnails,
       subCountText: 'String',
       lengthSeconds: 'Int32',
       allowRatings: 'Boolean',
@@ -223,18 +209,12 @@ export const schema = {
           url: 'String'
         }
       ],
+      // TODO IMPORTANT!
       recommendedVideos: [
         {
           videoId: 'String',
           title: 'String',
-          videoThumbnails: [
-            {
-              quality: 'String',
-              url: 'String',
-              width: 'Int32',
-              height: 'Int32'
-            }
-          ],
+          videoThumbnails,
           author: 'String',
           lengthSeconds: 'Int32',
           viewCountText: 'String'

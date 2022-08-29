@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { mkInterface, mktemp } from './util.js'
 import { save, folder } from './config.js'
 import { keypressHandle } from './keypress.js'

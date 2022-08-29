@@ -1,15 +1,10 @@
-#!/usr/bin/env node
-
 import { createInterface, cursorTo } from 'readline'
 import { spawnSync } from 'child_process'
 import { rmSync, existsSync } from 'fs'
 
 export const bold = input => `\x1b[1m${input}\x1b[0m`
 
-// export const gotoTop = () => process.stdout.write('\x1b[1;1H')
 export const gotoTop = () => cursorTo(0, 0)
-
-// export const noScroll = () => process.stdout.write('\x1Bc\x1b[3J')
 
 export const sanitize = str => str.replace(/([^a-z0-9]+)/gi, '-')
 

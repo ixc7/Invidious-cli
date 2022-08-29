@@ -1,24 +1,21 @@
-#!/usr/bin/env node
-
 import https from 'https'
 import { cursorTo } from 'readline'
 import { pages } from './config.js'
-// import { bold, mkPrompt, noScroll } from './util.js'
 import { bold, mkPrompt } from './util.js'
 import { servers } from './servers.js'
 
 export const searchOne = async (
   searchTerm,
-  env,
+  { hosts },
   page = 1,
   serverName = false,
   serverIndex = 0
 ) => {
-  const { hosts } = env
+  // const { hosts } = env
   let server = serverName || hosts[0]
   const serverCount = hosts.length
 
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const changeServer = async msg => {
       console.log(msg)
       serverIndex += 1
@@ -26,7 +23,7 @@ export const searchOne = async (
 
       if (serverIndex < serverCount) {
         console.log(`  + trying '${server}'`)
-        resolve(await searchOne(searchTerm, env, page, server, serverIndex))
+        resolve(await searchOne(searchTerm, { hosts }, page, server, serverIndex))
       } else {
         console.log(bold('no servers available.'))
         process.exit(1)
@@ -39,21 +36,14 @@ export const searchOne = async (
 
     const req = https.request(query.href)
     req.setHeader('Accept', 'application/json')
-
     req.on('error', async e => {
       resolve(await changeServer(`  + '${server}' cannot be reached (${e.message || e}).`))
     })
 
-    // // (TEMP) for servers testing.
-    // let resToString = ''
-    // const accumulate = (r, s) => {
-    //   return r.on('data', d => (s += d.toString('utf8')))
-    // }
-    // accumulate(res, resToString)
-
     // TODO string util [3]
     req.on('response', res => {
       let resToString = ''
+
       res.on('data', d => (resToString += d.toString('utf8')))
 
       res.on('end', async () => {
@@ -90,34 +80,37 @@ export const searchOne = async (
   })
 }
 
-export const searchMulti = async (searchTerm, env, max = pages) => {
-  let server = env.hosts[0]
+export const searchMulti = async (searchTerm, { hosts }, max = pages) => {
+  let server = hosts[0]
   let final = []
 
   for (let i = 1; i < max + 1; i += 1) {
     cursorTo(process.stdout, 0, 1)
     console.log(`fetching page ${bold(i)} of ${bold(max)}\nserver: ${bold(server)}`)
 
-    const res = await searchOne(searchTerm, env, i, server)
+    const res = await searchOne(searchTerm, { hosts }, i, server)
     if (!res.results.length) return final
+
     server = res.server
     final = final.concat(res.results)
   }
+
   return final
 }
 
 export const searchPrompt = async () => {
-  const env = await servers()
+  // const env = await servers()
   const input = await mkPrompt()
 
-  // noScroll()
   console.clear()
   console.log(`searching for ${bold(input)}`)
 
-  const res = await searchMulti(input, env)
+  const res = await searchMulti(input, await servers())
+
   if (!res.length) {
     console.log('no results')
     process.exit(1)
   }
+
   return res
 }
