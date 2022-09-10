@@ -1,6 +1,9 @@
 import { spawn } from 'child_process'
-import { bold, mkInterface, rmdir } from './util.js'
+import { rmSync } from 'fs'
+import { bold, mkInterface } from './util.js'
 import {
+  player,
+  playerOpts,
   format,
   downloader,
   downloaderOpts
@@ -12,7 +15,35 @@ const pbcopy = data => {
   proc.stdin.end()
 }
 
-const actuallyDownload = (title, file, url, dir) => {
+const playMedia = filePath => {
+  const child = spawn(player, [filePath, ...playerOpts], {
+    stdio: ['pipe', process.stdout, process.stderr]
+  })
+  return new Promise(resolve => {
+    child.on('exit', () => resolve())
+  })
+}
+
+const savePrompt = filePath => {
+  const rl = mkInterface()
+
+  process.stdout.write('\nSAVE? [Y/N*] ')
+
+  return new Promise(resolve => {
+    rl.on('line', line => {
+      if (line.toLowerCase() === 'y') {
+        pbcopy(filePath)
+        console.log(`COPIED TO CLIPBOARD ${filePath}`)
+      } else {
+        rmSync(filePath)
+        console.log(`REMOVED ${filePath}`)
+      }
+      resolve()
+    })
+  })
+}
+
+export const download = (title, file, url, dir) => {
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
   const rl = mkInterface()
@@ -33,38 +64,17 @@ const actuallyDownload = (title, file, url, dir) => {
   })
 
   rl.input.on('keypress', char => {
-    if (char === 'q') {
-      rmdir(dir)
-      child.kill()
-    }
+    if (char === 'q') child.kill()
   })
 
   return new Promise(() => {
-    child.on('exit', code => {
-      if (code !== 0) console.log('download cancelled')
-      else {
-        pbcopy(`${dir}/${fileName}`)
-        console.log(`saved ${dir}/${fileName}`)
-      }
-      process.exit(0)
-    })
-  })
-}
-
-export const download = (title, file, url, dir) => {
-  const rl = mkInterface()
-
-  console.clear()
-  console.log('SAVE? [Y/N*]')
-
-  return new Promise(() => {
-    rl.on('line', line => {
-      if (line.toLowerCase() === 'y') {
-        // DOWNLOAD IT
-        console.log(`\n${line}\nYES YOU WILL\n`)
+    child.on('exit', async exitCode => {
+      if (exitCode !== 0) {
+        rmSync(filePath)
+        console.log('download cancelled')
       } else {
-        // DO NOT DOWNLOAD IT
-        console.log(`\n${line}\nNO YOU WONT\n`)
+        await playMedia(filePath)
+        await savePrompt(filePath)
       }
       process.exit(0)
     })
