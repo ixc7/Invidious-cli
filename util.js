@@ -24,6 +24,7 @@ export const fmtTime = s => {
   return `${min}:${sec}`
 }
 
+// TODO: does this break from using process from THIS file instead????
 export const mkInterface = (opts, { stdin, stdout } = process) => {
   stdin.removeAllListeners('keypress')
   stdin.removeAllListeners('line')

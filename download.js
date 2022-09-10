@@ -1,57 +1,21 @@
 import { spawn } from 'child_process'
 import { bold, mkInterface, rmdir } from './util.js'
 import {
-  player,
-  playerOpts,
-  save,
-  folder,
   format,
   downloader,
   downloaderOpts
 } from './config.js'
 
-export const open = (file, dir) => {
-  return new Promise(() => {
-    const filePath = `${dir}/${file}`
-    const child = spawn(player, [filePath, ...playerOpts], {
-      stdio: ['pipe', process.stdout, process.stderr]
-    })
-
-    process.stdin.pipe(child.stdin)
-
-    // TODO fix keypress sending to mpv
-    //      ffmpeg
-    child.on('spawn', () =>
-      console.log(`
-        \rplaying file with ${bold(player)}
-        \rpress ${bold('q')} to quit
-      `)
-    )
-
-    child.on('exit', async code => {
-      if (code !== 0) {
-        console.log('error opening file')
-        rmdir(dir)
-        process.exit(0)
-      }
-
-      // TODO do not delete the entire folder
-      if (!save) rmdir(dir)
-
-      // TODO else, prompt
-      else console.log(`saved '${file}' to '${folder}'`)
-      process.exit(0)
-    })
-  })
+const pbcopy = data => {
+  const proc = spawn('pbcopy')
+  proc.stdin.write(data)
+  proc.stdin.end()
 }
 
-// TODO expect object {}
-export const download = (title, file, url, dir) => {
+const actuallyDownload = (title, file, url, dir) => {
   const fileName = `${file}.${format}`
   const filePath = `${dir}/${fileName}`
-
   const rl = mkInterface()
-
   const child = spawn(
     downloader,
     [`--format=${format}`, `--output=${filePath}`, ...downloaderOpts, url],
@@ -75,20 +39,34 @@ export const download = (title, file, url, dir) => {
     }
   })
 
-  return new Promise(resolve => {
-    child.on('exit', async code => {
-      if (code !== 0) {
-        console.log('\ndownload cancelled')
-
-        // EXIT infinite loop
-        process.exit(0)
-      } else {
-        rl.close()
-        process.stdin.removeAllListeners('keypress')
-
-        // CONTINUE infinite loop
-        resolve(await open(fileName, dir))
+  return new Promise(() => {
+    child.on('exit', code => {
+      if (code !== 0) console.log('download cancelled')
+      else {
+        pbcopy(`${dir}/${fileName}`)
+        console.log(`saved ${dir}/${fileName}`)
       }
+      process.exit(0)
+    })
+  })
+}
+
+export const download = (title, file, url, dir) => {
+  const rl = mkInterface()
+
+  console.clear()
+  console.log('SAVE? [Y/N*]')
+
+  return new Promise(() => {
+    rl.on('line', line => {
+      if (line.toLowerCase() === 'y') {
+        // DOWNLOAD IT
+        console.log(`\n${line}\nYES YOU WILL\n`)
+      } else {
+        // DO NOT DOWNLOAD IT
+        console.log(`\n${line}\nNO YOU WONT\n`)
+      }
+      process.exit(0)
     })
   })
 }

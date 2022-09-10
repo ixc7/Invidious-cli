@@ -19,28 +19,21 @@ export const keypressHandle = async (searchResults, destinationFolder) => {
   const fzf = new Fzf(searchResults, { selector: item => item.title || '' })
 
   const keymap = {
-    down() { pos += 1 },
-    right() { pos += 1 },
-    up() { pos -= 1 },
-    left() { pos -= 1 },
-    async return() {
-      if (selection) {
-        return await download(
-          selection.title,
-          sanitize(selection.title),
-          selection.url,
-          destinationFolder
-        )
-      }
-    },
-    backspace() { input = input.substring(0, input.length - 1) },
-    q(seq) {
+    up: () => { pos -= 1 },
+    down: () => { pos += 1 },
+    left: () => { pos -= 1 },
+    right: () => { pos += 1 },
+    return: async () => selection
+      ? await download(selection.title, sanitize(selection.title), selection.url, destinationFolder)
+      : null,
+    backspace: () => { input = input.substring(0, input.length - 1) },
+    q: seq => {
       if (seq === '\x11') { // ctrl-q
         console.clear()
         console.log('search cancelled')
         process.exit(0)
       }
-      input += 'q'
+      input += 'q' // q
     }
   }
 
@@ -64,6 +57,7 @@ export const keypressHandle = async (searchResults, destinationFolder) => {
 
     // render/print everything
     console.clear()
+
     if (selection) {
       const { author, viewCount, publishedText, lengthSeconds } = selection.info
 
@@ -74,6 +68,7 @@ export const keypressHandle = async (searchResults, destinationFolder) => {
           .map(res => res.title)
           .join('\n')
       )
+
       print(`
         \rselection: ${selection.title}
         \rauthor: ${author}
@@ -84,7 +79,7 @@ export const keypressHandle = async (searchResults, destinationFolder) => {
       )
     }
 
-    // render query input
+    // render fzf query input at bottom
     print(`-> ${input}`, 0, getRows(1))
   }
 

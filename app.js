@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 
-import { fork } from 'child_process'
-const pathname = new URL('index.js', import.meta.url).pathname
+import { mkInterface, mktemp } from './util.js'
+import { save, folder } from './config.js'
+import { keypressHandle } from './keypress.js'
+import { searchPrompt } from './search.js'
 
-// run index.js FOREVER
-export const app = async () => {
-  const index = fork(pathname)
-  index.on('close', async () => await app())
-}
+// export const run = async () => {
+const dir = save ? folder : mktemp()
+const results = await searchPrompt()
+const rl = mkInterface()
+const handler = await keypressHandle(results, dir)
 
-export default app()
+rl.input.on('keypress', handler)
+// }
+
+// export default run()

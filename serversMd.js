@@ -1,6 +1,6 @@
-// fallback method to get servers if API is down
-
 import { request } from 'https'
+
+// fallback method to get servers if API is down
 
 // markdown document w/ list of servers
 export const markdownUrl =
