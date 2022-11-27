@@ -82,11 +82,11 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
 
       // info box
       write(`
-        \rselection: ${selection.title}
-        \rauthor: ${author}
-        \rviewCount: ${viewCount}
-        \rPublishedText: ${publishedText}
-        \rlengthSeconds: ${fmtTime(lengthSeconds)}
+        \rTitle: ${selection.title}
+        \rChannel: ${author}
+        \rViews: ${viewCount}
+        \rDescription: ${publishedText}
+        \rLength: ${fmtTime(lengthSeconds)}
       `, 0, getRows(7)
       )
     }
