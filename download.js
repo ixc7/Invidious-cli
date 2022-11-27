@@ -26,26 +26,25 @@ const playMedia = filePath => {
 
 const savePrompt = filePath => {
   const rl = mkInterface()
-
-  process.stdout.write('\nSAVE? [Y/N*] ')
+  process.stdout.write('\nSave? [Y/N*] ')
 
   return new Promise(resolve => {
     rl.on('line', line => {
       if (line.toLowerCase() === 'y') {
         pbcopy(filePath)
-        console.log(`COPIED TO CLIPBOARD ${filePath}`)
+        console.log(`Copied to clipboard: ${filePath}`)
       } else {
         rmSync(filePath)
-        console.log(`REMOVED ${filePath}`)
+        console.log(`Removed: ${filePath}`)
       }
+
       resolve()
     })
   })
 }
 
 export const download = (title, file, url, dir) => {
-  const fileName = `${file}.${format}`
-  const filePath = `${dir}/${fileName}`
+  const filePath = `${dir}/${file}.${format}`
   const rl = mkInterface()
   const child = spawn(
     downloader,
@@ -76,6 +75,7 @@ export const download = (title, file, url, dir) => {
         await playMedia(filePath)
         await savePrompt(filePath)
       }
+
       process.exit(0)
     })
   })
