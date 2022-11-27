@@ -36,6 +36,7 @@ const savePrompt = filePath => {
 
       } else {
         rmSync(filePath, { force: true })
+        rmSync(`${filePath}.part`, { force: true })
         console.log(`Removed: ${filePath}`)
       }
 
@@ -71,6 +72,7 @@ export const download = (title, file, url, dir) => {
     child.on('exit', async exitCode => {
       if (exitCode !== 0) {
         rmSync(filePath, { force: true })
+        rmSync(`${filePath}.part`, { force: true })
         console.log('download cancelled')
       } else {
         await playMedia(filePath)
