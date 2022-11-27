@@ -33,8 +33,9 @@ const savePrompt = filePath => {
       if (line.toLowerCase() === 'y') {
         pbcopy(filePath)
         console.log(`Copied to clipboard: ${filePath}`)
+
       } else {
-        rmSync(filePath)
+        rmSync(filePath, { force: true })
         console.log(`Removed: ${filePath}`)
       }
 
@@ -69,7 +70,7 @@ export const download = (title, file, url, dir) => {
   return new Promise(() => {
     child.on('exit', async exitCode => {
       if (exitCode !== 0) {
-        rmSync(filePath)
+        rmSync(filePath, { force: true })
         console.log('download cancelled')
       } else {
         await playMedia(filePath)

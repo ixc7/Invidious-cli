@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
+import { config } from './config.js'
 import { mkInterface, mktemp } from './util.js'
-import { save, folder } from './config.js'
-import { keypressHandle } from './keypress.js'
-import { searchPrompt } from './search.js'
+import { mainKeypressHandler } from './keypress.js'
+import { mainSearchPrompt } from './search.js'
 
-const dir = save ? folder : mktemp()
-const results = await searchPrompt()
+const dir = config.save ? config.folder : mktemp()
+const results = await mainSearchPrompt()
 const rl = mkInterface()
-const handler = await keypressHandle(results, dir)
+const handler = await mainKeypressHandler(results, dir)
 
 rl.input.on('keypress', handler)
 

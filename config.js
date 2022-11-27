@@ -12,7 +12,7 @@ export const playerOpts = [
   // '--geometry=100%:100%',
 ]
 
-export default {
+export const config = {
   format,
   downloader,
   downloaderOpts,
@@ -22,3 +22,6 @@ export default {
   folder,
   pages
 }
+
+export default config
+

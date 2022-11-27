@@ -4,51 +4,54 @@ import { pages } from './config.js'
 import { bold, mkPrompt } from './util.js'
 import { servers } from './servers.js'
 
-export const searchOne = async (
+const searchSinglePage = async (
   searchTerm,
   { hosts },
   page = 1,
   serverName = false,
   serverIndex = 0
 ) => {
-  // const { hosts } = env
   let server = serverName || hosts[0]
   const serverCount = hosts.length
 
-  return new Promise(resolve => {
-    const changeServer = async msg => {
-      console.log(msg)
-      serverIndex += 1
-      server = hosts[hosts.length - serverIndex]
+  const changeServer = async (msg, res) => {
+    console.log(msg)
 
-      if (serverIndex < serverCount) {
-        console.log(`  + trying '${server}'`)
-        resolve(await searchOne(searchTerm, { hosts }, page, server, serverIndex))
-      } else {
-        console.log(bold('no servers available.'))
-        process.exit(1)
-      }
+    serverIndex += 1
+    server = hosts[hosts.length - serverIndex]
+
+    if (serverIndex < serverCount) {
+      console.log(`  + trying '${server}'`)
+      res(await searchSinglePage(searchTerm, { hosts }, page, server, serverIndex))
+    } else {
+      console.log(bold('no servers available.'))
+      process.exit(1)
     }
+  }
 
+  return new Promise(resolve => {
     const query = new URL('/api/v1/search', `${server}/api`)
+
     query.searchParams.set('q', searchTerm)
     query.searchParams.set('page', page)
 
     const req = https.request(query.href)
+
     req.setHeader('Accept', 'application/json')
+
     req.on('error', async e => {
-      resolve(await changeServer(`  + '${server}' cannot be reached (${e.message || e}).`))
+      resolve(await changeServer(`  + '${server}' cannot be reached (${e.message || e}).`, resolve))
     })
 
-    // TODO string util [3]
     req.on('response', res => {
+      // TODO string util [3]
       let resToString = ''
 
       res.on('data', d => (resToString += d.toString('utf8')))
 
       res.on('end', async () => {
         if (res.statusCode !== 200) {
-          resolve(await changeServer(`  + '${server}' returned an error (${res.statusCode}).`))
+          resolve(await changeServer(`  + '${server}' returned an error (${res.statusCode}).`, resolve))
         } else {
           try {
             resolve({
@@ -70,7 +73,7 @@ export const searchOne = async (
               )
             })
           } catch (e) {
-            resolve(await changeServer(`  + '${server}' returned an invalid response (${e.message || e}).`))
+            resolve(await changeServer(`  + '${server}' returned an invalid response (${e.message || e}).`, resolve))
           }
         }
       })
@@ -80,7 +83,7 @@ export const searchOne = async (
   })
 }
 
-export const searchMulti = async (searchTerm, { hosts }, max = pages) => {
+const searchMultiplePages = async (searchTerm, { hosts }, max = pages) => {
   let server = hosts[0]
   let final = []
 
@@ -88,7 +91,7 @@ export const searchMulti = async (searchTerm, { hosts }, max = pages) => {
     cursorTo(process.stdout, 0, 1)
     console.log(`fetching page ${bold(i)} of ${bold(max)}\nserver: ${bold(server)}`)
 
-    const res = await searchOne(searchTerm, { hosts }, i, server)
+    const res = await searchSinglePage(searchTerm, { hosts }, i, server)
     if (!res.results.length) return final
 
     server = res.server
@@ -98,14 +101,13 @@ export const searchMulti = async (searchTerm, { hosts }, max = pages) => {
   return final
 }
 
-export const searchPrompt = async () => {
-  // const env = await servers()
+export const mainSearchPrompt = async () => {
   const input = await mkPrompt()
 
   console.clear()
   console.log(`searching for ${bold(input)}`)
 
-  const res = await searchMulti(input, await servers())
+  const res = await searchMultiplePages(input, await servers())
 
   if (!res.length) {
     console.log('no results')
@@ -114,3 +116,4 @@ export const searchPrompt = async () => {
 
   return res
 }
+

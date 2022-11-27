@@ -8,7 +8,7 @@ export const servers = () => {
     req.on('error', async e => {
       console.log(`  + error fetching servers (${e.message || e}).`)
 
-      // md if API is down
+      // try to get .md list if API is down
       const serversMdResults = await serversMd()
 
       if (serversMdResults.length) resolve({ hosts: serversMdResults })
@@ -17,10 +17,12 @@ export const servers = () => {
       process.exit(1)
     })
 
-    // TODO string util [1]
     req.on('response', res => {
+      // TODO string util [1]
       let str = ''
+
       res.on('data', d => (str += d.toString('utf8')))
+
       res.on('end', async () => {
         const hosts = JSON.parse(str)
           .filter(item => !item[0].includes('.onion') && item[1].api)
