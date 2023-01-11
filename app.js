@@ -5,10 +5,13 @@ import { mkInterface, mktemp } from './util.js'
 import { mainKeypressHandler } from './keypress.js'
 import { mainSearchPrompt } from './search.js'
 
-const dir = config.save ? config.folder : mktemp()
-const results = await mainSearchPrompt()
-const rl = mkInterface()
-const handler = await mainKeypressHandler(results, dir)
+const App = async () => {
+  const dir = config.save ? config.folder : mktemp()
+  const results = await mainSearchPrompt()
+  const rl = mkInterface()
+  const handler = await mainKeypressHandler(results, dir)
 
-rl.input.on('keypress', handler)
+  rl.input.on('keypress', handler)
+}
 
+App()

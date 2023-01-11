@@ -1,4 +1,4 @@
-export const format = 'm4a'
+export const format = 'mp4'
 export const downloader = 'yt-dlp' // TODO: ffmpeg, spotdl, vlc, youtube-dl
 export const player = 'mpv'
 export const folder = '/Users/admin/Music/invidious'
@@ -24,4 +24,3 @@ export const config = {
 }
 
 export default config
-

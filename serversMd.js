@@ -16,8 +16,7 @@ export const formatMd = arr =>
       const end = x.indexOf(')')
       const url = x.substr(start, end - start)
 
-      if (url.substr(url.length - 1) === '/')
-        return url.substr(0, url.length - 1)
+      if (url.substr(url.length - 1) === '/') { return url.substr(0, url.length - 1) }
       return url
     })
 

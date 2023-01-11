@@ -21,15 +21,15 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
   let input = ''
 
   const keymap = {
-    'up': () => pos -= 1,
-    'down': () => pos += 1,
-    'left': () => pos -= 1,
-    'right': () => pos += 1,
-    'return': async () => selection
+    up: () => { pos -= 1 },
+    down: () => { pos += 1 },
+    left: () => { pos -= 1 },
+    right: () => { pos += 1 },
+    return: async () => selection
       ? await download(selection.title, sanitize(selection.title), selection.url, destinationFolder)
       : null,
-    'backspace': () => input = input.substring(0, input.length - 1),
-    'q': seq => {
+    backspace: () => { input = input.substring(0, input.length - 1) },
+    q: seq => {
       if (seq === '\x11') { // ctrl+q
         clear()
         write('search cancelled\n')

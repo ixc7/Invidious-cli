@@ -1,3 +1,4 @@
+import { clear, log } from 'console'
 import { spawn } from 'child_process'
 import { rmSync } from 'fs'
 import { bold, mkInterface } from './util.js'
@@ -32,12 +33,11 @@ const savePrompt = filePath => {
     rl.on('line', line => {
       if (line.toLowerCase() === 'y') {
         pbcopy(filePath)
-        console.log(`Copied to clipboard: ${filePath}`)
-
+        log(`Copied to clipboard: ${filePath}`)
       } else {
         rmSync(filePath, { force: true })
         rmSync(`${filePath}.part`, { force: true })
-        console.log(`Removed: ${filePath}`)
+        log(`Removed: ${filePath}`)
       }
 
       resolve()
@@ -55,8 +55,8 @@ export const download = (title, file, url, dir) => {
   )
 
   child.on('spawn', () => {
-    console.clear()
-    console.log(`
+    clear()
+    log(`
       \rvideo: ${bold(title)}
       \rurl: ${bold(url)}
       \rdownloading file with ${bold(downloader)}
@@ -73,7 +73,7 @@ export const download = (title, file, url, dir) => {
       if (exitCode !== 0) {
         rmSync(filePath, { force: true })
         rmSync(`${filePath}.part`, { force: true })
-        console.log('download cancelled')
+        log('download cancelled')
       } else {
         await playMedia(filePath)
         await savePrompt(filePath)

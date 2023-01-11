@@ -1,8 +1,9 @@
+import { clear, log } from 'console'
 import https from 'https'
 import { cursorTo } from 'readline'
 import { pages } from './config.js'
 import { bold, mkPrompt } from './util.js'
-import { servers } from './servers.js'
+import { fetchServers } from './servers.js'
 
 const searchSinglePage = async (
   searchTerm,
@@ -15,16 +16,15 @@ const searchSinglePage = async (
   const serverCount = hosts.length
 
   const changeServer = async (msg, res) => {
-    console.log(msg)
-
     serverIndex += 1
     server = hosts[hosts.length - serverIndex]
+    log(msg)
 
     if (serverIndex < serverCount) {
-      console.log(`  + trying '${server}'`)
+      log(`  + trying '${server}'`)
       res(await searchSinglePage(searchTerm, { hosts }, page, server, serverIndex))
     } else {
-      console.log(bold('no servers available.'))
+      log(bold('no servers available.'))
       process.exit(1)
     }
   }
@@ -39,9 +39,9 @@ const searchSinglePage = async (
 
     req.setHeader('Accept', 'application/json')
 
-    req.on('error', async e => {
+    req.on('error', async e =>
       resolve(await changeServer(`  + '${server}' cannot be reached (${e.message || e}).`, resolve))
-    })
+    )
 
     req.on('response', res => {
       // TODO string util [3]
@@ -85,35 +85,34 @@ const searchSinglePage = async (
 
 const searchMultiplePages = async (searchTerm, { hosts }, max = pages) => {
   let server = hosts[0]
-  let final = []
+  let results = []
 
   for (let i = 1; i < max + 1; i += 1) {
     cursorTo(process.stdout, 0, 1)
-    console.log(`fetching page ${bold(i)} of ${bold(max)}\nserver: ${bold(server)}`)
+    log(`fetching page ${bold(i)} of ${bold(max)}\nserver: ${bold(server)}`)
 
-    const res = await searchSinglePage(searchTerm, { hosts }, i, server)
-    if (!res.results.length) return final
+    const page = await searchSinglePage(searchTerm, { hosts }, i, server)
+    if (!page.results.length) return results
 
-    server = res.server
-    final = final.concat(res.results)
+    server = page.server
+    results = results.concat(page.results)
   }
 
-  return final
+  return results
 }
 
 export const mainSearchPrompt = async () => {
   const input = await mkPrompt()
 
-  console.clear()
-  console.log(`searching for ${bold(input)}`)
+  clear()
+  log(`searching for ${bold(input)}`)
 
-  const res = await searchMultiplePages(input, await servers())
+  const results = await searchMultiplePages(input, await fetchServers())
 
-  if (!res.length) {
-    console.log('no results')
+  if (!results.length) {
+    log('no results')
     process.exit(1)
   }
 
-  return res
+  return results
 }
-

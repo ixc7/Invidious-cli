@@ -11,17 +11,13 @@ export const sanitize = str => str.replace(/([^a-z0-9]+)/gi, '-')
 export const mktemp = () =>
   spawnSync('mktemp', ['-d']).stdout.toString('utf8').replaceAll('\n', '')
 
-export const rmdir = dir => existsSync(dir) && rmSync(dir, { recursive: true, force: true })
+export const rmdir = dir =>
+  existsSync(dir) && rmSync(dir, { recursive: true, force: true })
 
-export const fmtTime = s => {
-  const zeros = n => {
-    const str = n.toString()
-    if (str.length === 1) return `0${str}`
-    return str
-  }
-  const min = zeros(Math.floor(s / 60))
-  const sec = zeros(s - min * 60)
-  return `${min}:${sec}`
+export const fmtTime = seconds => {
+  const time = new Date(seconds * 1000)
+  const fmt = num => num.toString().padStart(2, '0')
+  return `${fmt(time.getMinutes())}:${fmt(time.getSeconds())}`
 }
 
 // TODO: does this break from using process from THIS file instead????
