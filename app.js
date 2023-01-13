@@ -7,7 +7,7 @@ import { mainSearchPrompt } from './search.js'
 
 const App = async () => {
   const dir = config.save ? config.folder : mktemp()
-  const results = await mainSearchPrompt()
+  const results = await mainSearchPrompt(process.argv.slice(2).join(' '))
   const rl = mkInterface()
   const handler = await mainKeypressHandler(results, dir)
 

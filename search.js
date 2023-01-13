@@ -56,21 +56,23 @@ const searchSinglePage = async (
           try {
             resolve({
               server,
-              results: JSON.parse(resToString, 0, 2).map(
-                ({ author, viewCount, publishedText, lengthSeconds, title, videoId }) => {
-                  return {
-                    title,
-                    url: `${server}/watch?v=${videoId}`,
-                    info: {
-                      thumbnail: `${server}/vi/${videoId}/hqdefault.jpg`,
-                      author,
-                      viewCount,
-                      publishedText,
-                      lengthSeconds
+              results: JSON.parse(resToString, 0, 2)
+                .filter(({ type }) => type === 'video')
+                .map(
+                  ({ author, viewCount, publishedText, lengthSeconds, title, videoId }) => {
+                    return {
+                      title,
+                      url: `${server}/watch?v=${videoId}`,
+                      info: {
+                        thumbnail: `${server}/vi/${videoId}/hqdefault.jpg`,
+                        author,
+                        viewCount,
+                        publishedText,
+                        lengthSeconds
+                      }
                     }
                   }
-                }
-              )
+                )
             })
           } catch (e) {
             resolve(await changeServer(`  + '${server}' returned an invalid response (${e.message || e}).`, resolve))
@@ -101,8 +103,8 @@ const searchMultiplePages = async (searchTerm, { hosts }, max = pages) => {
   return results
 }
 
-export const mainSearchPrompt = async () => {
-  const input = await mkPrompt()
+export const mainSearchPrompt = async prefill => {
+  const input = await mkPrompt('Search: ', prefill)
 
   clear()
   log(`searching for ${bold(input)}`)

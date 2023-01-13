@@ -1,3 +1,4 @@
+import { spawnSync } from 'child_process'
 import { cursorTo } from 'readline'
 import { clear } from 'console'
 import { Fzf } from 'fzf'
@@ -41,7 +42,7 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
 
   const fzf = new Fzf(searchResults, { selector: item => item.title || '' })
 
-  /* main function
+  /* main UI function
 
     checks for/runs keymap functions,
     filters input w fzf,
@@ -69,16 +70,21 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
     clear()
 
     if (selection) {
-      const { author, viewCount, publishedText, lengthSeconds } = selection.info
+      const { author, viewCount, publishedText, lengthSeconds, thumbnail } = selection.info
 
       // list of video titles
       write(
         `${bold(selection.title)}\n` +
         matches
-          .slice(pos + 1, pos + getRows(9))
+          .slice(pos + 1, pos + 25)
+          // .slice(pos + 1, pos + getRows(9))
           .map(res => res.title)
           .join('\n')
       )
+
+      // thumbnail
+      cursorTo(process.stdout, 0, 0)
+      spawnSync('timg', ['-gx15', '-C', thumbnail], { stdio: ['pipe', process.stdout, process.stderr] })
 
       // info box
       write(`

@@ -15,8 +15,9 @@ export const rmdir = dir =>
   existsSync(dir) && rmSync(dir, { recursive: true, force: true })
 
 export const fmtTime = seconds => {
-  const time = new Date(seconds * 1000)
   const fmt = num => num.toString().padStart(2, '0')
+  const time = new Date(seconds * 1000)
+
   return `${fmt(time.getMinutes())}:${fmt(time.getSeconds())}`
 }
 
@@ -24,6 +25,7 @@ export const fmtTime = seconds => {
 export const mkInterface = (opts, { stdin, stdout } = process) => {
   stdin.removeAllListeners('keypress')
   stdin.removeAllListeners('line')
+
   return createInterface({
     input: stdin,
     output: stdout,
@@ -31,16 +33,22 @@ export const mkInterface = (opts, { stdin, stdout } = process) => {
   })
 }
 
-export const mkPrompt = (prompt = 'search: ') => {
+export const mkPrompt = (prompt = 'Search: ', prefilled) => {
   const rl = mkInterface({ prompt })
+
+  prefilled && rl.write(prefilled)
+
   return new Promise(resolve => {
     rl.on('line', str => {
       if (str.replaceAll(' ', '').length > 0) {
         rl.close()
+
         resolve(str)
       }
+
       rl.prompt()
     })
+
     rl.prompt()
   })
 }
