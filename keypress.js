@@ -5,23 +5,13 @@ import { Fzf } from 'fzf'
 import { bold, fmtTime, sanitize, getRows, write } from './util.js'
 import { download } from './download.js'
 
-/* utils */
-
-// const write = (str, x = 0, y = 0) => {
-//   cursorTo(process.stdout, x, y)
-//   process.stdout.write(str)
-// }
-
-// const getRows = n => process.stdout.rows - n
-
-/* wrapper */
-
+// top wrapper
 export const mainKeypressHandler = async (searchResults, destinationFolder) => {
   let pos = Infinity
   let selection = false
   let input = ''
 
-  const keymap = {
+  const actionsList = {
     up: () => { pos -= 1 },
     down: () => { pos += 1 },
     left: () => { pos -= 1 },
@@ -37,21 +27,16 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
         process.exit(0)
       }
       input += 'q' // normal q
-    }
+    },
   }
 
   const fzf = new Fzf(searchResults, { selector: item => item.title || '' })
 
-  /* main UI function
-
-    checks for/runs keymap functions,
-    filters input w fzf,
-    draws the ui */
-
+  // main UI function
   const keypressRender = async (char, { name, sequence }) => {
     // check if keypress has an action
-    if (keymap[name]) await keymap[name](sequence)
-
+    if (actionsList[name]) await actionsList[name](sequence)
+    
     // else, add char to input
     else if (char && !sequence.includes('\x1b') && name !== 'return') input += char
 
@@ -68,15 +53,26 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
 
     // render the ui
     clear()
-
+    
+    // render thumbnail preview and video info
     if (selection) {
       const { author, viewCount, publishedText, lengthSeconds, thumbnail } = selection.info
-
-      // thumbnail previews
+      
+      // position to render thumbnails/list
       cursorTo(process.stdout, 0, 0)
-      spawnSync('timg', ['-gx15', thumbnail], {stdio: ['pipe', process.stdout, process.stderr]})
 
-      // list of video titles
+      // render thumbnail w/timg on ctrl+left/home keypress
+      if (name === 'home') {
+        write(`${selection.title}
+`)
+        spawnSync(
+          'timg',
+          ['-gx10', selection.info.thumbnail],
+          { stdio: ['pipe', process.stdout, process.stderr] }
+        )
+      }
+
+      // browsable list of video titles
       write(
         `${bold(selection.title)}\n` +
         matches
@@ -87,18 +83,19 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
         16
       )
 
-      // info box
+      // bottom info box
       write(`
         \rTitle: ${selection.title}
+        \rItem: ${pos + 1} / ${matches.length}
         \rChannel: ${author}
         \rViews: ${viewCount}
         \rDescription: ${publishedText}
         \rLength: ${fmtTime(lengthSeconds)}
-      `, 0, getRows(7)
+      `, 0, getRows(8)
       )
     }
 
-    // fzf/user input
+    // bottom input line with fzf
     write(`-> ${input}`, 0, getRows(1))
   }
 
@@ -114,6 +111,7 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
     0,
     16
   )
+
   write(`-> ${input}`, 0, getRows(1))
 
   // return the main function
