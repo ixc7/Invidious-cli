@@ -52,3 +52,12 @@ export const mkPrompt = (prompt = 'Search: ', prefilled) => {
     rl.prompt()
   })
 }
+
+export const getRows = n => process.stdout.rows - n
+
+export const write = (str, x = 0, y = 0) => {
+  cursorTo(process.stdout, x, y)
+  process.stdout.write(str)
+}
+
+

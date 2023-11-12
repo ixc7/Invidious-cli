@@ -2,17 +2,17 @@ import { spawnSync } from 'child_process'
 import { cursorTo } from 'readline'
 import { clear } from 'console'
 import { Fzf } from 'fzf'
-import { bold, fmtTime, sanitize } from './util.js'
+import { bold, fmtTime, sanitize, getRows, write } from './util.js'
 import { download } from './download.js'
 
 /* utils */
 
-const write = (str, x = 0, y = 0) => {
-  cursorTo(process.stdout, x, y)
-  process.stdout.write(str)
-}
+// const write = (str, x = 0, y = 0) => {
+//   cursorTo(process.stdout, x, y)
+//   process.stdout.write(str)
+// }
 
-const getRows = n => process.stdout.rows - n
+// const getRows = n => process.stdout.rows - n
 
 /* wrapper */
 
@@ -72,19 +72,20 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
     if (selection) {
       const { author, viewCount, publishedText, lengthSeconds, thumbnail } = selection.info
 
+      // thumbnail previews
+      cursorTo(process.stdout, 0, 0)
+      spawnSync('timg', ['-gx15', thumbnail], {stdio: ['pipe', process.stdout, process.stderr]})
+
       // list of video titles
       write(
         `${bold(selection.title)}\n` +
         matches
-          .slice(pos + 1, pos + 25)
-          // .slice(pos + 1, pos + getRows(9))
+          .slice(pos + 1, pos + getRows(24)) // 9 for info, 15 for timg
           .map(res => res.title)
-          .join('\n')
+          .join('\n'),
+        0,
+        16
       )
-
-      // thumbnail
-      cursorTo(process.stdout, 0, 0)
-      spawnSync('timg', ['-gx15', '-C', thumbnail], { stdio: ['pipe', process.stdout, process.stderr] })
 
       // info box
       write(`
@@ -97,7 +98,7 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
       )
     }
 
-    // fzf input at bottom
+    // fzf/user input
     write(`-> ${input}`, 0, getRows(1))
   }
 
@@ -109,7 +110,9 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
     searchResults
       .slice(0, getRows(10))
       .map(res => res.title)
-      .join('\n')
+      .join('\n'),
+    0,
+    16
   )
   write(`-> ${input}`, 0, getRows(1))
 

@@ -1,5 +1,6 @@
 import { log } from 'console'
 import https from 'https'
+import { write, getRows } from './util.js'
 
 export const fetchServers = () => new Promise(resolve => {
   const req = https.request('https://api.invidious.io/instances.json')
@@ -16,11 +17,35 @@ export const fetchServers = () => new Promise(resolve => {
     res.on('data', d => (str += d.toString('utf8')))
 
     res.on('end', async () => {
-      const hosts = JSON.parse(str)
-        .filter(item => !item[0].includes('.onion') && item[1].api)
-        .map(item => `https://${item[0]}`)
+      const data = JSON.parse(str)
+
+      const hosts = data
+        .filter(i => 
+          i[1].monitor?.statusClass === 'success' // only include servers that are accessible
+      ) 
+        .map(i => `https://${i[0]}`)
+        
+      const excluded = data
+      .map(i => {
+        const named = `https://${i[0]}`
+        return named
+      })
+      .filter(i => {
+        if (!hosts.includes(i)) {
+          return i
+        } 
+      })
+      
+      write(
+        `accessible servers: ${hosts.length}/${data.length}
+        \rexcluded servers: ${excluded.length}/${data.length}`, 
+        0,
+        getRows(2)
+      )
 
       if (hosts.length) resolve({ hosts })
+
+
       else {
         log('  + error fetching servers (empty response).')
         process.exit(1)
