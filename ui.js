@@ -1,16 +1,17 @@
 import { spawnSync } from 'child_process'
 import { cursorTo } from 'readline'
-import { clear } from 'console'
+// import { clear } from 'console'
 import { Fzf } from 'fzf'
-import { bold, fmtTime, sanitize, getRows, write } from './util.js'
+import { bold, fmtTime, sanitize, getRows, write, clear } from './util.js'
 import { download } from './download.js'
 
 // top wrapper
-export const mainKeypressHandler = async (searchResults, destinationFolder) => {
+export const mainUI = async (searchResults, destinationFolder) => {
   let pos = Infinity
   let selection = false
   let input = ''
-
+  
+  // keymap
   const actionsList = {
     up: () => { pos -= 1 },
     down: () => { pos += 1 },
@@ -21,13 +22,15 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
       : null,
     backspace: () => { input = input.substring(0, input.length - 1) },
     q: seq => {
-      if (seq === '\x11') { // ctrl+q
+      // ctrl+q
+      if (seq === '\x11') { 
         clear()
         write('search cancelled\n')
         process.exit(0)
       }
-      input += 'q' // normal q
-    },
+      // normal q
+      input += 'q' 
+    }
   }
 
   const fzf = new Fzf(searchResults, { selector: item => item.title || '' })
@@ -56,27 +59,28 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
     
     // render thumbnail preview and video info
     if (selection) {
+      const { title } = selection
       const { author, viewCount, publishedText, lengthSeconds, thumbnail } = selection.info
       
       // position to render thumbnails/list
       cursorTo(process.stdout, 0, 0)
 
       // render thumbnail w/timg on ctrl+left/home keypress
+      // not in top level keymap because needs selection
       if (name === 'home') {
-        write(`${selection.title}
-`)
+        write(`Thumbnail: ${bold(title)}\n`)
         spawnSync(
           'timg',
-          ['-gx10', selection.info.thumbnail],
+          ['-gx10', thumbnail],
           { stdio: ['pipe', process.stdout, process.stderr] }
         )
       }
 
       // browsable list of video titles
       write(
-        `${bold(selection.title)}\n` +
+        `${bold(title)}\n` +
         matches
-          .slice(pos + 1, pos + getRows(24)) // 9 for info, 15 for timg
+          .slice(pos + 1, pos + getRows(19)) // 9 for info, 10 for timg
           .map(res => res.title)
           .join('\n'),
         0,
@@ -89,7 +93,7 @@ export const mainKeypressHandler = async (searchResults, destinationFolder) => {
         \rItem: ${pos + 1} / ${matches.length}
         \rChannel: ${author}
         \rViews: ${viewCount}
-        \rDescription: ${publishedText}
+        \rPublished: ${publishedText}
         \rLength: ${fmtTime(lengthSeconds)}
       `, 0, getRows(8)
       )

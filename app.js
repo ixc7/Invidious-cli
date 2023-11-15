@@ -2,7 +2,7 @@
 
 import { config } from './config.js'
 import { mkInterface, mktemp } from './util.js'
-import { mainKeypressHandler } from './keypress.js'
+import { mainUI } from './ui.js'
 import { mainSearchPrompt } from './search.js'
 
 const App = async () => {
@@ -12,7 +12,7 @@ const App = async () => {
 
   const rl = mkInterface()
 
-  const handler = await mainKeypressHandler(results, saveDir)
+  const handler = await mainUI(results, saveDir)
 
   rl.input.on('keypress', handler)
 }

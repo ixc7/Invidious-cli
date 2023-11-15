@@ -4,7 +4,7 @@ import { rmSync, existsSync } from 'fs'
 
 export const bold = input => `\x1b[1m${input}\x1b[0m`
 
-export const gotoTop = () => cursorTo(0, 0)
+export const clear = () => process.stdout.write('\x1Bc\x1b[3J')
 
 export const sanitize = str => str.replace(/([^a-z0-9]+)/gi, '-')
 
@@ -21,7 +21,6 @@ export const fmtTime = seconds => {
   return `${fmt(time.getMinutes())}:${fmt(time.getSeconds())}`
 }
 
-// TODO: does this break from using process from THIS file instead????
 export const mkInterface = (opts, { stdin, stdout } = process) => {
   stdin.removeAllListeners('keypress')
   stdin.removeAllListeners('line')
@@ -35,14 +34,12 @@ export const mkInterface = (opts, { stdin, stdout } = process) => {
 
 export const mkPrompt = (prompt = 'Search: ', prefilled) => {
   const rl = mkInterface({ prompt })
-
   prefilled && rl.write(prefilled)
 
   return new Promise(resolve => {
     rl.on('line', str => {
       if (str.replaceAll(' ', '').length > 0) {
         rl.close()
-
         resolve(str)
       }
 
@@ -59,3 +56,4 @@ export const write = (str, x = 0, y = 0) => {
   cursorTo(process.stdout, x, y)
   process.stdout.write(str)
 }
+
