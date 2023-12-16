@@ -6,17 +6,15 @@ import { mainUI } from './ui.js'
 import { mainSearchPrompt } from './search.js'
 
 const App = async () => {
-  const saveDir = config.save ? config.folder : mktemp()
-  
-  const results = await mainSearchPrompt(process.argv.slice(2).join(' '))
+  const saveLocation = config.save ? config.folder : mktemp()
+
+  const resultsList = await mainSearchPrompt(process.argv.slice(2).join(' '))
 
   const rl = mkInterface()
 
-  const handler = await mainUI(results, saveDir)
+  const handler = await mainUI(resultsList, saveLocation)
 
   rl.input.on('keypress', handler)
 }
 
-console.clear()
 App()
-

@@ -1,6 +1,4 @@
 import { spawnSync } from 'child_process'
-import { cursorTo } from 'readline'
-// import { clear } from 'console'
 import { Fzf } from 'fzf'
 import { bold, fmtTime, sanitize, getRows, write, clear } from './util.js'
 import { download } from './download.js'
@@ -10,9 +8,9 @@ export const mainUI = async (searchResults, destinationFolder) => {
   let pos = Infinity
   let selection = false
   let input = ''
-  
+
   // keymap
-  const actionsList = {
+  const keymap = {
     up: () => { pos -= 1 },
     down: () => { pos += 1 },
     left: () => { pos -= 1 },
@@ -23,27 +21,28 @@ export const mainUI = async (searchResults, destinationFolder) => {
     backspace: () => { input = input.substring(0, input.length - 1) },
     q: seq => {
       // ctrl+q
-      if (seq === '\x11') { 
+      if (seq === '\x11') {
         clear()
         write('search cancelled\n')
         process.exit(0)
       }
       // normal q
-      input += 'q' 
+      input += 'q'
     }
   }
 
+  // fuzzy finder instance
   const fzf = new Fzf(searchResults, { selector: item => item.title || '' })
 
   // main UI function
-  const keypressRender = async (char, { name, sequence }) => {
-    // check if keypress has an action
-    if (actionsList[name]) await actionsList[name](sequence)
-    
-    // else, add char to input
+  const renderUI = async (char, { name, sequence }) => {
+    // check if keypress has an associated action
+    if (keymap[name]) await keymap[name](sequence)
+
+    // else, add keypress character to input
     else if (char && !sequence.includes('\x1b') && name !== 'return') input += char
 
-    // get list of input matches
+    // get list of fuzzy matches to input
     const matches = fzf.find(input).map(({ item }) => item)
     const len = matches.length - 1
 
@@ -51,21 +50,18 @@ export const mainUI = async (searchResults, destinationFolder) => {
     if (pos > len) pos = 0
     else if (pos < 0) pos = len
 
-    // highlight current selection
+    // used to highlight + get info on current selection
     selection = matches[pos]
 
-    // render the ui
+    // clear previous render
     clear()
-    
-    // render thumbnail preview and video info
+
+    // render info about current selection
     if (selection) {
       const { title } = selection
       const { author, viewCount, publishedText, lengthSeconds, thumbnail } = selection.info
-      
-      // position to render thumbnails/list
-      cursorTo(process.stdout, 0, 0)
 
-      // render thumbnail w/timg on ctrl+left/home keypress
+      // render thumbnail on ctrl+left/home key
       // not in top level keymap because needs selection
       if (name === 'home') {
         write(`Thumbnail: ${bold(title)}\n`)
@@ -99,7 +95,7 @@ export const mainUI = async (searchResults, destinationFolder) => {
       )
     }
 
-    // bottom input line with fzf
+    // bottom input line
     write(`-> ${input}`, 0, getRows(1))
   }
 
@@ -119,5 +115,5 @@ export const mainUI = async (searchResults, destinationFolder) => {
   write(`-> ${input}`, 0, getRows(1))
 
   // return the main function
-  return keypressRender
+  return renderUI
 }

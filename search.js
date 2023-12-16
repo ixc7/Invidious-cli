@@ -15,73 +15,61 @@ const searchSinglePage = async (
   let server = serverName || hosts[0]
   const serverCount = hosts.length
 
-  const changeServer = async (msg, res) => {
-    serverIndex += 1
-    server = hosts[hosts.length - serverIndex]
+  const changeServer = async (msg, resolve) => {
     log(msg)
+
+    serverIndex += 1
+    server = hosts[serverCount - serverIndex]
 
     if (serverIndex < serverCount) {
       log(`  + trying '${server}'`)
-      res(await searchSinglePage(searchTerm, { hosts }, page, server, serverIndex))
-    } else {
+      resolve(await searchSinglePage(searchTerm, { hosts }, page, server, serverIndex))
+    }
+    else {
       log(bold('no servers available.'))
       process.exit(1)
     }
   }
 
-  return new Promise(resolve => {
-    const query = new URL('/api/v1/search', `${server}/api`)
-
-    query.searchParams.set('q', searchTerm)
-    query.searchParams.set('page', page)
-
-    const req = https.request(query.href)
-
-    req.setHeader('Accept', 'application/json')
-
-    req.on('error', async e =>
-      resolve(await changeServer(`  + '${server}' cannot be reached (${e.message || e}).`, resolve))
+  return new Promise(async resolve => {
+    const onError = async msg => resolve(
+      await changeServer(
+        msg,
+        resolve
+      )
     )
 
-    req.on('response', res => {
-      // TODO string util [3]
-      let resToString = ''
+    try {
+      const response = await (await fetch(`${server}/api/v1/search?q=${searchTerm}?page=${page}`)).json()
 
-      res.on('data', d => (resToString += d.toString('utf8')))
-
-      res.on('end', async () => {
-        if (res.statusCode !== 200) {
-          resolve(await changeServer(`  + '${server}' returned an error (${res.statusCode}).`, resolve))
-        } else {
-          try {
-            resolve({
-              server,
-              results: JSON.parse(resToString, 0, 2)
-                .filter(({ type }) => type === 'video')
-                .map(
-                  ({ author, viewCount, publishedText, lengthSeconds, title, videoId }) => {
-                    return {
-                      title,
-                      url: `${server}/watch?v=${videoId}`,
-                      info: {
-                        thumbnail: `${server}/vi/${videoId}/hqdefault.jpg`,
-                        author,
-                        viewCount,
-                        publishedText,
-                        lengthSeconds
-                      }
-                    }
+      try {
+        resolve({
+          server,
+          results: response
+            .filter(({ type }) => type === 'video')
+            .map(
+              ({ author, viewCount, publishedText, lengthSeconds, title, videoId }) => {
+                return {
+                  title,
+                  url: `${server}/watch?v=${videoId}`,
+                  info: {
+                    thumbnail: `${server}/vi/${videoId}/hqdefault.jpg`,
+                    author,
+                    viewCount,
+                    publishedText,
+                    lengthSeconds
                   }
-                )
-            })
-          } catch (e) {
-            resolve(await changeServer(`  + '${server}' returned an invalid response (${e.message || e}).`, resolve))
-          }
-        }
-      })
-    })
-
-    req.end()
+                }
+              }
+            )
+        })
+      } catch (e) {
+        onError(`  + '${server}' returned an invalid response (${e.message || e}).`)
+      }
+    }
+    catch (e) {
+      onError(`  + '${server}' cannot be reached (${e.message || e}).`)
+    }
   })
 }
 

@@ -56,4 +56,3 @@ export const write = (str, x = 0, y = 0) => {
   cursorTo(process.stdout, x, y)
   process.stdout.write(str)
 }
-
